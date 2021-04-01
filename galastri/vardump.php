@@ -38,7 +38,7 @@ function varDump(...$values)
     $varDump = preg_replace('/(int)\((.*)\)/', '<span class="numeric text">$2</span> <span class="numeric solid"><b>$1</b></span>', $varDump);
     
     // Division between values
-    $varDump = preg_replace('/([0-9]\.)/', '<span class="division">$1</span>', $varDump);
+    $varDump = preg_replace('/(Result\s[0-9]\.)/', '<span class="division">$1</span>', $varDump);
 
     // // Array/Object key
     $varDump = preg_replace('/(\[[0-9]\])(=>)/', '<span class="array-key">$1</span> $2 ', $varDump);
@@ -68,7 +68,7 @@ function _getVarDump($type, ...$values)
 {
     ob_start();
     foreach($values[0] as $key => $value){
-        echo $type !== 'json' ? "$key." : '';
+        echo $type !== 'json' ? "Result $key." : '';
         var_dump($value);
     };
     $content = ob_get_contents();
