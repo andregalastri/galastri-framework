@@ -1,4 +1,5 @@
 <?php
-/** Requere os arquivos de carregamento inicial */
-require_once(__DIR__.'/../galastri/debug.php');
-require_once(__DIR__.'/../galastri/galastri.php');
+/**
+ * Requires the bootstrap file that starts the framework.
+ */
+require_once(__DIR__.'/../galastri/bootstrap.php');

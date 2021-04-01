@@ -1,402 +1,205 @@
 <?php
-/**
- * !!DOCUMENTAR
- * - Route.php -
- * 
- * Classe que define as propriedades da rota baseado na URL e nas configurações de rotas do
- * arquivo config/routes.php
- */
 namespace galastri\core;
 
-use \galastri\modules\Authentication;
+use \galastri\modules\Functions as F;
 
 class Route
 {
     private static $urlArray;
-    private static $route = [
-        'classPath' => '',
-        'urlPath' => '',
-        'currentNode' => '',
-    ];
-    private static $urlParameters = [
-        'afterMethod' => [],
-        'classAsParameter' => [],
-    ];
-    private static $tmpParameters = [];
-    private static $inheritanceConfig = [
-        'renderer'     => null,
-        'offline'      => false,
+    private static $controllerName = false;
+    private static $controllerParams = [];
+    private static $controllerPath = [];
+    private static $dynamicNodes = [];
+    private static $remainingUrlNodes = [];
+    private static $methodName = false;
+    private static $methodParams = [
         'downloadable' => false,
-        'cache'        => false,
-        'authTag'      => false,
-        'authFailUrl'  => null,
-        'template'     => false,
-        'error404Url'  => null,
-        'siteName'     => null,
+        'viewFile' => false,
+        'fileBaseFolder' => false,
     ];
-
-    private static $controller;
-    private static $method;
-    private static $methodNames = [
-        'original' => '',
-        'camelCase' => '',
+    private static $cascateParameters = [
+        'appTitle' => false,
+        'authFailRedirect' => false,
+        'authTag' => false,
+        'cache' => false,
+        'controllerNamespace' => false,
+        'viewDirectory' => false,
+        'notFoundRedirect' => false,
+        'offline' => false,
+        'pageTitle' => false,
+        'renderer' => false,
+        'template' => false,
+        'forceRedirect' => false,
     ];
-    private static $methodParameters;
-    private static $view;
-    private static $classPath;
-    private static $path;
-    private static $offline;
-    private static $authTag;
-    private static $authStatus;
-    private static $authBlock = false;
-    private static $authFailUrl;
-    private static $error404Url;
-    private static $cache;
-    private static $routes;
-    private static $baseFolder;
-    private static $parameters;
-    private static $newParameters;
-    private static $urlString;
-    private static $siteName;
-    private static $title;
-    private static $template;
-    private static $import;
-    private static $renderer;
-    private static $downloadable;
-
-    /** Classe que trabalha sob o padrão Singleton, por isso, não poderá ser instanciada. */
-    private function __construct(){}
-
-    /**
-     * Este microframework se utiliza de URLs amigaveis para as requisições e navegação entre as
-     * páginas. Por conta disso, toda URL sofre um tratamento de forma a impedir o comportamento
-     * padrão das URLs.
-     * 
-     * O padrão comum é que a URL acesse diretamente um arquivo. Aqui, todas as URLs são
-     * redirecionadas para o arquivo galastri.php. Este arquivo inicializa o microframework que
-     * em seguida realiza a resolução da URL.
-     * 
-     * Como este arquivo possui muitos comandos, a explicação de cada bloco importante de código
-     * será feito diretamente junto aos códigos.
-     */
-
-    private static function getUrl()
-    {
-        $root = ltrim(GALASTRI['bootstrap_path'], '/');
-
-        $url = explode('?', str_replace($root, '', $_SERVER['REQUEST_URI']));
-        $url = explode('/', $url[0]);
-
-        if(empty($url[1])) array_shift($url);
-        
-        self::$urlArray = $url;
-    }
-
-    private static function addSlashs()
-    {
-        foreach(self::$urlArray as &$routeName)
-            $routeName = "/$routeName";
-
-        unset($routeName);
-    }
-
-    private static function parseNodes($routeConfig)
-    {
-        foreach(self::$urlArray as $key => $urlRoute){
-            if(array_key_exists($urlRoute, $routeConfig)){
-                self::buildPath();
-                self::resolveInheritanceParameters($routeConfig[$urlRoute]);
-                self::$route['currentNode'] = $urlRoute;
-                
-                self::$authStatus = self::resolveAuthStatus(self::$inheritanceConfig['authTag']);
-                $routeConfig = $routeConfig[$urlRoute];
-                
-                array_shift(self::$urlArray);
-                
-                if(!empty(self::$tmpParameters)){
-                    array_shift(self::$tmpParameters);
-                }
-            } else {
-                break;
-            }
-        }
-        self::$route['keys'] = array_keys($routeConfig);
-        self::$route['data'] = $routeConfig;
-    }
-
-    private static function resolveInheritanceParameters($routeArray)
-    {
-        foreach(self::$inheritanceConfig as $config => &$value){
-            if(array_key_exists($config, $routeArray)){
-                $value = $routeArray[$config];
-            }
-        }
-    }
-
-    private static function buildPath()
-    {
-        $currentNode = self::$route['currentNode'];
-        
-        if($currentNode === '/' or $currentNode === '')
-            return false;
-        
-        $currentNode = ltrim($currentNode, '/?');
-        $currentNode = ltrim($currentNode, '?');
-
-        self::$route['urlPath'] .= '/'.$currentNode;
-        self::$route['classPath'] .= '/'.convertCase($currentNode, 'pascal');
-    }
-
-    private static function defineRouteUrl()
-    {
-        $url = implode(self::$urlArray);
-        $url = ltrim($url, '/');
-        $url = "/$url";
-
-        self::$route['url'] = $url;
-    }
-
-    private static function defineUrlParameters()
-    {
-        $tmpParameters = replaceOnce(self::$route['classPath'], '', self::$route['url']);
-        $tmpParameters = ltrim($tmpParameters, '/');
-
-        if(!empty($tmpParameters)){
-            $tmpParameters = explode('/', $tmpParameters);
-            self::$tmpParameters = $tmpParameters;
-        }
-    }
-
-    private static function defineController($runTimes = 0)
-    {
-        Debug::trace(debug_backtrace()[0]);
-        
-        $tmpParameters = self::$tmpParameters;
-        
-        self::buildPath();
-
-        if(empty($tmpParameters)){
-            self::setMethod('main');
-        } else {
-            if(array_search('@'.$tmpParameters[0], self::$route['keys']) !== false){
-                self::setMethod($tmpParameters[0]);
-                array_shift(self::$tmpParameters);
-            } else {
-                $dynamicNode = self::searchDynamicNode();
-
-                if($dynamicNode['count'] > 0){
-                    array_shift(self::$urlArray);
-                    array_shift(self::$tmpParameters);
-
-                    self::setUrlParameter($dynamicNode['nodeName'], $tmpParameters[0]);
-                    
-                    // self::$authStatus = self::resolveAuthStatus($tmpParameters[0]);
-                    self::$route['currentNode'] = $dynamicNode['nodeName'];
-                    
-                    self::parseNodes(self::$route['data'][$dynamicNode['nodeName']]);
-                    self::defineRouteUrl();
-                    self::defineUrlParameters();
-                    self::defineController($runTimes + 1);
-                } else {
-                    self::setMethod('main');
-                }
-            }
-            self::setUrlParameters(self::$tmpParameters);
-        }
-        self::setController();
-    }
-
-    private static function searchDynamicNode()
-    {
-        Debug::trace(debug_backtrace()[0]);
-
-        $dynamicController = array_filter(self::$route['keys'], function($key){
-            if(substr($key, 0, 2) === '/?'){
-                return true;
-            }
-        });
-
-        if(count($dynamicController) > 1)
-            Debug::error('ROUTE001', count($dynamicController))::print();
-
-        self::resolveInheritanceParameters(self::$route['data'][implode($dynamicController)] ?? []);
-
-        return [
-            'nodeName' => implode($dynamicController),
-            'count' => count($dynamicController),
-        ];
-    }
-
-    private static function setUrlParameters($array)
-    {
-        self::$urlParameters['afterMethod'] = $array;
-    }
-
-    private static function setUrlParameter($key, $value)
-    {
-        $key = ltrim($key, '/');
-        $key = ltrim($key, '?');
-
-        self::$urlParameters['classAsParameter'][$key] = $value;
-    }
-
-    private static function setController()
-    {
-        $configFolder = rtrim(GALASTRI['folders']['controller'], '/');
-        $controller = self::$route['classPath'];
-
-        if(empty($controller))
-            $controller = '/Index';
-
-        self::$controller = str_replace(['/','.'], ['\\',''], $configFolder);
-        self::$controller .= str_replace('/', '\\', $controller);
-    }
-
-    private static function setMethod($name)
-    {
-        
-        $name = ltrim($name, '@');
-        self::$methodNames['original'] = $name;
-        self::$methodNames['camelCase'] = convertCase($name, 'camel');
-    }
-
-    private static function defineView()
-    {
-        self::$view = self::$route['classPath'].'/'.self::$methodNames['camelCase'].'.php';
-    }
-
-    private static function defineMethodParameters()
-    {
-        $methodNode = '@'.self::$methodNames['original'];
-
-        if(!isset(self::$route['data'][$methodNode])){
-            self::$methodParameters = self::$route['data'];
-        } else {
-            self::$methodParameters = self::$route['data'][$methodNode];
-        }
-    }
-
-    private static function resolveAuthFailUrl($authFailUrl)
-    {
-        if($authFailUrl){
-            $urlKeys = explode('/', $authFailUrl);
-
-            $classAsParameter = self::getUrlParameters()['classAsParameter'];
-            foreach($urlKeys as $urlKey){
-                if(self::isDynamic($urlKey)){
-                    $urlKey = ltrim($urlKey, '?');
-                    $filteredUrl[] = $classAsParameter[$urlKey];
-                } else {
-                    $filteredUrl[] = $urlKey;
-                }
-            }
-            $authFailUrl = implode('/', $filteredUrl);
-        }
-
-        return $authFailUrl;
-    }
-
-    private static function resolveAuthStatus($authTag)
-    {
-        if($authTag){
-            if(self::isDynamic($authTag)){
-                $classAsParameter = self::getUrlParameters()['classAsParameter'];
-                $authTag = ltrim($authTag, '?');
-                $authTag = $classAsParameter[$authTag];
-            }
-
-            if(Authentication::validate($authTag) === false and self::$authBlock === false)
-                self::$authBlock = true;
-
-            return Authentication::validate($authTag);
-        } else {
-            return true;
-        }
-    }
-
-    private static function isDynamic($string)
-    {
-        return substr($string, 0, 1) === '?';
-    }
-
-    private static function getUrlParameter($key) { return self::$urlParameters[$key]; }
-    private static function getUrlParameters() { return self::$urlParameters; }
-    private static function getController(){ return self::$controller; }
-    // private static function getMethod($type = 'camelCase'){ return self::$methodNames[$type]; }
-    private static function getView(){ return self::$view; }
-    private static function getMethodParameters(){ return self::$methodParameters; }
-    private static function getMethodParameter($key, $default = null){ return self::$methodParameters[$key] ?? $default; }
+    private static $additionalParams = [];
 
     public static function resolve()
     {
-        Debug::trace(debug_backtrace()[0]);
+        self::prepareUrlArray();
+        self::getControllerParams(GALASTRI_ROUTES);
+        self::defineMethod();
+        self::getMethodParams();
+        self::getAdditionalParams();
 
-        self::getUrl();
-        self::addSlashs();
-        self::parseNodes(GALASTRI['routes']);
-        self::defineRouteUrl();
-        self::defineUrlParameters();
-        self::defineController();
-        self::defineView();
-
-        self::defineMethodParameters();
-
-        self::resolveInheritanceParameters(self::getMethodParameters());
-
-        if(self::$inheritanceConfig['cache'] === false){
-            self::$cache = GALASTRI['cache'];
-        } else {
-            $cache = self::$inheritanceConfig['cache'];
-            self::$cache['status'] = $cache['status'] ?? GALASTRI['cache']['status'];
-            self::$cache['expire'] = $cache['expire'] ?? GALASTRI['cache']['expire'];
+        if (count(self::$controllerPath) > 1) {
+            array_shift(self::$controllerPath);
         }
-        self::$controller   = self::getMethodParameter('controller', self::getController());
-        self::$method       = self::$methodNames['camelCase'];
-        self::$routes       = self::$route['data'];
-        self::$view         = self::getMethodParameter('view', self::getView());
-        self::$parameters   = self::getUrlParameters();
-        self::$classPath    = self::$route['classPath'];
-        self::$path         = self::$route['urlPath'];
-        self::$offline      = self::$inheritanceConfig['offline'];
-        self::$authTag      = self::$inheritanceConfig['authTag'];
-        // self::$authStatus   = self::resolveAuthStatus(self::$inheritanceConfig['authTag']);
-        self::$authFailUrl  = self::resolveAuthFailUrl(self::$inheritanceConfig['authFailUrl']);
-        self::$error404Url  = self::$inheritanceConfig['error404Url'] ?? GALASTRI['error404Url'];
-        self::$urlString    = self::$route['urlPath'].self::$route['url'];
-        self::$siteName     = self::$inheritanceConfig['siteName'] ?? GALASTRI['title']['siteName'];
-        self::$title        = self::getMethodParameter('title', '');
-        self::$template     = self::$inheritanceConfig['template'];
-        self::$import       = self::getMethodParameter('import', []);
-        self::$renderer     = self::$inheritanceConfig['renderer'];
-        self::$baseFolder   = self::getMethodParameter('baseFolder', null);
-        self::$downloadable = self::$inheritanceConfig['downloadable'];
+
+        vardump(self::$controllerPath, self::$methodName);
     }
 
     /**
-     * Métodos getters para recuperar o conteúdo dos atributos.
-     */
-    public static function method($conversion = 'camelCase')
+     * Prepare an array with the URL nodes, which will be used as nodes.
+     *
+     * Everything in URL that is between the domain and the beginning of the
+     * querystring (? key), will be divided into parts, inside an array.
+     *
+     * Example: mydomain.com/foo/bar?val1=baz&val2=qux
+     *
+     * - The domain and querystring will me ignored. Only the /foo/bar will be
+     *   get as a string.
+     * 
+     * - The string '/foo/bar' will be divided into an array('foo', 'bar')
+     * 
+     * - Every key value will receive a '/' char in the beginning of their value
+     *   like this: array('/foo', '/bar')
+     * 
+     * The result array is stored inside $urlArray attribute.
+     * 
+     * @return void
+     */    
+    private static function prepareUrlArray()
     {
-        return $conversion == 'camelCase' ? self::$methodNames['camelCase'] : self::$methodNames['original'];
+        $bootstrapPath = ltrim(GALASTRI_PROJECT['bootstrapPath'], '/');
+
+        $urlArray = explode('?', str_replace($bootstrapPath, '', $_SERVER['REQUEST_URI']));
+        $urlArray = explode('/', $urlArray[0]);
+
+        if (empty($urlArray[1])) {
+            array_shift($urlArray);
+        }
+
+        foreach ($urlArray as &$value) {
+            $value = '/'.$value;
+        } unset($value);
+
+        
+        self::$urlArray = $urlArray;
     }
-    public static function cache()       { return self::$cache; }
-    public static function controller()  { return self::$controller; }
-    public static function routes()      { return self::$routes; }
-    public static function view()        { return self::$view; }
-    public static function parameters()  { return self::$parameters; }
-    public static function path()        { return self::$path; }
-    public static function offline()     { return self::$offline; }
-    public static function error404Url() { return self::$error404Url; }
-    public static function authTag()     { return self::$authTag; }
-    public static function authFailUrl() { return self::$authFailUrl; }
-    public static function authStatus()  { return self::$authStatus; }
-    public static function authBlock()   { return self::$authBlock; }
-    public static function urlString()   { return self::$urlString; }
-    public static function siteName()    { return self::$siteName; }
-    public static function title()       { return self::$title; }
-    public static function template()    { return self::$template; }
-    public static function import()      { return self::$import; }
-    public static function renderer()    { return self::$renderer; }
-    public static function baseFolder()  { return self::$baseFolder; }
-    public static function downloadable(){ return self::$downloadable; }
+        
+    private static function getControllerParams(array $routeNodes)
+    {
+        $found = false;
+
+        $resolveNode = function(array $routeNodes, string $key)
+        {
+            array_shift(self::$urlArray);
+            self::$controllerParams = $routeNodes[$key];
+            self::defineCascateParams($routeNodes[$key]);
+            self::storeControllerPath($key);
+            self::getControllerParams($routeNodes[$key]);
+            return true;
+        };
+
+        foreach (self::$urlArray as $urlNode) {
+            if (isset($routeNodes[$urlNode])) {
+                $found = $resolveNode($routeNodes, $urlNode);
+                break;
+            }
+
+            if (!$found) {
+                if ($dynamicNode = F::arrayKeySearch('/?', $routeNodes, MATCH_START)) {
+                    self::storeDynamicNode($dynamicNode, $urlNode);
+                    $found = $resolveNode($routeNodes, key($dynamicNode));
+                    break;
+                }
+            }
+
+            if (!$found) {
+                self::$controllerName = false;
+            }
+        }
+
+        self::$remainingUrlNodes = self::$urlArray;
+    }
+
+    private static function defineCascateParams(array $routeNodes)
+    {
+        foreach (self::$cascateParameters as $param => &$value) {
+            if (array_key_exists($param, $routeNodes)) {
+                $value = $routeNodes[$param];
+            }
+        }
+    }
+
+    private static function storeDynamicNode(array $dynamicNode, string $urlNode)
+    {
+        $dynamicNodeTag = substr(key($dynamicNode), 2);
+        self::$dynamicNodes[$dynamicNodeTag] = ltrim($urlNode, '/');
+    }
+
+    private static function storeControllerPath(string $controllerName)
+    {
+        $controllerName = ltrim($controllerName, '/');
+        $controllerName = empty($controllerName) ? 'index' : $controllerName;
+        $controllerName = F::convertCase($controllerName, PASCAL_CASE);
+
+        self::$controllerName = $controllerName;
+        self::$controllerPath[] = '\\'.$controllerName;
+    }
+
+    private static function defineMethod()
+    {
+        if (empty(self::$remainingUrlNodes)) {
+            self::$methodName = 'main';
+        } else {
+            self::$methodName = ltrim(self::$remainingUrlNodes[0], '/');
+            array_shift(self::$remainingUrlNodes);
+        }
+    }
+
+    private static function getMethodParams()
+    {
+        $found = false;
+
+        foreach (self::$controllerParams as $param => $value) {
+            if ($param === '@'.self::$methodName) {
+                $found = true;
+                $methodParams = $value;
+                break;
+            }
+        }
+
+        if ($found) {
+            foreach (self::$methodParams as $key => $value) {
+                self::$methodParams[$key] = $methodParams[$key] ?? false;
+            }
+
+            self::defineCascateParams(self::$methodParams);
+        } else {
+            self::$methodName = false;
+        }
+    }
+
+    private static function getAdditionalParams()
+    {
+        $methodParams = self::$methodParams;
+        if (isset($methodParams['parameters'])) {
+            
+            $additionalParams = $methodParams['parameters'];
+
+            if (gettype($additionalParams) === 'string') {
+                $additionalParams = explode('/', $additionalParams);
+                if (empty($additionalParams[0])) {
+                    array_shift($additionalParams);
+                }
+            }
+            // vardump($additionalParams);
+
+            foreach (self::$remainingUrlNodes as $key => $value) {
+                $keyLabel = $additionalParams[$key];
+                self::$additionalParams[$keyLabel] = ltrim($value, '/');
+            }
+        }
+    }
 }

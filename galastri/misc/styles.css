@@ -1,0 +1,88 @@
+#galastriDump {
+    font-family: monospace;
+    color: #666;
+}
+#galastriDump section {
+    padding-left: 12px;
+    border-left: 4px solid #ddd;
+}
+
+#galastriDump pre {
+    color: #999;
+}
+
+#galastriDump .division {
+    font-weight: bold;
+    color: #ff2bbd;
+    border-top: 1px solid #ccc;
+    display:block;
+    padding: 3px 0;
+    margin-top: 15px;
+    font-size:10px;
+}
+
+#galastriDump .solid {
+    display:inline-flex;
+    align-items:center;
+    height:15px;
+    margin: 2px 0;
+    padding:0 3px;
+}
+
+#galastriDump .string.solid {
+    background: #4eafff;
+    color: #fff;
+}
+
+#galastriDump .string.text {
+    font-weight: bold;
+    color: #1298e8;
+}
+
+#galastriDump .numeric.solid {
+    background: #ff6c65;
+    color: #fff;
+}
+
+#galastriDump .numeric.text {
+    font-weight: bold;
+    color: #f14c45;
+}
+
+#galastriDump .bool.solid.true {
+    background: #00ad74;
+    color: #fff;
+}
+
+#galastriDump .bool.text.true {
+    font-weight: bold;
+    color: #00ad74;
+}
+
+#galastriDump .bool.solid.false {
+    background: #ff3287;
+    color: #fff;
+}
+
+#galastriDump .bool.text.false {
+    font-weight: bold;
+    color: #ff3287;
+}
+
+#galastriDump .array.solid {
+    background: #a684f7;
+    color: #fff;
+}
+
+#galastriDump .array-key {
+    border: 2px solid #ffe000;
+    display: inline-flex;
+    color: #4f05ff;
+    margin: 1px 0;
+    border-radius: 4px;
+}
+
+#galastriDump .object.solid {
+    background: #88cc7a;
+    color: #fff;
+}
