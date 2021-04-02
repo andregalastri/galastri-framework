@@ -22,14 +22,14 @@ class Debug
     /**
      * The message that will be shown when an exception is thrown.
      *
-     * @var array
+     * @var string
      */
     private static $message = '';
 
     /**
      * The code that identifies the exception.
      *
-     * @var array
+     * @var int|string
      */
     private static $code = '';
     
@@ -42,7 +42,6 @@ class Debug
     private function __construct()
     {
     }
-
         
     /**
      * Stores the backlog array in the $backlog attribute.
@@ -64,7 +63,7 @@ class Debug
     /**
      * Returns every data of the backlog array.
      *
-     * @return void
+     * @return array
      */
     public static function getBacklog()
     {
@@ -77,7 +76,7 @@ class Debug
      * @param  string|int|bool $index   Return specific key of the most recent
      *                                  backlog data.
      *
-     * @return void
+     * @return array
      */
     public static function getLastBacklog(mixed $index = false)
     {

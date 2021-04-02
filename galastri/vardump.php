@@ -4,7 +4,7 @@ function jsonDump(...$values)
 {
     $debug = debug_backtrace()[0];
 
-    $varDump = _getVarDump('json', $values);
+    $varDump = _getVarDump(VARDUMP_JSON_TYPE, $values);
 
     header('Content-Type: application/json');
     echo json_encode([
@@ -22,7 +22,7 @@ function varDump(...$values)
 {
     $debug = debug_backtrace()[0];
 
-    $varDump = _getVarDump('var', $values);
+    $varDump = _getVarDump(VARDUMP_HTML_TYPE, $values);
 
     // Remove all breaklines and spaces between ["name"]=>"value"
     $varDump = preg_replace('/(\[".+)\n[\s]*/', '$1', $varDump);
@@ -64,11 +64,11 @@ function varDump(...$values)
     </div>";
 }
 
-function _getVarDump($type, ...$values)
+function _getVarDump(int $type, ...$values)
 {
     ob_start();
     foreach($values[0] as $key => $value){
-        echo $type !== 'json' ? "Result $key." : '';
+        echo $type !== VARDUMP_JSON_TYPE ? "Result $key." : '';
         var_dump($value);
     };
     $content = ob_get_contents();

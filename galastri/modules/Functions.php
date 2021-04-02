@@ -65,11 +65,11 @@ class Functions
      * modifiers to match any key that is equal to the string and keys that
      * starts or ends with the given string.
      *
-     * @param  mixed $search            The value to be found.
+     * @param  string $search           The value to be found.
      *
-     * @param  mixed $array             The array that will be looked.
+     * @param  array $array             The array that will be looked.
      *
-     * @param  mixed $matchType         The modifier. Can be MATCH_ANY,
+     * @param  int $matchType           The modifier. Can be MATCH_ANY,
      *                                  MATCH_START or MATCH_END.
      * @return array|bool
      */
@@ -100,23 +100,25 @@ class Functions
      * A better trim function. Removes many chars from the beginning and end of
      * the given string.
      *
-     * @param  string $value            The string that will be trimmed.
+     * @param  string $string            The string that will be trimmed.
      *
      * @param  array $chars             List of chars that will be removed from
      *                                  the string.
      * @return string
      */
-    public static function trim(string $value, ...$chars)
+    public static function trim(string $string, ...$chars)
     {
         if (empty($chars)) {
             $chars = [' '];
         }
 
+
         foreach ($chars as $char) {
-            $value = ltrim(rtrim($value, $char), $char);
+            $char = preg_quote($char);
+            $string = ltrim(rtrim($string, $char), $char);
         }
 
-        return $value;
+        return $string;
     }
     
     /**
@@ -187,7 +189,7 @@ class Functions
     /**
      * Converts the string to lower case.
      *
-     * @param  mixed $string            The string that will be converted.
+     * @param  string $string            The string that will be converted.
      * @return string
      */
     public static function lowerCase(string $string)
@@ -198,16 +200,16 @@ class Functions
     /**
      * Converts the string to a specific type.
      *
-     * @param  mixed $string            The string that will be converted.
+     * @param  string $string           The string that will be converted.
      *
-     * @param  mixed $type              The type of conversion. Can be
+     * @param  int $type                The type of conversion. Can be
      *                                  CAMEL_CASE or PASCAL_CASE.
      *
-     * @param  mixed $regex             A custom regex to detect chars that need
+     * @param  string $regex            A custom regex to detect chars that need
      *                                  to be removed if it is in the string.
      * @return string
      */
-    public static function convertCase(string $string, int $type, $regex = '/(-|_)/')
+    public static function convertCase(string $string, int $type, string $regex = '/(-|_)/')
     {
         $string = preg_split($regex, $string);
         $string = array_map(function ($a) {
@@ -261,7 +263,7 @@ class Functions
      *
      * @param  bool $unique             Returns only unique keys.
      *
-     * @return void
+     * @return array
      */
     public static function flattenArray(array $array, mixed $onlyKey = false, bool $unique = false)
     {
