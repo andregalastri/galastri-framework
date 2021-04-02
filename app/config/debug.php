@@ -1,5 +1,5 @@
 <?php
 return [
-    'displayErrors' => true,
-    'showTraceData' => false,
+    'displayErrors' => false,
+    'showBacklogData' => false,
 ];

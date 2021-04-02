@@ -34,6 +34,14 @@ class Debug
     private static $code = '';
     
     /**
+     * When true, bypass the displayErrors = false configuration in
+     * \app\config\debug.php and shows the error message anyway.
+     *
+     * @var bool
+     */
+    private static $bypassGenericMessage = false;
+    
+    /**
      * This is a singleton class, so, the __construct() method is private to
      * avoid user to instanciate this class.
      *
@@ -49,15 +57,19 @@ class Debug
      * @param  array $backlogData       The array given by the debug_backlog()
      *                                  function
      *
-     * @return void
+     * @return \galastri\core\Debug
      */
     public static function setBacklog(array $backlogData)
     {
+        self::$bypassGenericMessage = false;
+
         if (GALASTRI_DEBUG['showBacklogData']) {
             self::$backlogData[] = $backlogData;
         } else {
             self::$backlogData[0] = $backlogData;
         }
+
+        return __CLASS__;
     }
     
     /**
@@ -65,7 +77,7 @@ class Debug
      *
      * @return array
      */
-    public static function getBacklog()
+    private static function getBacklog()
     {
         return self::$backlogData;
     }
@@ -78,7 +90,7 @@ class Debug
      *
      * @return array
      */
-    public static function getLastBacklog(mixed $index = false)
+    private static function getLastBacklog(mixed $index = false)
     {
         return $index ? self::$backlogData[0][$index] : self::$backlogData[0];
     }
@@ -110,7 +122,14 @@ class Debug
     {
         $printfData = F::flattenArray($printfData);
         
-        self::$message = GALASTRI_DEBUG['displayErrors'] ? vsprintf($message, $printfData) : self::GENERIC_MESSAGE[0];
+        self::$message = (function($message, $printfData) {
+            if (!GALASTRI_DEBUG['displayErrors'] and !self::$bypassGenericMessage) {
+                return self::GENERIC_MESSAGE;
+            } else {
+                return vsprintf($message, $printfData);
+            }
+        })($message, $printfData);
+
         self::$code = $code;
         
         return __CLASS__;
@@ -123,15 +142,26 @@ class Debug
      */
     public static function print()
     {
-        $data = [
-            'code' => self::$code,
-            'origin' => self::getLastBacklog('file'),
-            'line' => self::getLastBacklog('line'),
-            'message' => self::$message,
-            'warning' => true,
-            'error' => true,
-        ];
-
+        if (GALASTRI_DEBUG['displayErrors']) {
+            $data = [
+                'code' => self::$code,
+                'origin' => self::getLastBacklog('file'),
+                'line' => self::getLastBacklog('line'),
+                'message' => self::$message,
+                'warning' => true,
+                'error' => true,
+            ];
+        } else {
+            $data = [
+                'code' => self::$code,
+                'origin' => null,
+                'line' => null,
+                'message' => self::$message,
+                'warning' => true,
+                'error' => true,
+            ];
+        }
+        
         if (GALASTRI_DEBUG['showBacklogData']) {
             $data = array_merge($data, [
                 'backlogTrace' => self::getBacklog(),
@@ -141,5 +171,16 @@ class Debug
         header('Content-Type: application/json');
         echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         exit();
+    }
+    
+    /**
+     * Sets the $bypassGenericMessage attribute to true temporarily to show the
+     * error message even if the displayErrors debug configuration is false.
+     *
+     * @return void
+     */
+    public static function bypassGenericMessage()
+    {
+        self::$bypassGenericMessage = true;
     }
 }

@@ -235,8 +235,6 @@ class Route
         if (count(self::$controllerNamespace) > 1) {
             array_shift(self::$controllerNamespace);
         }
-
-        vardump(self::$controllerNamespace, self::$childNodeName);
     }
 
     /**
@@ -572,11 +570,13 @@ class Route
         
     /**
      * Return the $globalParamValues attribute.
-     *
-     * @return array
-     */
-    public static function getGlobalParamValues()
+     * 
+     * @param  string|bool $key         Specify which key will be returned.
+     * 
+     * @return mixed
+     */    
+    public static function getGlobalParamValues(mixed $key = false)
     {
-        return self::$globalParamValues;
+        return $key === false ? self::$globalParamValues : self::$globalParamValues[$key];
     }
 }
