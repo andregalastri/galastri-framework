@@ -65,12 +65,16 @@ return [
      */
     'viewTemplate' => [],
 
+    'offline' => false,
+
+    'notFoundRedirect' => '404',
+
     /**
      * Default messages for a differents cases.
      *
      * @key timezone string
      */
-    'messages' => [
+    'message' => [
         'offline' => "This area is currently offline. Please, try again later.",
         'authFail' => "You aren't authorized to access this area.",
         'permissionFail' => "You don't have permission to execute this action.",

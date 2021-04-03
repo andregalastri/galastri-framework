@@ -194,28 +194,37 @@ class Route
      *                                  URL, path or URL alias when the node or
      *                                  its children is accessed.
      *
-     * @key bool|string messages        Defines a custom set of messages instead
+     * @key bool|string message        Defines a custom set of messages instead
      *                                  of the ones defined in
      *                                  \app\config\project.php file.
      *
      * @var array
      */
     private static $globalParamValues = [
-        'projectTitle' => false,
+        'projectTitle' => GALASTRI_PROJECT['projectTitle'],
         'authFailRedirect' => false,
         'authTag' => false,
         'browserCache' => false,
         'controllerNamespace' => false,
         'viewBaseFolder' => false,
-        'notFoundRedirect' => false,
-        'offline' => false,
+        'notFoundRedirect' => GALASTRI_PROJECT['notFoundRedirect'],
+        'offline' => GALASTRI_PROJECT['offline'],
         'pageTitle' => false,
         'solver' => false,
-        'viewTemplate' => false,
+        'viewTemplate' => GALASTRI_PROJECT['viewTemplate'],
         'forceRedirect' => false,
-        'messages' => false,
+        'message' => GALASTRI_PROJECT['message'],
     ];
 
+    /**
+     * This is a singleton class, so, the __construct() method is private to
+     * avoid user to instanciate it.
+     *
+     * @return void
+     */
+    private function __construct()
+    {
+    }
         
     /**
      * Execute a chain of methods that resolves the URL string, searching for
@@ -449,8 +458,7 @@ class Route
             foreach (self::$childNodeParams as $key => $value) {
                 self::$childNodeParams[$key] = $childNodeParams[$key] ?? false;
             }
-
-            self::resolveGlobalParamValues(self::$childNodeParams);
+            self::resolveGlobalParamValues($childNodeParams);
         } else {
             self::$childNodeName = false;
         }

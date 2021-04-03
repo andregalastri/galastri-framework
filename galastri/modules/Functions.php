@@ -22,7 +22,16 @@ class Functions
      */
     private static $debugTrack = false;
 
-        
+    /**
+     * This is a singleton class, so, the __construct() method is private to
+     * avoid user to instanciate it.
+     *
+     * @return void
+     */
+    private function __construct()
+    {
+    }
+
     /**
      * Receives a path and converts it to the real path, based on project's
      * root.

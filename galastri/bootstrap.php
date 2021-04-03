@@ -71,6 +71,7 @@ ini_set('display_errors', GALASTRI_DEBUG['displayErrors']);
  */
 define('GALASTRI_PROJECT', F::importFile('/app/config/project.php'));
 define('GALASTRI_ROUTES', F::importFile('/app/config/routes.php'));
+define('GALASTRI_URL_TAGS', F::importFile('/app/config/url-tags.php'));
 define('GALASTRI_VERSION', F::getFileContents('/galastri/VERSION'));
 
 /**
