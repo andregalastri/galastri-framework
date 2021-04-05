@@ -36,7 +36,7 @@ require_once('vardump.php');
  * Project Path:  /home/project
  *
  */
-define('GALASTRI_PROJECT_DIR', (function(){
+define('GALASTRI_PROJECT_DIR', (function () {
     $currentDir = explode(DIRECTORY_SEPARATOR, __DIR__);
     array_pop($currentDir);
     return implode(DIRECTORY_SEPARATOR, $currentDir);

@@ -84,14 +84,14 @@ class Galastri
         // Debug::setBacklog(debug_backtrace()[0]);
 
         // try {
-            $forceRedirect = Route::getGlobalParamValues('forceRedirect');
-            if ($forceRedirect) {
-                Redirect::bypassUrlRoot()::to($forceRedirect);
-                // 
+        $forceRedirect = Route::getGlobalParamValues('forceRedirect');
+        if ($forceRedirect) {
+            Redirect::bypassUrlRoot()::to($forceRedirect);
+            //
                 // throw new Exception('', '');
-            }
+        }
 
-            return __CLASS__;
+        return __CLASS__;
         // } catch (Exception $e) {
         //     Debug::setError($e->getMessage(), $e->getCode())::print();
         // }

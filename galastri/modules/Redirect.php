@@ -9,7 +9,7 @@ use \galastri\modules\Functions as F;
  * external.
  */
 class Redirect
-{        
+{
     /**
      * Defines if the urlRoot parameter will be ignored (true) or not (false).
      *
@@ -96,7 +96,7 @@ class Redirect
      * ending of a string.
      *
      * @param  string $string           The string to be sanitized.
-     * 
+     *
      * @return void
      */
     private static function sanitize(string $string)

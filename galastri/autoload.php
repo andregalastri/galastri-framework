@@ -16,12 +16,13 @@
  *
  * Example: A controller inside app/controller/MyRoute need have a namespace
  * declared like this:
- * 
+ *
  * namespace \app\controller\MyRoute;
  */
-spl_autoload_register(function($className){
+spl_autoload_register(function ($className) {
     $classFile = GALASTRI_PROJECT_DIR.'/'.str_replace('\\', '/', $className).'.php';
 
-    if(file_exists($classFile))
+    if (file_exists($classFile)) {
         require_once($classFile);
+    }
 });

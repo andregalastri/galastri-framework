@@ -43,7 +43,7 @@ use \galastri\modules\Functions as F;
  * routing is configured.
  */
 class Route
-{    
+{
     /**
      * Stores the URL nodes in array format which will be worked to extract the
      * parent's parameters, define the node that will be called, its child and
@@ -256,16 +256,16 @@ class Route
      *
      * - The domain and querystring will be ignored. Only the /foo/bar will be
      *   get as a string.
-     * 
+     *
      * - The string '/foo/bar' will be divided into an array('foo', 'bar')
-     * 
+     *
      * - Every key value will receive a '/' char in the beginning of their value
      *   like this: array('/foo', '/bar')
-     * 
+     *
      * The result array is stored inside $urlWorkingArray attribute.
-     * 
+     *
      * @return void
-     */    
+     */
     private static function prepareUrlArray()
     {
         /**
@@ -282,7 +282,8 @@ class Route
 
         foreach ($urlWorkingArray as &$value) {
             $value = '/'.$value;
-        } unset($value);
+        }
+        unset($value);
 
         
         self::$urlWorkingArray = $urlWorkingArray;
@@ -311,7 +312,7 @@ class Route
      * the variable $resolveNode explained above.
      *
      * If there ir no node nor dynamic node, then this means that the URL node
-     * doesn't exists, so the $parentNodeName is set as false. 
+     * doesn't exists, so the $parentNodeName is set as false.
      *
      *
      * After all the tests, all the remaining URL nodes is stored in the
@@ -325,8 +326,7 @@ class Route
     {
         $found = false;
 
-        $resolveNode = function(array $routeNodes, string $key)
-        {
+        $resolveNode = function (array $routeNodes, string $key) {
             array_shift(self::$urlWorkingArray);
             self::$parentNodeParams = $routeNodes[$key];
             self::resolveGlobalParamValues($routeNodes[$key]);
@@ -381,10 +381,10 @@ class Route
      * Stores the dynamic label tag found in routing configuration file and its
      * value in the URL node.
      *
-     * @param  string $dynamicNodeTag   The key label of the dynamic node.       
-     * 
+     * @param  string $dynamicNodeTag   The key label of the dynamic node.
+     *
      * @param  astring $urlNode         The value of the node in the URL.
-     * 
+     *
      * @return void
      */
     private static function storeDynamicNode(string $dynamicNodeTag, string $urlNode)
@@ -487,7 +487,6 @@ class Route
     {
         $childNodeParams = self::$childNodeParams;
         if (isset($childNodeParams['parameters'])) {
-            
             $urlParams = $childNodeParams['parameters'];
 
             if (gettype($urlParams) === 'string') {
@@ -561,7 +560,7 @@ class Route
      *
      * @return array
      */
-    public static function getChildNodeParams() 
+    public static function getChildNodeParams()
     {
         return self::$childNodeParams;
     }
@@ -578,11 +577,11 @@ class Route
         
     /**
      * Return the $globalParamValues attribute.
-     * 
+     *
      * @param  string|bool $key         Specify which key will be returned.
-     * 
+     *
      * @return mixed
-     */    
+     */
     public static function getGlobalParamValues(mixed $key = false)
     {
         return $key === false ? self::$globalParamValues : self::$globalParamValues[$key];

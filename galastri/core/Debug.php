@@ -122,7 +122,7 @@ class Debug
     {
         $printfData = F::flattenArray($printfData);
         
-        self::$message = (function($message, $printfData) {
+        self::$message = (function ($message, $printfData) {
             if (!GALASTRI_DEBUG['displayErrors'] and !self::$bypassGenericMessage) {
                 return self::GENERIC_MESSAGE;
             } else {

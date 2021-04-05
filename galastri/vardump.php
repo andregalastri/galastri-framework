@@ -67,7 +67,7 @@ function varDump(...$values)
 function _getVarDump(int $type, ...$values)
 {
     ob_start();
-    foreach($values[0] as $key => $value){
+    foreach ($values[0] as $key => $value) {
         echo $type !== VARDUMP_JSON_TYPE ? "Result $key." : '';
         var_dump($value);
     };
