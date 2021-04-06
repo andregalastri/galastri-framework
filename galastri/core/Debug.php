@@ -4,7 +4,7 @@ namespace galastri\core;
 use \galastri\modules\Functions as F;
 
 /**
- * This class is parte of the core of the framework. It helps to handle the
+ * This class is part of the core of the framework. It helps to handle the
  * exceptions and shows error messages when some configuration is wrong or a
  * framework function is used incorrectly.
  */
@@ -54,14 +54,12 @@ class Debug
     /**
      * Stores the backlog array in the $backlog attribute.
      *
-     * @param  array $backlogData       The array given by the debug_backlog()
-     *                                  function
-     *
      * @return \galastri\core\Debug
      */
-    public static function setBacklog(array $backlogData)
+    public static function setBacklog()
     {
         self::$bypassGenericMessage = false;
+        $backlogData = debug_backtrace()[1];
 
         if (GALASTRI_DEBUG['showBacklogData']) {
             self::$backlogData[] = $backlogData;

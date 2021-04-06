@@ -1,10 +1,20 @@
 <?php
 return [
     '/' => [
+        'solver' => 'view',
         '@main' => [
-            'aaa' => true,
+            // 'requestType' => 'GET|POST'
         ],
-        '/?page1' => [
+        '@not-found' => [
+        ],
+        '/page1' => [
+            'solver' => 'json',
+            'notFoundRedirect' => 'index',
+
+            '@main' => [
+                'aaa' => true,
+            ],
+
             // 'snippetExecAfter' => ['\app\snippets\MySnippet', '\app\snippets\OtherSnippet'],
             
             '/page1-2' => [

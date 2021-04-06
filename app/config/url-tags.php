@@ -8,6 +8,8 @@
  */
 
 return [
+    /* These are required default tags, used by the framework. You can change
+    their values, but not their key labels. */
     'index' => '/',
     '404'   => '/not-found',
 ];

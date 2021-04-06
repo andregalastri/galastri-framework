@@ -7,6 +7,7 @@
 namespace galastri;
 
 use \galastri\modules\Functions as F;
+use \galastri\modules\PerformanceAnalysis;
 
 ini_set('display_errors', 1); // Will remove it. Just kept it here for debugging.
 
@@ -73,6 +74,8 @@ define('GALASTRI_PROJECT', F::importFile('/app/config/project.php'));
 define('GALASTRI_ROUTES', F::importFile('/app/config/routes.php'));
 define('GALASTRI_URL_TAGS', F::importFile('/app/config/url-tags.php'));
 define('GALASTRI_VERSION', F::getFileContents('/galastri/VERSION'));
+
+PerformanceAnalysis::begin(PERFORMANCE_ANALYSIS_LABEL, GALASTRI_DEBUG['performanceAnalysis']);
 
 /**
  * Starts the framework.

@@ -25,6 +25,7 @@ function varDump(...$values)
     $varDump = _getVarDump(VARDUMP_HTML_TYPE, $values);
 
     // Remove all breaklines and spaces between ["name"]=>"value"
+    // $varDump = preg_replace('/'.PHP_EOL.'/', '<br>', $varDump);
     $varDump = preg_replace('/(\[".+)\n[\s]*/', '$1', $varDump);
     $varDump = preg_replace('/(\[[0-9].+)\n[\s]*/', '$1', $varDump);
 

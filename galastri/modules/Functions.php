@@ -2,6 +2,7 @@
 namespace galastri\modules;
 
 use \galastri\core\Debug;
+use \galastri\core\PerformanceAnalysis;
 
 /**
  * This class have many methods that execute functions that can help and to make
@@ -33,6 +34,9 @@ class Functions
     }
 
     /**
+     * Author: Sven Arduwie
+     * https://www.php.net/manual/pt_BR/function.realpath.php#84012
+
      * Receives a path and converts it to the real path, based on project's
      * root.
      *
@@ -42,7 +46,22 @@ class Functions
     public static function getRealPath(string $path)
     {
         self::checkDebugTrack();
-        return realpath(GALASTRI_PROJECT_DIR.$path);
+
+        $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, GALASTRI_PROJECT_DIR.'/'.self::trim($path, DIRECTORY_SEPARATOR));
+        $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+        $absolutes = array();
+        foreach ($parts as $part) {
+            if ('.' == $part) continue;
+            if ('..' == $part) {
+                array_pop($absolutes);
+            } else {
+                $absolutes[] = $part;
+            }
+        }
+
+        $finalPath = implode(DIRECTORY_SEPARATOR, $absolutes);
+        
+        return strncasecmp(PHP_OS, 'WIN', 3) == 0 ? $finalPath : DIRECTORY_SEPARATOR.$finalPath;
     }
     
     /**
@@ -54,6 +73,8 @@ class Functions
     public static function importFile(string $path)
     {
         self::checkDebugTrack();
+        require(self::getRealPath($path));
+        
         return require(self::getRealPath($path));
     }
     
@@ -67,42 +88,6 @@ class Functions
     {
         self::checkDebugTrack();
         return file_get_contents(self::getRealPath($path));
-    }
-    
-    /**
-     * This method search for keys in an array that is equal to a string. It has
-     * modifiers to match any key that is equal to the string and keys that
-     * starts or ends with the given string.
-     *
-     * @param  string $search           The value to be found.
-     *
-     * @param  array $array             The array that will be looked.
-     *
-     * @param  int $matchType           The modifier. Can be MATCH_ANY,
-     *                                  MATCH_START or MATCH_END.
-     * @return array|bool
-     */
-    public static function arrayKeySearch(string $search, array $array, int $matchType = MATCH_ANY)
-    {
-        $arrayKeys = array_keys($array);
-        $found = false;
-
-        $regex = (function ($a, $b) {
-            switch ($b) {
-                case MATCH_ANY: return "/$a/";
-                case MATCH_START: return "/^$a/";
-                case MATCH_END: return "/$a$/";
-            }
-        })(preg_quote($search, '/'), $matchType);
-        
-        foreach ($arrayKeys as $key) {
-            preg_match($regex, $key, $match);
-            if (!empty($match)) {
-                $found[$key] = $array[$key];
-            }
-        }
-
-        return $found;
     }
     
     /**
@@ -247,6 +232,76 @@ class Functions
         return implode($string);
     }
 
+     
+    /**
+     * This method search for keys in an array that is equal to a string. It has
+     * modifiers to match any key that is equal to the string and keys that
+     * starts or ends with the given string.
+     *
+     * @param  string $search           The value to be found.
+     *
+     * @param  array $array             The array that will be looked.
+     *
+     * @param  int $matchType           The modifier. Can be MATCH_ANY,
+     *                                  MATCH_START or MATCH_END.
+     * @return array|bool
+     */
+    public static function arrayKeySearch(string $search, array $array, int $matchType = MATCH_ANY)
+    {
+        $arrayKeys = array_keys($array);
+        $found = false;
+
+        $regex = (function ($a, $b) {
+            switch ($b) {
+                case MATCH_EXACT: return "$a";
+                case MATCH_ANY: return "/$a/";
+                case MATCH_START: return "/^$a/";
+                case MATCH_END: return "/$a$/";
+            }
+        })(preg_quote($search, '/'), $matchType);
+        
+        foreach ($arrayKeys as $key) {
+            preg_match($regex, $key, $match);
+            if (!empty($match)) {
+                $found[$key] = $array[$key];
+            }
+        }
+
+        return $found;
+    }
+
+    public static function arrayValueSearch(string $search, array $array, int $matchType = MATCH_ANY)
+    {
+        $arrayValues = array_values($array);
+        $found = false;
+
+        $regex = (function ($a, $b) {
+            switch ($b) {
+                case MATCH_EXACT: return "/\b$a\b/";
+                case MATCH_ANY: return "/$a/";
+                case MATCH_START: return "/^$a/";
+                case MATCH_END: return "/$a$/";
+            }
+        })(preg_quote($search, '/'), $matchType);
+        
+        foreach ($arrayValues as $key => $value) {
+            preg_match($regex, $value, $match);
+            if (!empty($match)) {
+                $found[$key] = $value;
+            }
+        }
+
+        return $found;
+    }
+
+    public static function arrayValueExists(string $search, array $array, int $matchType = MATCH_EXACT)
+    {
+        if (self::arrayValueSearch($search, $array, $matchType)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
         
     /**
      * Converts a multidimensional array into a simple array, keeping the values
@@ -297,6 +352,97 @@ class Functions
         $result = $recursive($array, $onlyKey, [], $recursive);
         return $unique ? array_unique($result) : $result;
     }
+
+    /**
+     * Creates a file and all the directory path, if the file will be stored
+     * inside a path that doesn't exists.
+     *
+     * @param  string $path             The path of the file.
+     * 
+     * @return void
+     */
+    public static function createFile(string $path)
+    {
+        self::checkDebugTrack();
+
+        $parentDir = self::getRealPath($path.'/..');
+        $filePath = self::getRealPath($path);
+
+        if (!file_exists($parentDir)) {
+            $permissionResolve = umask(0);
+            mkdir($parentDir, 0777, true);
+            umask($permissionResolve);
+        }
+
+        if (!file_exists($filePath)) {
+            $fileOpen = fopen($filePath, 'a');
+            fclose($fileOpen);
+        }
+    }
+
+    /**
+     * Insert a string inside a file.
+     *
+     * @param  string $path             The path of the file.
+     * 
+     * @param  string $string           The text that will be included inside
+     *                                  the file.
+     *
+     * @param  string $method           Read/Write method used by fopen.
+     * @return void
+     */
+    public static function fileInsertContent(string $path, string $string, string $method = 'a')
+    {
+        $filePath = self::getRealPath($path);
+
+        $fileOpen = fopen($filePath, $method);
+        fwrite($fileOpen, $string);
+        fclose($fileOpen);
+    }
+
+    /**
+     * Author: xelozz@gmail.com
+     * https://www.php.net/manual/pt_BR/function.memory-get-usage.php#96280
+     *
+     * Converts a number of bytes in formatted string showing its value in kb,
+     * mb, etc.
+     *
+     * @param  int $bytes               Integer in bytes that will be converted.
+     * 
+     * @return string
+     */    
+    public static function convertBytes(int $bytes)
+    {
+        $unit = ['b','kb','mb','gb','tb','pb'];
+        return @round($bytes / pow(1024, ($i = floor(log($bytes, 1024)))), 2).' '.$unit[$i];
+    }
+
+    /**
+     * Author hackan@gmail.com
+     * https://www.php.net/manual/pt_BR/function.uniqid.php#120123
+     *
+     * Creates a random string using hexadecimal numbers and letters, based on
+     * the informed length.
+     *
+     * - IMPORTANT: If you want to create safe unique string, use length greater
+     *   than 15 chars.
+     *
+     * @param  int $length              Number of chars that the final random
+     *                                  string will have.
+     * @return string
+     */
+    public static function randomBytes(int $length) {
+        if (function_exists("random_bytes")) {
+            $bytes = random_bytes(ceil($length / 2));
+        } elseif (function_exists("openssl_random_pseudo_bytes")) {
+            $bytes = openssl_random_pseudo_bytes(ceil($length / 2));
+        } else {
+            throw new Exception("No cryptographically secure random function available");
+            exit;
+        }
+
+        return bin2hex($bytes);
+    }
         
     /**
      * Define the $debugTrack as true which allow the next method to be included
@@ -319,7 +465,7 @@ class Functions
     private static function checkDebugTrack()
     {
         if (self::$debugTrack) {
-            Debug::setTrace(debug_backtrace()[0]);
+            Debug::setBacklog();
             self::$debugTrack = false;
         }
     }

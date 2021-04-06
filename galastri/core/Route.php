@@ -2,6 +2,7 @@
 namespace galastri\core;
 
 use \galastri\modules\Functions as F;
+use \galastri\modules\PerformanceAnalysis;
 
 /**
  * This class resolves the URL routing.
@@ -287,6 +288,8 @@ class Route
 
         
         self::$urlWorkingArray = $urlWorkingArray;
+
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
             
     /**
@@ -355,6 +358,7 @@ class Route
         }
 
         self::$remainingUrlNodes = self::$urlWorkingArray;
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
         
@@ -429,6 +433,8 @@ class Route
             self::$childNodeName = ltrim(self::$remainingUrlNodes[0], '/');
             array_shift(self::$remainingUrlNodes);
         }
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+
     }
 
     /**
@@ -462,6 +468,8 @@ class Route
         } else {
             self::$childNodeName = false;
         }
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+
     }
     
     /**
@@ -501,6 +509,7 @@ class Route
                 self::$urlParams[$keyLabel] = ltrim($value, '/');
             }
         }
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
 

@@ -71,11 +71,10 @@ class Redirect
         preg_match(REDIRECT_IDENFITY_PROTOCOLS_REGEX, $location, $match);
         
         if (empty($match)) {
-            $location = '/'.$location;
             $urlRoot = self::$bypassUrlRoot ? '' : '/'.self::sanitize(GALASTRI_PROJECT['urlRoot']);
-            $location = $urlRoot.$location;
+            $location = '/'.self::sanitize($urlRoot.$location);
         }
-        
+
         exit(header('Location: '.vsprintf($location, $printfData)));
     }
     
