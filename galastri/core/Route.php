@@ -55,6 +55,21 @@ class Route
     private static $urlWorkingArray;
 
     /**
+     * urlParams
+     *
+     * @var array
+     */
+    private static $urlParams = [];
+
+    /**
+     * Stores the parent node's parameters, including child nodes and child
+     * nodes that are parents too.
+     *
+     * @var array
+     */
+    private static $nodeWorkingArray = [];
+
+    /**
      * After all process to define the parent node, there are more nodes after
      * that. This remaining nodes will be worked to define the child node's name
      * its parameters and if there are additional url parameters.
@@ -62,13 +77,6 @@ class Route
      * @var array
      */
     private static $remainingUrlNodes = [];
-    
-    /**
-     * urlParams
-     *
-     * @var array
-     */
-    private static $urlParams = [];
 
     /**
      * Stores the parent node name in the given URL. When false means that no
@@ -78,13 +86,17 @@ class Route
      */
     private static $parentNodeName = false;
 
-    /**
-     * Stores the parent node's parameters, including child nodes and child
-     * nodes that are parents too.
+        /**
+     * Stores parent nodes specific parameters.
      *
+     * @key bool|string controller      Defines custom controller to the node
+     *                                  and its children, instead the default
+     *                                  \app\controller.
      * @var array
      */
-    private static $parentNodeParams = [];
+    private static $parentNodeParams = [
+        'controller' => false,
+    ];
 
     /**
      * Stores the namespace in case of the parent node be a controller.
@@ -92,6 +104,16 @@ class Route
      * @var array
      */
     private static $controllerNamespace = [];
+
+
+    /**
+     * When the global parameter 'namespace' is found in the parent's node, it
+     * is set to true temporarily and all data stored in $controllerNamespace
+     * attribute is resetted.
+     *
+     * @var bool
+     */
+    private static $resetNamespace = false;
 
     /**
      * Stores the child node name in the given URL. When false means that no
@@ -102,7 +124,7 @@ class Route
     private static $childNodeName = false;
 
     /**
-     * Stores child nodes parameters.
+     * Stores child nodes specific parameters.
      *
      * @key bool fileDownloadable       Works only with File solvers. Defines if
      *                                  the file is downloadable.
@@ -112,15 +134,23 @@ class Route
      *
      * @key bool|string viewFilePath    Works only with View solvers. Defines a
      *                                  custom view file instead the default.
+     *
+     * @key bool|array requestMethod    Points to an internal method that will
+     *                                  be called based on the request method.
+     *                                  The key of the array needs to have the
+     *                                  name of request method (POST, GET, PUT,
+     *                                  etc..) and its value needs to be the
+     *                                  method to be called, always starting
+     *                                  with @, for better identification.
      * @var array
      */
     private static $childNodeParams = [
         'fileDownloadable' => false,
         'fileBaseFolder' => false,
         'viewFilePath' => false,
+        'requestMethod' => false,
     ];
-
-
+    
     /**
      * Stores the tag names of dynamic nodes and its values in the URL. Dynamic
      * nodes are like url parameters, but in reverse position: url parameters
@@ -138,11 +168,10 @@ class Route
      *                                  the default defined in the
      *                                  \app\config\project.php file.
      *
-     * @key bool|string authFailRedirect    Defines a URL, path or url alias to
-     *                                      redirect the users that requests
-     *                                      paths that needs authorization to
-     *                                      access but doesn't have.
-     *
+     * @key bool|string authFailRedirect Defines a URL, path or url alias to
+     *                                  redirect the users that requests paths
+     *                                  that needs authorization to access but
+     *                                  doesn't have.
      *
      * @key bool|string authTag         Defines a tag string that the user
      *                                  session needs to have access to the node
@@ -154,16 +183,16 @@ class Route
      *                                  children (in seconds). When false, the
      *                                  node won't be cached.
      *
-     * @key bool|string controllerNamespace     Defines a custom namespace for
-     *                                          the node and its children,
-     *                                          instead the default.
+     * @key bool|string namespace       Defines custom namespace for controllers
+     *                                  to the node and its children, instead
+     *                                  the default \app\controller.
      *
      * @key bool|string viewBaseFolder  Works only with View solvers. Defines a
      *                                  custom folder where views are located.
      *
-     * @key bool|string notFoundRedirect    Defines a custom URL, path or URL
-     *                                      alias when a file or URL path is not
-     *                                      found (error 404).
+     * @key bool|string notFoundRedirect Defines a custom URL, path or URL alias
+     *                                  when a file or URL path is not found
+     *                                  (error 404).
      *
      * @key bool offline                Defines that the node and its children
      *                                  is offline. No scripts are executed when
@@ -195,7 +224,7 @@ class Route
      *                                  URL, path or URL alias when the node or
      *                                  its children is accessed.
      *
-     * @key bool|string message        Defines a custom set of messages instead
+     * @key bool|string message         Defines a custom set of messages instead
      *                                  of the ones defined in
      *                                  \app\config\project.php file.
      *
@@ -206,7 +235,7 @@ class Route
         'authFailRedirect' => false,
         'authTag' => false,
         'browserCache' => false,
-        'controllerNamespace' => false,
+        'namespace' => false,
         'viewBaseFolder' => false,
         'notFoundRedirect' => GALASTRI_PROJECT['notFoundRedirect'],
         'offline' => GALASTRI_PROJECT['offline'],
@@ -237,7 +266,7 @@ class Route
     public static function resolve()
     {
         self::prepareUrlArray();
-        self::resolveParentNodeParams(GALASTRI_ROUTES);
+        self::resolveRouteNodes(GALASTRI_ROUTES);
         self::defineChildNode();
         self::resolveChildNodeParams();
         self::getAdditionalParams();
@@ -302,7 +331,7 @@ class Route
      *
      * This function:
      * 1. Removes the current key off the $urlWorkingArray
-     * 2. Stores the node parameters in $parentNodeParams attribute
+     * 2. Stores the node parameters in $nodeWorkingArray attribute
      * 3. Add the key label in the $controllerNamespace attribute
      * 4. Calls the method again to repeat the process.
      *
@@ -315,7 +344,7 @@ class Route
      * the variable $resolveNode explained above.
      *
      * If there ir no node nor dynamic node, then this means that the URL node
-     * doesn't exists, so the $parentNodeName is set as false.
+     * doesn't exist, so the $parentNodeName is set as false.
      *
      *
      * After all the tests, all the remaining URL nodes is stored in the
@@ -325,16 +354,17 @@ class Route
      *                                  configuration of the project routing.
      * @return void
      */
-    private static function resolveParentNodeParams(array $routeNodes)
+    private static function resolveRouteNodes(array $routeNodes)
     {
         $found = false;
 
         $resolveNode = function (array $routeNodes, string $key) {
             array_shift(self::$urlWorkingArray);
-            self::$parentNodeParams = $routeNodes[$key];
-            self::resolveGlobalParamValues($routeNodes[$key]);
+            self::$nodeWorkingArray = $routeNodes[$key];
+            self::resolveParentParams($routeNodes[$key]);
+            self::resolveGlobalParams($routeNodes[$key]);
             self::addControllerNamespacePath($key);
-            self::resolveParentNodeParams($routeNodes[$key]);
+            self::resolveRouteNodes($routeNodes[$key]);
             return true;
         };
 
@@ -367,16 +397,40 @@ class Route
      * parameters are inherited by the subsequent nodes. If there is any, its
      * value is overwrited by the new value.
      *
+     * NOTE: When the global parameter 'namespace' exists, a new namespace needs
+     * to be set as starting point from the node. This means that all the stored
+     * $controllerNamespace attribute needs to restart. That is why there is a
+     * test to check if the parameter 'namespaces' exists.
+     *
      * @param  array $nodeFound         Multidimensional array with the node
      *                                  parameters found in the routing
      *                                  configuration.
      * @return void
      */
-    private static function resolveGlobalParamValues(array $nodeFound)
+    private static function resolveGlobalParams(array $nodeFound)
     {
         foreach (self::$globalParamValues as $param => &$value) {
             if (array_key_exists($param, $nodeFound)) {
+                $value = (function($param, $nodeFound){
+                    switch ($param) {
+                        case 'namespace':
+                            self::$resetNamespace = true;
+                            return F::convertCase($nodeFound[$param], PASCAL_CASE);
+                        default:
+                            return $value = $nodeFound[$param];
+                    }
+                })($param, $nodeFound);
+            }
+        }
+    }
+
+    private static function resolveParentParams(array $nodeFound)
+    {
+        foreach (self::$parentNodeParams as $param => &$value) {
+            if (array_key_exists($param, $nodeFound)) {
                 $value = $nodeFound[$param];
+            } else {
+                $value = false;
             }
         }
     }
@@ -413,6 +467,12 @@ class Route
         $parentNodeName = F::convertCase($parentNodeName, PASCAL_CASE);
 
         self::$parentNodeName = $parentNodeName;
+
+        if (self::$resetNamespace) {
+            self::$controllerNamespace = [];
+            self::$resetNamespace = false;
+        }
+
         self::$controllerNamespace[] = '\\'.$parentNodeName;
     }
     
@@ -439,7 +499,7 @@ class Route
 
     /**
      * This method searchs for a parent node parameter that matches with the
-     * name of the child parameter that is the last of the chain (in shor, the
+     * name of the child parameter that is the last of the chain (in short, the
      * node that starts with @).
      *
      * If it exists, then the parameters are stored. If not, this means that
@@ -452,7 +512,7 @@ class Route
     {
         $found = false;
 
-        foreach (self::$parentNodeParams as $param => $value) {
+        foreach (self::$nodeWorkingArray as $param => $value) {
             if ($param === '@'.self::$childNodeName) {
                 $found = true;
                 $childNodeParams = $value;
@@ -464,7 +524,7 @@ class Route
             foreach (self::$childNodeParams as $key => $value) {
                 self::$childNodeParams[$key] = $childNodeParams[$key] ?? false;
             }
-            self::resolveGlobalParamValues($childNodeParams);
+            self::resolveGlobalParams($childNodeParams);
         } else {
             self::$childNodeName = false;
         }
@@ -511,8 +571,6 @@ class Route
         }
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-
-
     
     /**
      * Return the $urlParams attribute.
@@ -535,13 +593,15 @@ class Route
     }
     
     /**
-     * Return the $parentNodeParams attribute.
+     * Return the $nodeWorkingArray attribute.
      *
+     * @param  string|bool $key         Specify which key will be returned.
+     * 
      * @return array
      */
-    public static function getParentNodeParams()
+    public static function getParentNodeParams(mixed $key = false)
     {
-        return self::$parentNodeParams;
+        return $key === false ? self::$parentNodeParams : self::$parentNodeParams[$key];
     }
     
     /**
@@ -567,11 +627,13 @@ class Route
     /**
      * Return the $childNodeParams attribute.
      *
+     * @param  string|bool $key         Specify which key will be returned.
+     * 
      * @return array
      */
-    public static function getChildNodeParams()
+    public static function getChildNodeParams(mixed $key = false)
     {
-        return self::$childNodeParams;
+        return $key === false ? self::$childNodeParams : self::$childNodeParams[$key];
     }
     
     /**
@@ -591,7 +653,7 @@ class Route
      *
      * @return mixed
      */
-    public static function getGlobalParamValues(mixed $key = false)
+    public static function getGlobalParams(mixed $key = false)
     {
         return $key === false ? self::$globalParamValues : self::$globalParamValues[$key];
     }

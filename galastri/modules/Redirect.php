@@ -75,6 +75,7 @@ class Redirect
             $location = '/'.self::sanitize($urlRoot.$location);
         }
 
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL)::store(PERFORMANCE_ANALYSIS_LABEL);
         exit(header('Location: '.vsprintf($location, $printfData)));
     }
     

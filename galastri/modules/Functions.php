@@ -203,7 +203,7 @@ class Functions
      *                                  to be removed if it is in the string.
      * @return string
      */
-    public static function convertCase(string $string, int $type, string $regex = '/(-|_)/')
+    public static function convertCase(string $string, int $type, string $regex = '/(-|_|\s)/')
     {
         $string = preg_split($regex, $string);
         $string = array_map(function ($a) {
@@ -355,7 +355,7 @@ class Functions
 
     /**
      * Creates a file and all the directory path, if the file will be stored
-     * inside a path that doesn't exists.
+     * inside a path that doesn't exist.
      *
      * @param  string $path             The path of the file.
      * 

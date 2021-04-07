@@ -2,8 +2,13 @@
 return [
     '/' => [
         'solver' => 'view',
+        // 'namespace' => '\app\moreControl',
+
         '@main' => [
-            // 'requestType' => 'GET|POST'
+            'requestMethod' => [
+                'POST' => '@myPostMethod',
+                'PUT' => '@myPutMethod',
+            ],
         ],
         '@not-found' => [
         ],
@@ -17,13 +22,33 @@ return [
 
             // 'snippetExecAfter' => ['\app\snippets\MySnippet', '\app\snippets\OtherSnippet'],
             
-            '/page1-2' => [
+            '/page2' => [
+
                 '@main' => [
                     'aaa' => true,
                 ],
                 '@test' => [
                     'aaa' => true,
-                ]
+                ],
+                '/page3' => [
+    
+                    '@main' => [
+                        'aaa' => true,
+                    ],
+                    '@test' => [
+                        'aaa' => true,
+                    ],
+
+                    '/page4' => [
+    
+                        '@main' => [
+                            'aaa' => true,
+                        ],
+                        '@test' => [
+                            'aaa' => true,
+                        ]
+                    ],
+                ],
             ],
         ],
         '/page2' => [
