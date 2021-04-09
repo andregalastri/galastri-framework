@@ -1,6 +1,8 @@
 <?php
 namespace galastri\core;
 
+use \galastri\core\Debug;
+use \galastri\extensions\Exception;
 use \galastri\modules\Functions as F;
 use \galastri\modules\PerformanceAnalysis;
 
@@ -43,8 +45,10 @@ use \galastri\modules\PerformanceAnalysis;
  * child node can be parent for other children and this is the way the URL
  * routing is configured.
  */
-class Route
+final class Route
 {
+    const INVALID_REQUEST_METHOD = ['INVALID_REQUEST_METHOD', "This route have a invalid requestMethod parameter value. Expected '@%1\$s', but received '%1\$s' (without @), in key '%2\$s'."];
+
     /**
      * Stores the URL nodes in array format which will be worked to extract the
      * parent's parameters, define the node that will be called, its child and
@@ -53,13 +57,6 @@ class Route
      * @var array
      */
     private static $urlWorkingArray;
-
-    /**
-     * urlParams
-     *
-     * @var array
-     */
-    private static $urlParams = [];
 
     /**
      * Stores the parent node's parameters, including child nodes and child
@@ -94,7 +91,7 @@ class Route
      *                                  \app\controller.
      * @var array
      */
-    private static $parentNodeParams = [
+    private static $parentNodeParam = [
         'controller' => false,
     ];
 
@@ -144,12 +141,21 @@ class Route
      *                                  with @, for better identification.
      * @var array
      */
-    private static $childNodeParams = [
-        'fileDownloadable' => false,
-        'fileBaseFolder' => false,
-        'viewFilePath' => false,
-        'requestMethod' => false,
+    private static $childNodeParam = [
+        /** */'fileDownloadable' => false,
+        /** */'fileBaseFolder' => false,
+        /** */'viewFilePath' => false,
+        /** */'requestMethod' => false,
     ];
+
+
+    /**
+     * Stores the extra parameters of the URL that is defined in the route
+     * configuration.
+     *
+     * @var array                       Parameters tags and its values.
+     */
+    private static $urlParam = [];
     
     /**
      * Stores the tag names of dynamic nodes and its values in the URL. Dynamic
@@ -214,36 +220,38 @@ class Route
      *                                  - Json: returns data in json format;
      *                                  - Text: returns data in plain text.
      *
-     * @key bool|array viewTemplate     Works only with View solvers. Defines
-     *                                  the template files where the view will
-     *                                  be printed. It is an associative array,
-     *                                  which the key is the tag label and its
-     *                                  value is the path of the template file.
+     * @key string viewTemplateFile     Works only with View solvers. Defines
+     *                                  the template base file where the view
+     *                                  will be printed. This template base file
+     *                                  can have template parts, defined in the
+     *                                  parameter 'viewTemplateParts' which can
+     *                                  store the path of other parts that can
+     *                                  be imported inside the base template.
      *
      * @key bool|string forceRedirect   Force the request to be redirected to a
      *                                  URL, path or URL alias when the node or
      *                                  its children is accessed.
      *
-     * @key bool|string message         Defines a custom set of messages instead
-     *                                  of the ones defined in
+     * @key bool|string defaultmessage  Defines a custom set of defaultmessage
+     *                                  instead of the ones defined in
      *                                  \app\config\project.php file.
      *
      * @var array
      */
-    private static $globalParamValues = [
-        'projectTitle' => GALASTRI_PROJECT['projectTitle'],
-        'authFailRedirect' => false,
-        'authTag' => false,
-        'browserCache' => false,
-        'namespace' => false,
-        'viewBaseFolder' => false,
-        'notFoundRedirect' => GALASTRI_PROJECT['notFoundRedirect'],
+    private static $globalParam = [
         'offline' => GALASTRI_PROJECT['offline'],
-        'pageTitle' => false,
-        'solver' => false,
-        'viewTemplate' => GALASTRI_PROJECT['viewTemplate'],
+        /** */'projectTitle' => GALASTRI_PROJECT['projectTitle'],
+        /** */'pageTitle' => false,
+        /** */'authTag' => false,
+        /** */'authFailRedirect' => false,
         'forceRedirect' => false,
-        'message' => GALASTRI_PROJECT['message'],
+        'namespace' => false,
+        'notFoundRedirect' => GALASTRI_PROJECT['notFoundRedirect'],
+        /** */'solver' => false,
+        'browserCache' => false,
+        /** */'viewTemplateFile' => GALASTRI_PROJECT['viewTemplateFile'],
+        /** */'viewBaseFolder' => false,
+        'defaultmessage' => GALASTRI_PROJECT['defaultmessage'],
     ];
 
     /**
@@ -265,14 +273,20 @@ class Route
      */
     public static function resolve()
     {
-        self::prepareUrlArray();
-        self::resolveRouteNodes(GALASTRI_ROUTES);
-        self::defineChildNode();
-        self::resolveChildNodeParams();
-        self::getAdditionalParams();
-
-        if (count(self::$controllerNamespace) > 1) {
-            array_shift(self::$controllerNamespace);
+        try {
+            self::prepareUrlArray();
+            self::resolveRouteNodes(GALASTRI_ROUTES);
+            self::defineChildNode();
+            self::resolveChildNodeParam();
+            self::resolveChildNodeParamRequestMethod();
+            self::resolveUrlParam();
+    
+            if (count(self::$controllerNamespace) > 1) {
+                array_shift(self::$controllerNamespace);
+            }
+        } catch (Exception $e) {
+            PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
+            Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
         }
     }
 
@@ -361,8 +375,8 @@ class Route
         $resolveNode = function (array $routeNodes, string $key) {
             array_shift(self::$urlWorkingArray);
             self::$nodeWorkingArray = $routeNodes[$key];
-            self::resolveParentParams($routeNodes[$key]);
-            self::resolveGlobalParams($routeNodes[$key]);
+            self::resolveParentNodeParam($routeNodes[$key]);
+            self::resolveGlobalParam($routeNodes[$key]);
             self::addControllerNamespacePath($key);
             self::resolveRouteNodes($routeNodes[$key]);
             return true;
@@ -391,7 +405,6 @@ class Route
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
-        
     /**
      * Searchs in the found node if there is any parent global parameter. This
      * parameters are inherited by the subsequent nodes. If there is any, its
@@ -407,9 +420,9 @@ class Route
      *                                  configuration.
      * @return void
      */
-    private static function resolveGlobalParams(array $nodeFound)
+    private static function resolveGlobalParam(array $nodeFound)
     {
-        foreach (self::$globalParamValues as $param => &$value) {
+        foreach (self::$globalParam as $param => &$value) {
             if (array_key_exists($param, $nodeFound)) {
                 $value = (function($param, $nodeFound){
                     switch ($param) {
@@ -423,10 +436,19 @@ class Route
             }
         }
     }
-
-    private static function resolveParentParams(array $nodeFound)
+    
+    /**
+     * This method resolves parameters that are exclusive to the parent node and
+     * that aren't inherited by the other nodes. The parent node parameter
+     * belongs only to the parent node and is not trasmitted to other parent
+     * node.
+     *
+     * @param  array $nodeFound         The parent node's parameters
+     * @return void
+     */
+    private static function resolveParentNodeParam(array $nodeFound)
     {
-        foreach (self::$parentNodeParams as $param => &$value) {
+        foreach (self::$parentNodeParam as $param => &$value) {
             if (array_key_exists($param, $nodeFound)) {
                 $value = $nodeFound[$param];
             } else {
@@ -493,8 +515,8 @@ class Route
             self::$childNodeName = ltrim(self::$remainingUrlNodes[0], '/');
             array_shift(self::$remainingUrlNodes);
         }
+        
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-
     }
 
     /**
@@ -508,32 +530,73 @@ class Route
      *
      * @return void
      */
-    private static function resolveChildNodeParams()
+    private static function resolveChildNodeParam()
     {
+        Debug::setBacklog();
+
         $found = false;
 
         foreach (self::$nodeWorkingArray as $param => $value) {
             if ($param === '@'.self::$childNodeName) {
                 $found = true;
-                $childNodeParams = $value;
+                $childNodeParam = $value;
                 break;
             }
         }
 
         if ($found) {
-            foreach (self::$childNodeParams as $key => $value) {
-                self::$childNodeParams[$key] = $childNodeParams[$key] ?? false;
+            foreach (self::$childNodeParam as $key => $value) {
+                self::$childNodeParam[$key] = $childNodeParam[$key] ?? false;
             }
-            self::resolveGlobalParams($childNodeParams);
+
+            self::resolveGlobalParam($childNodeParam);
         } else {
             self::$childNodeName = false;
         }
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-
     }
     
     /**
-     * Gets all the remaining URL nodes and stores in the $urlParams attributes
+     * This method resolve the requestMethod parameter in child node. This
+     * parameter is an array that points a method to be executed based on the
+     * method used in the request (like POST, GET, etc.).
+     *
+     * The method gets the request method received by the server and checks if
+     * the requestMethod stored in the $childNodeParam attribute. If it exists
+     * it compares the actual request method to the methods defined in the key
+     * of the parameter. If it exists, then it is stored and this method ends.
+     * If not, it will search until the end. If it doesn't exist, then the
+     * parameter requestMethod is set as false.
+     *
+     * @return void
+     */
+    private static function resolveChildNodeParamRequestMethod()
+    {
+        Debug::setBacklog();
+
+        $serverRequestMethod = F::lowerCase($_SERVER['REQUEST_METHOD']);
+
+        if (self::$childNodeParam['requestMethod'] !== false) {
+            foreach (self::$childNodeParam['requestMethod'] as $key => $value) {
+                $key = F::lowerCase($key);
+
+                if ($key === $serverRequestMethod) {
+                    self::$childNodeParam['requestMethod'] = [
+                        $key => F::convertCase(ltrim($value, '@'), CAMEL_CASE),
+                    ];
+
+                    break;
+                } else {
+                    self::$childNodeParam['requestMethod'] = false;
+                }
+            }
+        }
+
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+    }
+    
+    /**
+     * Gets all the remaining URL nodes and stores in the $urlParam attributes
      * since there is a 'parameters' parameter configured in the routing
      * configuration.
      *
@@ -546,40 +609,42 @@ class Route
      *
      *      'parameters' => ['tag1', 'tag2'],
      *
-     * The tag name will be stored as a key label on the $urlParams attribute,
+     * The tag name will be stored as a key label on the $urlParam attribute,
      * while its value in the url will be stored as value of this key.
      *
      * @return void
      */
-    private static function getAdditionalParams()
+    private static function resolveUrlParam()
     {
-        $childNodeParams = self::$childNodeParams;
-        if (isset($childNodeParams['parameters'])) {
-            $urlParams = $childNodeParams['parameters'];
+        $childNodeParam = self::$childNodeParam;
 
-            if (gettype($urlParams) === 'string') {
-                $urlParams = explode('/', $urlParams);
-                if (empty($urlParams[0])) {
-                    array_shift($urlParams);
+        if (isset($childNodeParam['parameters'])) {
+            $urlParam = $childNodeParam['parameters'];
+
+            if (gettype($urlParam) === 'string') {
+                $urlParam = explode('/', $urlParam);
+                if (empty($urlParam[0])) {
+                    array_shift($urlParam);
                 }
             }
 
             foreach (self::$remainingUrlNodes as $key => $value) {
-                $keyLabel = $urlParams[$key];
-                self::$urlParams[$keyLabel] = ltrim($value, '/');
+                $keyLabel = $urlParam[$key];
+                self::$urlParam[$keyLabel] = ltrim($value, '/');
             }
         }
+
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
     
     /**
-     * Return the $urlParams attribute.
+     * Return the $urlParam attribute.
      *
      * @return array
      */
-    public static function getUrlParams()
+    public static function getUrlParam()
     {
-        return self::$urlParams;
+        return self::$urlParam;
     }
     
     /**
@@ -599,9 +664,9 @@ class Route
      * 
      * @return array
      */
-    public static function getParentNodeParams(mixed $key = false)
+    public static function getParentNodeParam(mixed $key = false)
     {
-        return $key === false ? self::$parentNodeParams : self::$parentNodeParams[$key];
+        return $key === false ? self::$parentNodeParam : self::$parentNodeParam[$key];
     }
     
     /**
@@ -625,15 +690,15 @@ class Route
     }
     
     /**
-     * Return the $childNodeParams attribute.
+     * Return the $childNodeParam attribute.
      *
      * @param  string|bool $key         Specify which key will be returned.
      * 
      * @return array
      */
-    public static function getChildNodeParams(mixed $key = false)
+    public static function getChildNodeParam(mixed $key = false)
     {
-        return $key === false ? self::$childNodeParams : self::$childNodeParams[$key];
+        return $key === false ? self::$childNodeParam : self::$childNodeParam[$key];
     }
     
     /**
@@ -641,20 +706,20 @@ class Route
      *
      * @return array
      */
-    public static function getDynamicNodeValues()
+    public static function getDynamicNodeValue(mixed $key = false)
     {
-        return self::$dynamicNodeValues;
+        return $key === false ? self::$dynamicNodeValues : self::$dynamicNodeValues[$key];
     }
         
     /**
-     * Return the $globalParamValues attribute.
+     * Return the $globalParam attribute.
      *
      * @param  string|bool $key         Specify which key will be returned.
      *
      * @return mixed
      */
-    public static function getGlobalParams(mixed $key = false)
+    public static function getGlobalParam(mixed $key = false)
     {
-        return $key === false ? self::$globalParamValues : self::$globalParamValues[$key];
+        return $key === false ? self::$globalParam : self::$globalParam[$key];
     }
 }

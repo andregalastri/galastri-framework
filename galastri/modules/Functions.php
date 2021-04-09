@@ -13,7 +13,7 @@ use \galastri\core\PerformanceAnalysis;
  * file inside /app/config/additional-config. All the .php scripts there are
  * automatically loaded with the framework.
  */
-class Functions
+final class Functions
 {
     /**
      * Property that stores if the method will be executed with trace bracklog

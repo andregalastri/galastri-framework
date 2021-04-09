@@ -2,21 +2,25 @@
 return [
     '/' => [
         'solver' => 'view',
-        // 'namespace' => '\app\moreControl',
+
+        'viewBaseTemplate' => '/app/templates/main.php',
 
         '@main' => [
             'requestMethod' => [
+                'GET' => '@myPutMethod',
                 'POST' => '@myPostMethod',
-                'PUT' => '@myPutMethod',
             ],
         ],
+       
         '@not-found' => [
         ],
-        '/page1' => [
+
+        '/?page1' => [
             'solver' => 'json',
             'notFoundRedirect' => 'index',
 
             '@main' => [
+                
                 'aaa' => true,
             ],
 

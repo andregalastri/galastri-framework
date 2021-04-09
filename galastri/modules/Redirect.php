@@ -8,7 +8,7 @@ use \galastri\modules\Functions as F;
  * This module class helps to redirect the request to another path or URL, even
  * external.
  */
-class Redirect
+final class Redirect
 {
     /**
      * Defines if the urlRoot parameter will be ignored (true) or not (false).

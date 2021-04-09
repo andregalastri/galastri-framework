@@ -14,26 +14,35 @@ use \galastri\modules\Functions as F;
  *
  *   - Order of the execution;
  *   - Path of the file that executed the method;
+ *   - The route requested (URI);
+ *   - The request method, like POST, GET, etc;
  *   - Method that is being executed;
- *   - Memory usage of the script (cumulative);
+ *   - Memory usage in the current portion of the script;
+ *   - Peak of memory usage in the entire script;
  *   - Execution time (in milliseconds) of the section measured;
  *   - Cumulative execution time (in milliseconds).
  * 
  * Example of a measure:
  * 
  *   1. /galastri/core/Route.php
- *     Execution ............ galastri\core\Route::prepareUrlArray
- *     Memory Usage (Total).. 362.39 kb
- *     Execution Time ....... 0.1 ms
- *     Cumulative Time ...... 0.1 ms
+ *     Requested URI .......... /page1
+ *     Request Method ......... POST
+ *     Execution .............. galastri\core\Route::prepareUrlArray
+ *     Memory Usage (Current).. 455.55 kb
+ *     Memory Usage (Peak)..... 455.55 kb
+ *     Execution Time ......... 0.1 ms
+ *     Cumulative Time ........ 0.1 ms
  * 
  *   2. /galastri/core/Route.php
- *     Execution ............ galastri\core\Route::resolveParentNodeParams
- *     Memory Usage (Total).. 366.27 kb
- *     Execution Time ....... 0.1 ms
- *     Cumulative Time ...... 0.2 ms
+ *     Requested URI .......... /page1
+ *     Request Method ......... POST
+ *     Execution .............. galastri\core\Route::resolveParentNodeParams
+ *     Memory Usage (Current).. 366.27 kb
+ *     Memory Usage (Peak)..... 455.55 kb
+ *     Execution Time ......... 0.1 ms
+ *     Cumulative Time ........ 0.2 ms
  */
-class PerformanceAnalysis
+final class PerformanceAnalysis
 {
     const DIRECTORY_PATH = '/logs/performance-analysis/';
     
@@ -144,10 +153,13 @@ class PerformanceAnalysis
 
             self::$flushedData[$label][] = [
                 str_replace(GALASTRI_PROJECT_DIR, '', $backlogData['file']),
-                '    Execution ............ '.($backlogData['class'] ?? 'root').($backlogData['type'] ?? '..').($backlogData['function'] ?? 'root'),
-                '    Memory Usage (Total).. '.F::convertBytes(memory_get_usage()),
-                '    Execution Time ....... '.$executionTime.' ms',
-                '    Cumulative Time ...... '.self::$cumulativeTime[$label].' ms',
+                '    Requested URI .......... '.$_SERVER['REQUEST_URI'],
+                '    Request Method ......... '.$_SERVER['REQUEST_METHOD'],
+                '    Execution .............. '.($backlogData['class'] ?? 'root').($backlogData['type'] ?? '..').($backlogData['function'] ?? 'root'),
+                '    Memory Usage (Current).. '.F::convertBytes(memory_get_usage()),
+                '    Memory Usage (Peak)..... '.F::convertBytes(memory_get_peak_usage()),
+                '    Execution Time ......... '.$executionTime.' ms',
+                '    Cumulative Time ........ '.self::$cumulativeTime[$label].' ms',
             ];
 
             self::microtimeStart($label);
@@ -181,7 +193,8 @@ class PerformanceAnalysis
             $flushedData .= 'END';
             $flushedData .= str_repeat(PHP_EOL, 4);
 
-            $filename = $label.' '.date('Y m d - H').'.log';
+            $filename = $label === PERFORMANCE_ANALYSIS_LABEL ? '' : preg_replace('/[^a-zA-Z0-9]+/', '', $label);
+            $filename = $filename.date('Ymd-H').'.log';
 
             F::createFile(self::DIRECTORY_PATH.$filename);
             F::fileInsertContent(self::DIRECTORY_PATH.$filename, $flushedData);

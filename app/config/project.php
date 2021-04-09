@@ -39,42 +39,31 @@ return [
     'projectTitle' => 'Galastri Framework',
 
     /**
-     * Works only with View solvers. Defines the template files where the view
-     * will be printed. It is an associative array, which the key is the tag
-     * label and its value is the path of the template file.
+     * Works only with View solvers. Defines the template file where the view
+     * will be printed.
      *
-     * Example:
+     * NOTE: It isn't the view itself, the view will be other file. This
+     * parameter here refers just to the template file, the skeleton which the
+     * view and other stuff will be part.
      *
-     *      'viewTemplate' => [
-     *          // This key is required when using a view template.
-     *          'main' => '/template/main.php'
-     *
-     *          // These are optional keys and can have any label.
-     *          'sidemenu' => '/template/sidemenu.php'
-     *          'myfooter' => '/template/sidemenu.php'
-     *      ],
-     *
-     * The 'main' key is the only one that is required and the one that will be
-     * called and it merges the other template parts. The others can be called
-     * inside the main.
-     *
-     * You can define here multiple template parts and define the 'main' only in
-     * the route configuration, in \app\config\routes.php file.
+     * If your project have multiple templates, you can ignore this as empty and
+     * configure the template path in the route configuration, in
+     * \app\config\routes.php file.
      *
      * @key title array
      */
-    'viewTemplate' => [],
+    'viewTemplateFile' => '',
 
     'offline' => false,
 
     'notFoundRedirect' => '404',
 
     /**
-     * Default messages for a differents cases.
+     * Default defaultmessage for a differents cases.
      *
      * @key timezone string
      */
-    'message' => [
+    'defaultmessage' => [
         'offline' => "This area is currently offline. Please, try again later.",
         'authFail' => "You aren't authorized to access this area.",
         'permissionFail' => "You don't have permission to execute this action.",

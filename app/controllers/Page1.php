@@ -1,7 +1,7 @@
 <?php
 namespace app\controllers;
 
-class Index extends \galastri\core\Controller
+class Page1 extends \galastri\core\Controller
 {
     protected function __doBefore()
     {

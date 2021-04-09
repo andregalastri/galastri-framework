@@ -8,7 +8,7 @@ use \galastri\modules\Functions as F;
  * exceptions and shows error messages when some configuration is wrong or a
  * framework function is used incorrectly.
  */
-class Debug
+final class Debug
 {
     const GENERIC_MESSAGE = "An error occurred. Please, contact the administrator.";
     

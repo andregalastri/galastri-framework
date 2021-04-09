@@ -34,9 +34,9 @@ return [
      * - IMPORTANT: NEVER enable this in production. Every request will generate
      *   a log. If you have many access, a large log data will be created, which
      *   will consume large resources of the server. Use it ONLY for analysis in
-     *   a short time period and in a test server.
+     *   a short time period in a test server.
      * - If this crashes the executions of the requests, it is recommended to
-     *   execute the PerformanceAnalysis customly inside specific codes.
+     *   execute the PerformanceAnalysis class in specific code parts.
      *
      *   More information in the file: /galastri/modules/PerformanceAnalysis.php
      * 
