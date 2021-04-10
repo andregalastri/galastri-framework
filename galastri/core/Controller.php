@@ -2,132 +2,139 @@
 namespace galastri\core;
 
 use \galastri\core\Route;
-use \galastri\modules\Functions as F;
+use \galastri\modules\Toolbox;
 use \galastri\modules\PerformanceAnalysis;
 
 /**
- * Controller
+ * This is the core controller. This class stores the parameters resolved by the
+ * \galastri\core\Route class and make it ready to use by the route controller (the child of this
+ * class here).
+ *
+ * The class calls for methods of the child class and return a array with the returned data.
  */
 abstract class Controller
 {    
     /**
-     * doBeforeData
+     * Stores the returned data of the method __doBefore(), if it exists in the route controller.
      *
      * @var array
      */
-    private $doBeforeData = [];
+    private array $doBeforeData = [];
         
     /**
-     * doAfterData
+     * Stores the returned data of the method __doAfter(), if it exists in the route controller.
      *
      * @var array
      */
-    private $doAfterData = [];
+    private array $doAfterData = [];
         
     /**
-     * controllerData
+     * Stores the returned data of the route method.
      *
      * @var array
      */
-    private $controllerData = [];  
+    private array $controllerData = [];  
       
     /**
-     * requestMethodData
+     * Stores the returned data of the request method, if it exists in the route configuration
+     * parameter 'requestMethod'.
      *
      * @var array
      */
-    private $requestMethodData = [];   
+    private array $requestMethodData = [];   
 
     /**
-     * resultData
+     * Stores a merged array of $doBeforeData, $doAfterData, $controllerData and $requestMethodData
+     * attributes.
      *
      * @var array
      */
-    private $resultData = [];
+    private array $resultData = [];
         
     /**
-     * stopControllerFlag
+     * Sets if the core controller will proceed to call other methods (false) or it will stop in the
+     * current method and conclude the execution (true).
      *
      * @var bool
      */
-    private $stopControllerFlag = false;
+    private bool $stopControllerFlag = false;
     
     /**
-     * projectTitle
+     * Stores the projectTitle route parameter.
      *
-     * @var mixed
+     * @var null|string
      */
-    private $projectTitle;
+    private ?string $projectTitle;
         
     /**
-     * pageTitle
+     * Stores the pageTitle route parameter.
      *
-     * @var mixed
+     * @var null|string
      */
-    private $pageTitle;
+    private ?string $pageTitle;
         
     /**
-     * authTag
+     * Stores the authTag route parameter.
      *
-     * @var mixed
+     * @var null|string
      */
-    private $authTag;
+    private ?string $authTag;
         
     /**
-     * authFailRedirect
+     * Stores the authFailRedirect route parameter.
      *
-     * @var mixed
+     * @var null|string
      */
-    private $authFailRedirect;
+    private ?string $authFailRedirect;
         
     /**
-     * solver
+     * Stores the solver route parameter.
      *
-     * @var mixed
+     * @var string
      */
-    private $solver;
+    private string $solver;
         
     /**
-     * viewTemplateFile
+     * Stores the viewTemplateFile route parameter.
      *
-     * @var mixed
+     * @var null|string
      */
-    private $viewTemplateFile;
+    private ?string $viewTemplateFile;
         
     /**
-     * viewBaseFolder
+     * Stores the viewBaseFolder route parameter.
      *
-     * @var mixed
+     * @var null|string
      */
-    private $viewBaseFolder;
+    private ?string $viewBaseFolder;
         
     /**
-     * fileDownloadable
+     * Stores the fileDownloadable route parameter.
      *
-     * @var mixed
+     * @var bool
      */
-    private $fileDownloadable;
+    private bool $fileDownloadable;
         
     /**
-     * fileBaseFolder
+     * Stores the fileBaseFolder route parameter.
      *
-     * @var mixed
+     * @var null|string
      */
-    private $fileBaseFolder;
+    private ?string $fileBaseFolder;
         
     /**
-     * viewFilePath
+     * Stores the viewFilePath route parameter.
      *
-     * @var mixed
+     * @var null|string
      */
-    private $viewFilePath;
+    private ?string $viewFilePath;
         
     /**
-     * requestMethod
+     * Stores the requestMethod route parameter.
      *
-     * @var mixed
+     * @var array
      */
-    private $requestMethod;
+    private array $requestMethod;
     
     /**
      * main
@@ -155,7 +162,7 @@ abstract class Controller
      *
      * @return void
      */
-    private function setInitialParameterValues()
+    private function setInitialParameterValues() : void
     {
         $childNodeParam = Route::getChildNodeParam();
         $globalParam = Route::getGlobalParam();
@@ -178,7 +185,7 @@ abstract class Controller
      *
      * @return void
      */
-    private function callDoBefore()
+    private function callDoBefore() : void
     {
         if (method_exists($this, '__doBefore')) {
             $this->doBeforeData = $this->__doBefore() ?? [];
@@ -192,22 +199,21 @@ abstract class Controller
      *
      * @return void
      */
-    private function callControllerMethod()
+    private function callControllerMethod() : void
     {
         if (!$this->stopControllerFlag) {
             $controllerMethod = Route::getChildNodeName();
-            $serverRequestMethod = F::lowerCase($_SERVER['REQUEST_METHOD']);
+            $serverRequestMethod = Toolbox::lowerCase($_SERVER['REQUEST_METHOD']);
 
             $this->controllerData = $this->$controllerMethod() ?? [];
             
-            if (Route::getChildNodeParam('requestMethod') !== false) {
+            if (Route::getChildNodeParam('requestMethod') !== null) {
                 $requestMethod = Route::getChildNodeParam('requestMethod')[$serverRequestMethod];
                 $this->requestMethodData = $this->$requestMethod() ?? [];
             }
 
             PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
         }
-
     }
     
     /**
@@ -215,7 +221,7 @@ abstract class Controller
      *
      * @return void
      */
-    private function callDoAfter()
+    private function callDoAfter() : void
     {
         if (!$this->stopControllerFlag) {
             if (method_exists($this, '__doBefore')) {
@@ -231,7 +237,7 @@ abstract class Controller
      *
      * @return void
      */
-    private function mergeResults()
+    private function mergeResults() : void
     {
         $this->resultData = array_merge(
             $this->doBeforeData,
@@ -248,7 +254,7 @@ abstract class Controller
      *
      * @return void
      */
-    final protected function stopControllerFlag()
+    final protected function stopControllerFlag() : void
     {
         $this->stopControllerFlag = true;
     }
@@ -258,7 +264,7 @@ abstract class Controller
      *
      * @return void
      */
-    final protected function getDoBeforeData()
+    final protected function getDoBeforeData() : array
     {
         return $this->doBeforeData;
     }
@@ -268,7 +274,7 @@ abstract class Controller
      *
      * @return void
      */
-    final protected function getDoAfterData()
+    final protected function getDoAfterData() : array
     {
         return $this->doAfterData;
     }
@@ -276,10 +282,10 @@ abstract class Controller
     /**
      * setFileDownloadable
      *
-     * @param  mixed $fileDownloadable
+     * @param  bool $fileDownloadable
      * @return void
      */
-    final protected function setFileDownloadable(bool $fileDownloadable)
+    final protected function setFileDownloadable(bool $fileDownloadable) : void
     {
         $this->fileDownloadable = $fileDownloadable;
     }
@@ -287,9 +293,9 @@ abstract class Controller
     /**
      * getFileDownloadable
      *
-     * @return void
+     * @return bool
      */
-    final protected function getFileDownloadable()
+    final protected function getFileDownloadable() : bool
     {
         return $this->fileDownloadable;
     }
@@ -297,10 +303,10 @@ abstract class Controller
     /**
      * setFileBaseFolder
      *
-     * @param  mixed $fileBaseFolder
+     * @param  null|string $fileBaseFolder
      * @return void
      */
-    final protected function setFileBaseFolder(mixed $fileBaseFolder)
+    final protected function setFileBaseFolder(?string $fileBaseFolder) : void
     {
         $this->fileBaseFolder = $fileBaseFolder;
     }
@@ -308,9 +314,9 @@ abstract class Controller
     /**
      * getFileBaseFolder
      *
-     * @return void
+     * @return null|string
      */
-    final protected function getFileBaseFolder()
+    final protected function getFileBaseFolder() : ?string
     {
         return $this->fileBaseFolder;
     }
@@ -318,10 +324,10 @@ abstract class Controller
     /**
      * setViewFilePath
      *
-     * @param  mixed $viewFilePath
+     * @param  null|string $viewFilePath
      * @return void
      */
-    final protected function setViewFilePath(mixed $viewFilePath)
+    final protected function setViewFilePath(?string $viewFilePath) : void
     {
         $this->viewFilePath = $viewFilePath;
     }
@@ -329,9 +335,9 @@ abstract class Controller
     /**
      * getViewFilePath
      *
-     * @return void
+     * @return null|string
      */
-    final protected function getViewFilePath()
+    final protected function getViewFilePath() : ?string
     {
         return $this->viewFilePath;
     }
@@ -339,10 +345,10 @@ abstract class Controller
     /**
      * setProjectTitle
      *
-     * @param  mixed $projectTitle
+     * @param  null|string $projectTitle
      * @return void
      */
-    final protected function setProjectTitle(mixed $projectTitle)
+    final protected function setProjectTitle(?string $projectTitle) : void
     {
         $this->projectTitle = $projectTitle;
     }
@@ -350,9 +356,9 @@ abstract class Controller
     /**
      * getProjectTitle
      *
-     * @return void
+     * @return null|string
      */
-    final protected function getProjectTitle()
+    final protected function getProjectTitle() : ?string
     {
         return $this->projectTitle;
     }
@@ -360,10 +366,10 @@ abstract class Controller
     /**
      * setPageTitle
      *
-     * @param  mixed $pageTitle
+     * @param  null|string $pageTitle
      * @return void
      */
-    final protected function setPageTitle(mixed $pageTitle)
+    final protected function setPageTitle(?string $pageTitle) : void
     {
         $this->pageTitle = $pageTitle;
     }
@@ -371,9 +377,9 @@ abstract class Controller
     /**
      * getPageTitle
      *
-     * @return void
+     * @return null|string
      */
-    final protected function getPageTitle()
+    final protected function getPageTitle() : ?string
     {
         return $this->pageTitle;
     }
@@ -381,10 +387,10 @@ abstract class Controller
     /**
      * setAuthTag
      *
-     * @param  mixed $authTag
+     * @param  null|string $authTag
      * @return void
      */
-    final protected function setAuthTag(mixed $authTag)
+    final protected function setAuthTag(?string $authTag) : void
     {
         $this->authTag = $authTag;
     }
@@ -392,9 +398,9 @@ abstract class Controller
     /**
      * getAuthTag
      *
-     * @return void
+     * @return null|string
      */
-    final protected function getAuthTag()
+    final protected function getAuthTag() : ?string
     {
         return $this->authTag;
     }
@@ -402,10 +408,10 @@ abstract class Controller
     /**
      * setAuthFailRedirect
      *
-     * @param  mixed $authFailRedirect
+     * @param  null|string $authFailRedirect
      * @return void
      */
-    final protected function setAuthFailRedirect(mixed $authFailRedirect)
+    final protected function setAuthFailRedirect(?string $authFailRedirect) : void
     {
         $this->authFailRedirect = $authFailRedirect;
     }
@@ -413,9 +419,9 @@ abstract class Controller
     /**
      * getAuthFailRedirect
      *
-     * @return void
+     * @return null|string
      */
-    final protected function getAuthFailRedirect()
+    final protected function getAuthFailRedirect() : ?string
     {
         return $this->authFailRedirect;
     }
@@ -423,10 +429,10 @@ abstract class Controller
     /**
      * setSolver
      *
-     * @param  mixed $solver
+     * @param  string $solver
      * @return void
      */
-    final protected function setSolver(mixed $solver)
+    final protected function setSolver(string $solver) : void
     {
         $this->solver = $solver;
     }
@@ -434,9 +440,9 @@ abstract class Controller
     /**
      * getSolver
      *
-     * @return void
+     * @return string
      */
-    final protected function getSolver()
+    final protected function getSolver() : string
     {
         return $this->solver;
     }
@@ -444,10 +450,10 @@ abstract class Controller
     /**
      * setViewTemplateFile
      *
-     * @param  mixed $viewTemplateFile
+     * @param  null|string $viewTemplateFile
      * @return void
      */
-    final protected function setViewTemplateFile(mixed $viewTemplateFile)
+    final protected function setViewTemplateFile(?string $viewTemplateFile) : void
     {
         $this->viewTemplateFile = $viewTemplateFile;
     }
@@ -455,9 +461,9 @@ abstract class Controller
     /**
      * getViewTemplateFile
      *
-     * @return void
+     * @return null|string
      */
-    final protected function getViewTemplateFile()
+    final protected function getViewTemplateFile() : ?string
     {
         return $this->viewTemplateFile;
     }
@@ -465,10 +471,10 @@ abstract class Controller
     /**
      * setViewBaseFolder
      *
-     * @param  mixed $viewBaseFolder
+     * @param  null|string $viewBaseFolder
      * @return void
      */
-    final protected function setViewBaseFolder(mixed $viewBaseFolder)
+    final protected function setViewBaseFolder(?string $viewBaseFolder) : void
     {
         $this->viewBaseFolder = $viewBaseFolder;
     }
@@ -476,9 +482,9 @@ abstract class Controller
     /**
      * getViewBaseFolder
      *
-     * @return void
+     * @return null|string
      */
-    final protected function getViewBaseFolder()
+    final protected function getViewBaseFolder() : ?string
     {
         return $this->viewBaseFolder;
     }
@@ -486,10 +492,10 @@ abstract class Controller
     /**
      * getDynamicNodeValue
      *
-     * @param  mixed $key
-     * @return void
+     * @param  string $key
+     * @return string
      */
-    final protected function getDynamicNodeValue(mixed $key = false)
+    final protected function getDynamicNodeValue(string $key) : string
     {
         return Route::getDynamicNodeValue($key);
     }

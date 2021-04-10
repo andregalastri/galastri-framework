@@ -1,12 +1,11 @@
 <?php
 namespace galastri\core;
 
-use \galastri\modules\Functions as F;
+use \galastri\modules\Toolbox;
 
 /**
- * This class is part of the core of the framework. It helps to handle the
- * exceptions and shows error messages when some configuration is wrong or a
- * framework function is used incorrectly.
+ * This class is part of the core of the framework. It helps to handle the exceptions and shows
+ * error messages when some configuration is wrong or a framework function is used incorrectly.
  */
 final class Debug
 {
@@ -17,33 +16,33 @@ final class Debug
      *
      * @var array
      */
-    private static $backlogData = [];
+    private static array $backlogData = [];
     
     /**
      * The message that will be shown when an exception is thrown.
      *
      * @var string
      */
-    private static $message = '';
+    private static string $message = '';
 
     /**
      * The code that identifies the exception.
      *
-     * @var int|string
+     * @var int|null|string
      */
-    private static $code = '';
+    private static /*int|null|string*/ $code = null;
     
     /**
-     * When true, bypass the displayErrors = false configuration in
-     * \app\config\debug.php and shows the error message anyway.
+     * When true, bypass the displayErrors = false configuration in \app\config\debug.php and shows
+     * the error message anyway.
      *
      * @var bool
      */
-    private static $bypassGenericMessage = false;
+    private static bool $bypassGenericMessage = false;
     
     /**
-     * This is a singleton class, so, the __construct() method is private to
-     * avoid user to instanciate this class.
+     * This is a singleton class, so, the __construct() method is private to avoid user to
+     * instanciate this class.
      *
      * @return void
      */
@@ -54,18 +53,14 @@ final class Debug
     /**
      * Stores the backlog array in the $backlog attribute.
      *
-     * @return \galastri\core\Debug
+     * @return galastri\core\Debug
      */
-    public static function setBacklog()
+    public static function setBacklog() : string /*self*/
     {
         self::$bypassGenericMessage = false;
         $backlogData = debug_backtrace()[1];
 
-        if (GALASTRI_DEBUG['showBacklogData']) {
-            self::$backlogData[] = $backlogData;
-        } else {
-            self::$backlogData[0] = $backlogData;
-        }
+        self::$backlogData[] = $backlogData;
 
         return __CLASS__;
     }
@@ -73,52 +68,65 @@ final class Debug
     /**
      * Returns every data of the backlog array.
      *
-     * @return array
-     */
-    private static function getBacklog()
+     * @param  int|null $index                      Return a specific group of keys of the stored
+     *                                              backlog.
+     *
+     * @param  null|string $key                     Return specific key of the most recent backlog
+     *                                              data.
+     *
+     *
+     * @return mixed
+     */    
+    public static function getBacklog(?int $index = null, ?string $key = null)// : mixed
     {
-        return self::$backlogData;
+        if ($index === null and $key === null) {
+            return self::$backlogData;
+        } elseif ($index !== null and $key === null) {
+            return self::$backlogData[$index];
+        } else {
+            return self::$backlogData[$index][$key];
+        }
     }
 
     /**
      * Returns the most recent data of the backlog array.
      *
-     * @param  string|int|bool $index   Return specific key of the most recent
-     *                                  backlog data.
+     * @param  null|string $key              Return specific key of the most recent
+     *                                              backlog data.
      *
-     * @return array
+     * @return mixed
      */
-    private static function getLastBacklog(mixed $index = false)
+    public static function getLastBacklog(?string $key = null)// : mixed
     {
-        return $index ? self::$backlogData[0][$index] : self::$backlogData[0];
+        return $key === null ? self::$backlogData[0] : self::$backlogData[0][$key];
     }
     
     /**
-     * Sets the exception message and code. Can return additional data to be
-     * converted if the message have %s flags in it.
+     * Sets the exception message and code. Can return additional data to be converted if the
+     * message have %s flags in it.
      *
      * This method can be chained with self::print() method.
      *
-     * @param  string $message          Message that will be displayed. Can have
-     *                                  %s flags that will be replaced by values
-     *                                  of $printfData parameter.
+     * @param  string $message                      Message that will be displayed. Can have %s
+     *                                              flags that will be replaced by values of
+     *                                              $printfData parameter.
      *
-     * @param  string|int $code         Code that identifies the exception.
+     * @param  int|string $code                     Code that identifies the exception.
      *
-     * @param  array $printfData        Values that will replace %s flags in the
-     *                                  message, in the same order of appearance
-     *                                  of the flags.
+     * @param  array ...$printfData                 Values that will replace %s flags in the
+     *                                              message, in the same order of appearance of the
+     *                                              flags.
      *
-     *                                  Exemple:
-     *                                  - message:    'This is %s and %s'
-     *                                  - printfData: ['John', 'Paul']
+     *                                              Exemple:
+     *                                              - message:    'This is %s and %s'
+     *                                              - printfData: ['John', 'Paul']
      *
-     *                                  Result: 'This is John and Paul'
+     *                                              Result: 'This is John and Paul'
      * @return \galastri\core\Debug
      */
-    public static function setError(string $message, mixed $code, ...$printfData)
+    public static function setError(string $message, /*int|string*/ $code, array ...$printfData) : string /*self*/
     {
-        $printfData = F::flattenArray($printfData);
+        $printfData = Toolbox::flattenArray($printfData);
         
         self::$message = (function ($message, $printfData) {
             if (!GALASTRI_DEBUG['displayErrors'] and !self::$bypassGenericMessage) {
@@ -138,7 +146,7 @@ final class Debug
      *
      * @return void
      */
-    public static function print()
+    public static function print() : void
     {
         if (GALASTRI_DEBUG['displayErrors']) {
             $data = [
@@ -172,12 +180,12 @@ final class Debug
     }
     
     /**
-     * Sets the $bypassGenericMessage attribute to true temporarily to show the
-     * error message even if the displayErrors debug configuration is false.
+     * Sets the $bypassGenericMessage attribute to true temporarily to show the error message even
+     * if the displayErrors debug configuration is false.
      *
      * @return void
      */
-    public static function bypassGenericMessage()
+    public static function bypassGenericMessage() : void
     {
         self::$bypassGenericMessage = true;
     }

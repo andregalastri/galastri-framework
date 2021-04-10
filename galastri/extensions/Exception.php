@@ -14,26 +14,24 @@ class Exception extends \Exception
      *
      * @var array
      */
-    private $data;
+    private array $data;
     
     /**
-     * Called when the Exception class is instanciated inside the try/catch
-     * commands, storing the message, the code and additional data to be worked
-     * inside the catch when an exception occurs.
+     * Called when the Exception class is instanciated inside the try/catch commands, storing the
+     * message, the code and additional data to be worked inside the catch when an exception occurs.
      *
-     * @param  string $message          The text message describing the
-     *                                  exception.
+     * @param  string $message                      The text message describing the exception.
      *
-     * @param  string|int $code         The code that defines the exception.
+     * @param  int|string $code                     The code that defines the exception.
      *
-     * @param  array $data              Additional data to be trasmitted to the
-     *                                  catch command.
+     * @param  array $data                          Additional data to be trasmitted to the catch
+     *                                              command.
      *
-     * @param  Exception $previous      The previous exception data.
+     * @param  Exception $previous                  The previous exception data.
      *
      * @return void
      */
-    public function __construct(string $message = '', mixed $code = 0, array $data = [], Exception $previous = null)
+    public function __construct(string $message = '', /*int|string*/ $code = 0, array $data = [], Exception $previous = null)
     {
         parent::__construct($message, 0, $previous);
 
@@ -42,16 +40,14 @@ class Exception extends \Exception
     }
     
     /**
-     * Returns all additional data trasmitted to the exception or a specific key
-     * of the array.
+     * Returns all additional data trasmitted to the exception or a specific key of the array.
      *
-     * @param  string|int|bool $key     Specify a key of the array to be
-     *                                  returned. When false, returns the entire
-     *                                  array.
+     * @param  null|int|string $key                 Specify a key of the array to be returned. When
+     *                                              false, returns the entire array.
      * @return mixed
      */
-    public function getData(mixed $key = false)
+    public function getData(/*null|int|string*/ $key = null)// : mixed
     {
-        return $key === false ? $this->data : $this->data[$key];
+        return $key === null ? $this->data : $this->data[$key];
     }
 }

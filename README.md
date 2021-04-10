@@ -13,10 +13,10 @@ This is an early development project. This means that I can drastically change t
 
 ## Features
 - MySQL **Database** class with multiple features like pagination and storing results;
-- Easy **route control** with multiple parameters and configuration;
-- Easy way to return data by just setting up which renderer will be used (View, JSON, File or Text);
+- Easy **routing control** with multiple parameters and configurations;
+- Easy way to return data by just setting up which *solver* will be used (View, JSON, File or Text);
 - **Redirect** class that can use preconfigured named urls instead of plain urls (easy to change url redirection)
-- **Fetch** class that resolves the compatibility issues with $_POST or $_GET globals when using Javascript Promises calls;
+- **Fetch** class that resolves the compatibility issues with $_POST or $_GET globals when using Javascript Promise calls;
 - **Authentication** class for protected routes;
 - **Permission** class for permission control; 
 - Powerful **Validation** class, with multiple options to validate data;

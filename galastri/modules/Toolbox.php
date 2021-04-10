@@ -2,30 +2,28 @@
 namespace galastri\modules;
 
 use \galastri\core\Debug;
-use \galastri\core\PerformanceAnalysis;
 
 /**
- * This class have many methods that execute functions that can help and to make
- * things easy. It is used by the framework, so, be careful if you will change
- * something here.
+ * This class have many methods that execute functions that can help and to make things easy. It is
+ * used by the framework, so, be careful if you will change something here.
  *
- * However, if you want to import your own functions, consider create your own
- * file inside /app/config/additional-config. All the .php scripts there are
- * automatically loaded with the framework.
+ * However, if you want to import your own functions, consider create your own file inside
+ * /app/config/additional-config. All the .php scripts there are automatically loaded with the
+ * framework.
  */
-final class Functions
+final class Toolbox
 {
     /**
-     * Property that stores if the method will be executed with trace bracklog
-     * active or not. Useful only for debuggin the framework, not for users.
+     * Property that stores if the method will be executed with trace bracklog active or not. Useful
+     * only for debuggin the framework, not for users.
      *
      * @var bool
      */
-    private static $debugTrack = false;
+    private static bool $debugTrack = false;
 
     /**
-     * This is a singleton class, so, the __construct() method is private to
-     * avoid user to instanciate it.
+     * This is a singleton class, so, the __construct() method is private to avoid user to
+     * instanciate it.
      *
      * @return void
      */
@@ -40,10 +38,11 @@ final class Functions
      * Receives a path and converts it to the real path, based on project's
      * root.
      *
-     * @param  string $path             The path which will be converted.
+     * @param  string $path                         The path which will be converted.
+     * 
      * @return string
      */
-    public static function getRealPath(string $path)
+    public static function getRealPath(string $path) : string
     {
         self::checkDebugTrack();
 
@@ -67,13 +66,13 @@ final class Functions
     /**
      * Imports a script file, based on the given path.
      *
-     * @param  string $path             The path of the file to be imported.
+     * @param  string $path                         The path of the file to be imported.
+     * 
      * @return mixed
      */
-    public static function importFile(string $path)
+    public static function importFile(string $path)// : mixed
     {
         self::checkDebugTrack();
-        require(self::getRealPath($path));
         
         return require(self::getRealPath($path));
     }
@@ -81,31 +80,34 @@ final class Functions
     /**
      * Get the contents of a file.
      *
-     * @param  string $path             The path of the file to be got.
-     * @return mixed
+     * @param  string $path                         The path of the file to be got.
+     * 
+     * @return string
      */
-    public static function getFileContents(string $path)
+    public static function getFileContents(string $path) : string
     {
         self::checkDebugTrack();
+
         return file_get_contents(self::getRealPath($path));
     }
     
     /**
-     * A better trim function. Removes many chars from the beginning and end of
-     * the given string.
+     * A better trim function. Removes many chars from the beginning and end of the given string.
      *
-     * @param  string $string            The string that will be trimmed.
+     * @param  string $string                       The string that will be trimmed.
      *
-     * @param  array $chars             List of chars that will be removed from
-     *                                  the string.
+     * @param  string ...$chars                     List of chars that will be removed from the
+     *                                              string.
+     *
      * @return string
      */
-    public static function trim(string $string, ...$chars)
+    public static function trim(string $string, string ...$chars) : string
     {
+        self::checkDebugTrack();
+
         if (empty($chars)) {
             $chars = [' '];
         }
-
 
         foreach ($chars as $char) {
             $char = preg_quote($char);
@@ -118,19 +120,21 @@ final class Functions
     /**
      * Capitalizes a the given string.
      *
-     * @param  string $string           The string that will be converted.
+     * @param  string $string                       The string that will be converted.
      *
-     * @param  bool $asArticle          Capitalize the letters the are in the
-     *                                  beginning of the string and also the
-     *                                  ones next to periods, exclamation and
-     *                                  question marks.
+     * @param  bool $asArticle                      Capitalize the letters the are in the beginning
+     *                                              of the string and also the ones next to periods,
+     *                                              exclamation and question marks.
      *
-     * @param  bool $keepChars          If true, will keep capitalized letters
-     *                                  that already are in the string.
+     * @param  bool $keepChars                      If true, will keep capitalized letters that
+     *                                              already are in the string.
+     *
      * @return string
      */
-    public static function capitalize(string $string, bool $asArticle = false, bool $keepChars = false)
+    public static function capitalize(string $string, bool $asArticle = false, bool $keepChars = false) : string
     {
+        self::checkDebugTrack();
+
         if ($asArticle) {
             $string = preg_split('/(\.|\!|\?)/', $string, -1, PREG_SPLIT_DELIM_CAPTURE);
             $string = array_map('trim', $string);
@@ -141,7 +145,7 @@ final class Functions
         /**
          * An internal method to capitalize only the first letter of the string.
          */
-        $upperCaseFirst = function (string $string, bool $lowerStringEnd = false, string $encoding = 'UTF-8') {
+        $upperCaseFirst = function (string $string, bool $lowerStringEnd = false, string $encoding = 'UTF-8') : string {
             $firstLetter = mb_strtoupper(mb_substr($string, 0, 1, $encoding), $encoding);
             $stringingEnd = '';
             if ($lowerStringEnd) {
@@ -166,49 +170,60 @@ final class Functions
         }
 
         $string = trim(implode('', $string));
+
         return $string;
     }
 
     /**
      * Converts the string to UPPER case.
      *
-     * @param  string $string           The string that will be converted.
+     * @param  string $string                       The string that will be converted.
+     * 
      * @return string
      */
-    public static function upperCase(string $string)
+    public static function upperCase(string $string) : string
     {
+        self::checkDebugTrack();
+
         return mb_convert_case($string, MB_CASE_UPPER, 'UTF-8');
     }
 
     /**
      * Converts the string to lower case.
      *
-     * @param  string $string            The string that will be converted.
+     * @param  string $string                       The string that will be converted.
+     * 
      * @return string
      */
-    public static function lowerCase(string $string)
+    public static function lowerCase(string $string) : string
     {
+        self::checkDebugTrack();
+
         return mb_convert_case($string, MB_CASE_LOWER, 'UTF-8');
     }
     
     /**
      * Converts the string to a specific type.
      *
-     * @param  string $string           The string that will be converted.
+     * @param  string $string                       The string that will be converted.
      *
-     * @param  int $type                The type of conversion. Can be
-     *                                  CAMEL_CASE or PASCAL_CASE.
-     *
-     * @param  string $regex            A custom regex to detect chars that need
-     *                                  to be removed if it is in the string.
+     * @param  int $type                            The type of conversion. Can be CAMEL_CASE or
+     *                                              PASCAL_CASE.
+     * 
      * @return string
      */
-    public static function convertCase(string $string, int $type, string $regex = '/(-|_|\s)/')
+    public static function convertCase(string $string, int $type) : string
     {
-        $string = preg_split($regex, $string);
+        self::checkDebugTrack();
+
+        $string = self::trim($string, '-', '_');
+
+        $string = preg_split('/(-|_|\s)/', $string);
+
         $string = array_map(function ($a) {
-            return self::trim($a, ' ');
+            return self::trim($a, '-', '_');
         }, $string);
+
 
         foreach ($string as $key => &$value) {
             if (empty($value)) {
@@ -231,25 +246,26 @@ final class Functions
 
         return implode($string);
     }
-
      
     /**
-     * This method search for keys in an array that is equal to a string. It has
-     * modifiers to match any key that is equal to the string and keys that
-     * starts or ends with the given string.
+     * This method search for keys in an array that is equal to a string. It has modifiers to match
+     * any key that is equal to the string and keys that starts or ends with the given string.
      *
-     * @param  string $search           The value to be found.
+     * @param  string $search                       The value to be found.
      *
-     * @param  array $array             The array that will be looked.
+     * @param  array $array                         The array that will be looked.
      *
-     * @param  int $matchType           The modifier. Can be MATCH_ANY,
-     *                                  MATCH_START or MATCH_END.
-     * @return array|bool
+     * @param  int $matchType                       The modifier. Can be MATCH_ANY, MATCH_START or
+     *                                              MATCH_END.
+     *
+     * @return array|null
      */
-    public static function arrayKeySearch(string $search, array $array, int $matchType = MATCH_ANY)
+    public static function arrayKeySearch(string $search, array $array, int $matchType = MATCH_ANY) : ?array
     {
+        self::checkDebugTrack();
+
         $arrayKeys = array_keys($array);
-        $found = false;
+        $found = null;
 
         $regex = (function ($a, $b) {
             switch ($b) {
@@ -269,11 +285,22 @@ final class Functions
 
         return $found;
     }
-
-    public static function arrayValueSearch(string $search, array $array, int $matchType = MATCH_ANY)
+    
+    /**
+     * arrayValueSearch
+     *
+     * @param  mixed $search
+     * @param  mixed $array
+     * @param  mixed $matchType
+     * 
+     * @return array|null
+     */
+    public static function arrayValueSearch(string $search, array $array, int $matchType = MATCH_ANY) : ?array
     {
+        self::checkDebugTrack();
+
         $arrayValues = array_values($array);
-        $found = false;
+        $found = null;
 
         $regex = (function ($a, $b) {
             switch ($b) {
@@ -293,9 +320,20 @@ final class Functions
 
         return $found;
     }
-
-    public static function arrayValueExists(string $search, array $array, int $matchType = MATCH_EXACT)
+    
+    /**
+     * arrayValueExists
+     *
+     * @param  mixed $search
+     * @param  mixed $array
+     * @param  mixed $matchType
+     * 
+     * @return bool
+     */
+    public static function arrayValueExists(string $search, array $array, int $matchType = MATCH_EXACT) : bool
     {
+        self::checkDebugTrack();
+
         if (self::arrayValueSearch($search, $array, $matchType)) {
             return true;
         } else {
@@ -304,33 +342,35 @@ final class Functions
     }
         
     /**
-     * Converts a multidimensional array into a simple array, keeping the values
-     * of the keys, but the indexes are lost.
+     * Converts a multidimensional array into a simple array, keeping the values of the keys, but
+     * the indexes are lost.
      *
-     * @param  array $array             The multidimensional array that will be
-     *                                  converted.
+     * @param  array $array                         The multidimensional array that will be
+     *                                              converted.
      *
-     * @param  string|bool|int $onlyKey Specify the index key label that will
-     *                                  have its value returned.
+     * @param  bool|int|string $onlyKey             Specify the index key label that will have its
+     *                                              value returned.
      *
-     *                                  Example:
-     *                                  [0] => ['id' => 1, 'name' => 'John'],
-     *                                  [1] => ['id' => 2, 'name' => 'Paul'],
+     *                                              Example:
+     *                                              [0] => ['id' => 1, 'name' => 'John'],
+     *                                              [1] => ['id' => 2, 'name' => 'Paul'],
      *
-     *                                  If you specify $onlyKey = 'name', the
-     *                                  method will only flat and return keys
-     *                                  with 'name' label:
+     *                                              If you specify $onlyKey = 'name', the
+     *                                              method will only flat and return keys
+     *                                              with 'name' label:
      *
-     *                                  Result:
-     *                                  [0] => 'John',
-     *                                  [1] => 'Paul',
+     *                                              Result:
+     *                                              [0] => 'John',
+     *                                              [1] => 'Paul',
      *
-     * @param  bool $unique             Returns only unique keys.
+     * @param  bool $unique                         Returns only unique keys.
      *
      * @return array
      */
-    public static function flattenArray(array $array, mixed $onlyKey = false, bool $unique = false)
+    public static function flattenArray(array $array, /*bool|int|string*/ $onlyKey = false, bool $unique = false) : array
     {
+        self::checkDebugTrack();
+
         $recursive = function ($array, $onlyKey, $result, $recursive) {
             foreach ($array as $key => $value) {
                 if (gettype($value) === 'array') {
@@ -354,14 +394,14 @@ final class Functions
     }
 
     /**
-     * Creates a file and all the directory path, if the file will be stored
-     * inside a path that doesn't exist.
+     * Creates a file and all the directory path, if the file will be stored inside a path that
+     * doesn't exist.
      *
-     * @param  string $path             The path of the file.
-     * 
+     * @param  string $path                         The path of the file.
+     *
      * @return void
      */
-    public static function createFile(string $path)
+    public static function createFile(string $path) : void
     {
         self::checkDebugTrack();
 
@@ -383,16 +423,18 @@ final class Functions
     /**
      * Insert a string inside a file.
      *
-     * @param  string $path             The path of the file.
-     * 
-     * @param  string $string           The text that will be included inside
-     *                                  the file.
+     * @param  string $path                         The path of the file.
      *
-     * @param  string $method           Read/Write method used by fopen.
+     * @param  string $string                       The text that will be included inside the file.
+     *
+     * @param  string $method                       Read/Write method used by fopen.
+     *
      * @return void
      */
-    public static function fileInsertContent(string $path, string $string, string $method = 'a')
+    public static function fileInsertContent(string $path, string $string, string $method = 'a') : void
     {
+        self::checkDebugTrack();
+
         $filePath = self::getRealPath($path);
 
         $fileOpen = fopen($filePath, $method);
@@ -404,34 +446,35 @@ final class Functions
      * Author: xelozz@gmail.com
      * https://www.php.net/manual/pt_BR/function.memory-get-usage.php#96280
      *
-     * Converts a number of bytes in formatted string showing its value in kb,
-     * mb, etc.
+     * Converts a number of bytes in formatted string showing its value in kb, mb, etc.
      *
-     * @param  int $bytes               Integer in bytes that will be converted.
-     * 
+     * @param  int $bytes                           Integer in bytes that will be converted.
+     *
      * @return string
      */    
-    public static function convertBytes(int $bytes)
+    public static function convertBytes(int $bytes) : string
     {
+        self::checkDebugTrack();
+
         $unit = ['b','kb','mb','gb','tb','pb'];
         return @round($bytes / pow(1024, ($i = floor(log($bytes, 1024)))), 2).' '.$unit[$i];
     }
 
     /**
-     * Author hackan@gmail.com
-     * https://www.php.net/manual/pt_BR/function.uniqid.php#120123
+     * Author hackan@gmail.com https://www.php.net/manual/pt_BR/function.uniqid.php#120123
      *
-     * Creates a random string using hexadecimal numbers and letters, based on
-     * the informed length.
+     * Creates a random string using hexadecimal numbers and letters, based on the informed length.
      *
-     * - IMPORTANT: If you want to create safe unique string, use length greater
-     *   than 15 chars.
+     * - IMPORTANT: If you want to create safe unique string, use length greater than 15 chars.
      *
-     * @param  int $length              Number of chars that the final random
-     *                                  string will have.
+     * @param  int $length                          Number of chars that the final random string
+     *                                              will have.
      * @return string
      */
-    public static function randomBytes(int $length) {
+    public static function randomBytes(int $length) : string
+    {
+        self::checkDebugTrack();
+
         if (function_exists("random_bytes")) {
             $bytes = random_bytes(ceil($length / 2));
         } elseif (function_exists("openssl_random_pseudo_bytes")) {
@@ -445,24 +488,24 @@ final class Functions
     }
         
     /**
-     * Define the $debugTrack as true which allow the next method to be included
-     * in the backlog errors if something wrong occurs.
+     * Define the $debugTrack as true which allow the next method to be included in the backlog
+     * errors if something wrong occurs.
      *
-     * @return void
+     * @return \galastri\modules\Toolbox
      */
-    public static function debugTrack()
+    public static function debugTrack() : string
     {
         self::$debugTrack = true;
         return __CLASS__;
     }
     
     /**
-     * If $debugTrack is true, store a trace of the backlog for debugging. Right
-     * after store the backlog, it turns the $debugTrack off (false).
+     * If $debugTrack is true, store a trace of the backlog for debugging. Right after store the
+     * backlog, it turns the $debugTrack off (false).
      *
      * @return void
      */
-    private static function checkDebugTrack()
+    private static function checkDebugTrack() : void
     {
         if (self::$debugTrack) {
             Debug::setBacklog();

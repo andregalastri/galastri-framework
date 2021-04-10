@@ -1,6 +1,6 @@
 <?php
 
-function jsonDump(...$values)
+function jsonDump(...$values) : void
 {
     $debug = debug_backtrace()[0];
 
@@ -18,7 +18,7 @@ function jsonDump(...$values)
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 }
 
-function varDump(...$values)
+function varDump(...$values) : void
 {
     $debug = debug_backtrace()[0];
 
@@ -53,8 +53,8 @@ function varDump(...$values)
     $varDump = preg_replace('/(=>\n[\s]*)/', ' => ', $varDump);
 
     echo "
-    <style>".file_get_contents(GALASTRI_PROJECT_DIR.'/galastri/misc/styles.css')."</style>
-    <div id='galastriDump'>
+    <style>".file_get_contents(GALASTRI_PROJECT_DIR.'/galastri/misc/vardump.css')."</style>
+    <div id='vardump'>
         <big><b>GALASTRI VARDUMP</b></big>
         <section>
             <b>ORIGIN: </b>$debug[file]<br>
@@ -65,7 +65,7 @@ function varDump(...$values)
     </div>";
 }
 
-function _getVarDump(int $type, ...$values)
+function _getVarDump(int $type, ...$values) : string
 {
     ob_start();
     foreach ($values[0] as $key => $value) {

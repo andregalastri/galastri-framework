@@ -1,17 +1,17 @@
-#galastriDump {
+#vardump {
     font-family: monospace;
     color: #666;
 }
-#galastriDump section {
+#vardump section {
     padding-left: 12px;
     border-left: 4px solid #ddd;
 }
 
-#galastriDump pre {
+#vardump pre {
     color: #999;
 }
 
-#galastriDump .division {
+#vardump .division {
     font-weight: bold;
     color: #ff2bbd;
     border-top: 1px solid #ccc;
@@ -21,7 +21,7 @@
     font-size:10px;
 }
 
-#galastriDump .solid {
+#vardump .solid {
     display:inline-flex;
     align-items:center;
     height:15px;
@@ -29,52 +29,52 @@
     padding:0 3px;
 }
 
-#galastriDump .string.solid {
+#vardump .string.solid {
     background: #4eafff;
     color: #fff;
 }
 
-#galastriDump .string.text {
+#vardump .string.text {
     font-weight: bold;
     color: #1298e8;
 }
 
-#galastriDump .numeric.solid {
+#vardump .numeric.solid {
     background: #ff6c65;
     color: #fff;
 }
 
-#galastriDump .numeric.text {
+#vardump .numeric.text {
     font-weight: bold;
     color: #f14c45;
 }
 
-#galastriDump .bool.solid.true {
+#vardump .bool.solid.true {
     background: #00ad74;
     color: #fff;
 }
 
-#galastriDump .bool.text.true {
+#vardump .bool.text.true {
     font-weight: bold;
     color: #00ad74;
 }
 
-#galastriDump .bool.solid.false {
+#vardump .bool.solid.false {
     background: #ff3287;
     color: #fff;
 }
 
-#galastriDump .bool.text.false {
+#vardump .bool.text.false {
     font-weight: bold;
     color: #ff3287;
 }
 
-#galastriDump .array.solid {
+#vardump .array.solid {
     background: #a684f7;
     color: #fff;
 }
 
-#galastriDump .array-key {
+#vardump .array-key {
     border: 2px solid #ffe000;
     display: inline-flex;
     color: #4f05ff;
@@ -82,7 +82,7 @@
     border-radius: 4px;
 }
 
-#galastriDump .object.solid {
+#vardump .object.solid {
     background: #88cc7a;
     color: #fff;
 }

@@ -3,13 +3,13 @@ return [
     '/' => [
         'solver' => 'view',
 
-        'viewBaseTemplate' => '/app/templates/main.php',
+        'viewTemplateFile' => '5',
 
         '@main' => [
-            'requestMethod' => [
-                'GET' => '@myPutMethod',
-                'POST' => '@myPostMethod',
-            ],
+            // 'requestMethod' => [
+            //     'GET' => '@ayPutMethod',
+            //     'POST' => '@myPostMethod',
+            // ],
         ],
        
         '@not-found' => [

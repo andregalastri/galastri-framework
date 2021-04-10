@@ -2,11 +2,10 @@
 namespace galastri\modules;
 
 use \galastri\core\Debug;
-use \galastri\modules\Functions as F;
+use \galastri\modules\Toolbox;
 
 /**
- * This module class helps to redirect the request to another path or URL, even
- * external.
+ * This module class helps to redirect the request to another path or URL, even external.
  */
 final class Redirect
 {
@@ -15,11 +14,11 @@ final class Redirect
      *
      * @var bool
      */
-    private static $bypassUrlRoot = false;
+    private static bool $bypassUrlRoot = false;
 
     /**
-     * This is a singleton class, so, the __construct() method is private to
-     * avoid user to instanciate it.
+     * This is a singleton class, so, the __construct() method is private to avoid user to
+     * instanciate it.
      *
      * @return void
      */
@@ -28,37 +27,33 @@ final class Redirect
     }
 
     /**
-     * Method that redirects the request. It uses 2 criteria to determine the
-     * path location:
+     * Method that redirects the request. It uses 2 criteria to determine the path location:
      *
-     * 1. If the parameter $location stores a string that matches a key
-     *    configured in \app\config\url-alias.php file, then the value of that
-     *    key will be used as redirect location.
+     * 1. If the parameter $location stores a string that matches a key configured in
+     *    \app\config\url-alias.php file, then the value of that key will be used as redirect
+     *    location.
      *
-     * 2. If the location isn't in the URL Alias configuration, then the string
-     *    itself will be used as redirect location.
+     * 2. If the location isn't in the URL Alias configuration, then the string itself will be used
+     *    as redirect location.
      *
-     * The location value will be tested again. If the start of the string
-     * matches a network protocol, like http or ftp, this means that the
-     * location is external and will be used as is.
+     * The location value will be tested again. If the start of the string matches a network
+     * protocol, like http or ftp, this means that the location is external and will be used as is.
      *
-     * However, if it is not, then it will check if $bypassUrlRoot is true. It
-     * it is NOT, then the urlRoot configuration will be attached in front of
-     * the location. If $bypassUrlRoot is false, then the urlRoot configuration
-     * will be ignored.
+     * However, if it is not, then it will check if $bypassUrlRoot is true. It it is NOT, then the
+     * urlRoot configuration will be attached in front of the location. If $bypassUrlRoot is false,
+     * then the urlRoot configuration will be ignored.
      *
-     * @param  string $location         Internal path, external URL or URL Alias
-     *                                  name set in \app\config\url-alias.php
-     *                                  file.
+     * @param  string $location                     Internal path, external URL or URL Alias name
+     *                                              set in \app\config\url-alias.php file.
      *
-     * @param  mixed $printfData        The location can have %s tags to be
-     *                                  replaced by dynamic values. These array
-     *                                  values will replace every %s tag in the
-     *                                  location string, in order of appearance.
+     * @param  mixed $printfData                    The location can have %s tags to be replaced by
+     *                                              dynamic values. These array values will replace
+     *                                              every %s tag in the location string, in order of
+     *                                              appearance.
      *
      * @return void
      */
-    public static function to(string $location, ...$printfData)
+    public static function to(string $location, string ...$printfData) : void
     {
         Debug::setBacklog(debug_backtrace()[0]);
 
@@ -80,27 +75,26 @@ final class Redirect
     }
     
     /**
-     * Ignores the urlRoot parameter configured in \app\config\project.php file
-     * when the location is internal and uses the exactly location given.
+     * Ignores the urlRoot parameter configured in \app\config\project.php file when the location is
+     * internal and uses the exactly location given.
      *
      * @return \galastri\modules\Redirect
      */
-    public static function bypassUrlRoot()
+    public static function bypassUrlRoot() : string /*self*/
     {
         self::$bypassUrlRoot = true;
         return __CLASS__;
     }
     
     /**
-     * Remove every special char and spaces that can be in the beginning and
-     * ending of a string.
+     * Remove every special char and spaces that can be in the beginning and ending of a string.
      *
-     * @param  string $string           The string to be sanitized.
+     * @param  string $string                       The string to be sanitized.
      *
-     * @return void
+     * @return string
      */
-    private static function sanitize(string $string)
+    private static function sanitize(string $string) : string
     {
-        return F::trim($string, '/?:;<>,.[]{}!@#$%&*()_+-=\\|');
+        return Toolbox::trim($string, '/?:;<>,.[]{}!@#$%&*()_+-=\\|');
     }
 }

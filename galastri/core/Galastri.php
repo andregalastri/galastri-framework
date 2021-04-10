@@ -5,13 +5,11 @@ use \galastri\core\Debug;
 use \galastri\extensions\Exception;
 use \galastri\modules\Redirect;
 use \galastri\modules\PerformanceAnalysis;
-use \galastri\modules\Functions as F;
-
+use \galastri\modules\Toolbox;
 /**
- * This is the main core class. Here we will verify if the classes, methods and
- * parameters defined in the /app/config/routes.php are valid and then call the
- * controller, if it is required, and finally call the solver, a script that
- * will resolve the request and return a type of data.
+ * This is the main core class. Here we will verify if the classes, methods and parameters defined
+ * in the /app/config/routes.php are valid and then call the controller, if it is required, and
+ * finally call the solver, a script that will resolve the request and return a type of data.
  */
 final class Galastri
 {
@@ -27,20 +25,21 @@ final class Galastri
     const CONTROLLER_PARENT_CONSTRUCT_NOT_CALLED = ['CONTROLLER_PARENT_CONSTRUCT_NOT_CALLED', "Controller '%s' has a __construct() method that is not calling the core's __contruct(). Please, add the code parent::__construct(); right after the definition of your controller's __construct()."];
     const VALIDATION_ERROR = ['VALIDATION_ERROR', "The validation '%s' was returned as invalid. The execution cannot proceed."];
 
-    private static $controller = false;
+    private static string $routeControllerName;
+    private static \galastri\core\Controller $routeController;
 
-    private static $checkedOffline = false;
-    private static $checkedForceRedirect = false;
-    private static $checkedRouteNodesExists = false;
-    private static $checkedSolver = false;
-    private static $checkedController = false;
-    private static $checkedControllerExtendsCore = false;
-    private static $checkedControllerMethod = false;
+    private static bool $checkedOffline = false;
+    private static bool $checkedForceRedirect = false;
+    private static bool $checkedRouteNodesExists = false;
+    private static bool $checkedSolver = false;
+    private static bool $checkedController = false;
+    private static bool $checkedControllerExtendsCore = false;
+    private static bool $checkedControllerMethod = false;
 
 
     /**
-     * This is a singleton class, so, the __construct() method is private to
-     * avoid user to instanciate it.
+     * This is a singleton class, so, the __construct() method is private to avoid user to
+     * instanciate it.
      *
      * @return void
      */
@@ -53,27 +52,27 @@ final class Galastri
      *
      * @return void
      */
-    public static function execute()
+    public static function execute() : void
     {
         try {
             /**
-             * Sets the timezone if it is configured in /app/config/project.php. If
-             * it is false, the timezone will not be configured here.
+             * Sets the timezone if it is configured in /app/config/project.php. If it is false, the
+             * timezone will not be configured here.
              */
             if (GALASTRI_PROJECT['timezone']) {
                 date_default_timezone_set(GALASTRI_PROJECT['timezone']);
             }
 
             /**
-             * Starts the resolution of the URL routes and its configurations in the
-             * /app/config/routes.php file.
+             * Starts the resolution of the URL routes and its configurations in
+             * the /app/config/routes.php file.
              */
             Route::resolve();
 
             self::checkOffline();
             self::checkForceRedirect();
-            self::checkRouteNodesExists();
             self::checkSolver();
+            self::checkRouteNodesExists();
             self::checkController();
             self::checkControllerExtendsCore();
             self::checkControllerMethod();
@@ -87,12 +86,12 @@ final class Galastri
     }
     
     /**
-     * Checks if the resolved route has the global parameter 'offline' sets as
-     * true. In this case, a offline message is shown.
+     * Checks if the resolved route has the global parameter 'offline' sets as true. In this case, a
+     * offline message is shown.
      *
      * @return void
      */
-    private static function checkOffline()
+    private static function checkOffline() : void
     {
         Debug::setBacklog()::bypassGenericMessage();
 
@@ -110,12 +109,12 @@ final class Galastri
     }
     
     /**
-     * Checks if the resolved route has the global parameter 'forceRedirect'
-     * sets as true. In this case, the request is redirected.
+     * Checks if the resolved route has the global parameter 'forceRedirect' sets as true. In this
+     * case, the request is redirected.
      *
      * @return void
      */
-    private static function checkForceRedirect()
+    private static function checkForceRedirect() : void
     {
         $forceRedirect = Route::getGlobalParam('forceRedirect');
 
@@ -128,19 +127,19 @@ final class Galastri
     }
     
     /**
-     * Checks if the resolved route has the global parameter 'solver' set
-     * properly. If not, an exception is thrown.
+     * Checks if the resolved route has the global parameter 'solver' set properly. If not, an
+     * exception is thrown.
      *
      * @return void
      */
-    private static function checkSolver()
+    private static function checkSolver() : void
     {
         Debug::setBacklog();
 
         $solver = Route::getGlobalParam('solver');
-
+        
         if ($solver) {
-            if (!F::arrayValueExists($solver, ['view', 'json', 'file', 'text'])) {
+            if (!Toolbox::arrayValueExists($solver, ['view', 'json', 'file', 'text'])) {
                 throw new Exception(self::INVALID_SOLVER[1], self::INVALID_SOLVER[0], [$solver]);
             }
         } else {
@@ -152,15 +151,14 @@ final class Galastri
     }
     
     /**
-     * Checks if the route configuration file has the url nodes informed by the
-     * request. If the child node and parent node exists in the route
-     * configuration, then everything is ok, but if it is not, then the request
-     * is redirected to the 404 page (if the solver is view of file) or return
-     * an exception text (if the solver is json or text).
+     * Checks if the route configuration file has the url nodes informed by the request. If the
+     * child node and parent node exists in the route configuration, then everything is ok, but if
+     * it is not, then the request is redirected to the 404 page (if the solver is view of file) or
+     * return an exception text (if the solver is json or text).
      *
      * @return void
      */
-    private static function checkRouteNodesExists()
+    private static function checkRouteNodesExists() : void
     {
         Debug::setBacklog()::bypassGenericMessage();
 
@@ -171,7 +169,7 @@ final class Galastri
 
         $error = false;
 
-        if ($parentNodeName === false and $childNodeName === false or $childNodeName === false) {
+        if ($parentNodeName === null and $childNodeName === null or $childNodeName === null) {
             if ($solver === 'view' or $solver === 'file') {
                 PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
                 Redirect::to($notFoundRedirect);
@@ -185,12 +183,11 @@ final class Galastri
     }
     
     /**
-     * Checks if there is a class to be called, based on the resolved URL nodes
-     * in \galastri\Core\Route.
+     * Checks if there is a class to be called, based on the resolved URL nodes in
+     * \galastri\Core\Route.
      *
-     * If there is a specific controller set, then that is the controller that
-     * will be call. If not, then the default way to call controllers will be
-     * executed:
+     * If there is a specific controller set, then that is the controller that will be call. If not,
+     * then the default way to call controllers will be executed:
      *
      * \base\namespace\ParentNode
      *
@@ -198,35 +195,34 @@ final class Galastri
      *
      * \base\namespace\ParentNode\ChildNode
      *
-     * The base namespace can be the default \app\controller or a custom one,
-     * set in the route configuration 'namespace' parameter. When this parameter
-     * isn't set, the default one is used.
+     * The base namespace can be the default \app\controller or a custom one, set in the route
+     * configuration 'namespace' parameter. When this parameter isn't set, the default one is used.
      *
      * @return void
      */
-    private static function checkController()
+    private static function checkController() : void
     {
         Debug::setBacklog();
 
         $controllerNamespace = Route::getControllerNamespace();
 
         if ($nodeController = Route::getParentNodeParam('controller')) {
-            $controller = $nodeController;
+            $routeController = $nodeController;
         } else {
             $baseNodeNamespace = Route::getGlobalParam('namespace') ?: self::DEFAULT_NODE_NAMESPACE;
-            $controller = $baseNodeNamespace.implode($controllerNamespace);
+            $routeController = $baseNodeNamespace.implode($controllerNamespace);
         }
 
-        if (class_exists($controller) === false) {
-            $workingController = explode('\\', $controller);
+        if (class_exists($routeController) === false) {
+            $workingController = explode('\\', $routeController);
             
             $notFoundClass = str_replace('\\', '', array_pop($workingController));
             $notFoundNamespace = implode('/', $workingController);
 
-            throw new Exception(self::CONTROLLER_NOT_FOUND[1], self::CONTROLLER_NOT_FOUND[0], [$controller, $notFoundClass, $notFoundNamespace]);
+            throw new Exception(self::CONTROLLER_NOT_FOUND[1], self::CONTROLLER_NOT_FOUND[0], [$routeController, $notFoundClass, $notFoundNamespace]);
         }
 
-        self::$controller = $controller;
+        self::$routeControllerName = $routeController;
         
         self::$checkedController = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
@@ -234,16 +230,17 @@ final class Galastri
 
     
     /**
-     * checkControllerExtendsCore
+     * Checks if the route controller extends the core controller, which is required. If it isn't,
+     * an exception is thrown.
      *
      * @return void
      */
-    private static function checkControllerExtendsCore()
+    private static function checkControllerExtendsCore() : void
     {
         Debug::setBacklog();
 
-        if (is_subclass_of(self::$controller, '\galastri\Core\Controller') === false) {
-            throw new Exception(self::CONTROLLER_DOESNT_EXTENDS_CORE[1], self::CONTROLLER_DOESNT_EXTENDS_CORE[0], [self::$controller]);
+        if (is_subclass_of(self::$routeControllerName, '\galastri\Core\Controller') === false) {
+            throw new Exception(self::CONTROLLER_DOESNT_EXTENDS_CORE[1], self::CONTROLLER_DOESNT_EXTENDS_CORE[0], [self::$routeControllerName]);
         }
         
         self::$checkedControllerExtendsCore = true;
@@ -251,18 +248,19 @@ final class Galastri
     }
     
     /**
-     * checkControllerMethod
+     * Checks if the child node exists as a method inside the route controller. If it isn't, an
+     * exception is thrown.
      *
      * @return void
      */
-    private static function checkControllerMethod()
+    private static function checkControllerMethod() : void
     {
         Debug::setBacklog();
         
         $method = Route::getChildNodeName();
         
-        if (method_exists(self::$controller, $method) === false) {
-            throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$controller, $method]);
+        if (method_exists(self::$routeControllerName, $method) === false) {
+            throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $method]);
         }
 
         self::$checkedControllerMethod = true;
@@ -270,11 +268,12 @@ final class Galastri
     }
     
     /**
-     * callController
+     * Checks if all stages of validation are true and then calls for the controller creating a
+     * instance of it inside the $routeController attribute.
      *
      * @return void
      */
-    private static function callController()
+    private static function callController() : void
     {
         Debug::setBacklog();
 
@@ -308,7 +307,7 @@ final class Galastri
             throw new Exception(self::VALIDATION_ERROR[1], self::VALIDATION_ERROR[0], [$error]);
         }
 
-        self::$controller = new self::$controller();
+        self::$routeController = new self::$routeControllerName();
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
