@@ -53,14 +53,15 @@ final class Debug
     /**
      * Stores the backlog array in the $backlog attribute.
      *
+     * @param array|null $customBacklog             A custom array backlog instead of the
+     *                                              debug_backtrace() one.
      * @return galastri\core\Debug
      */
-    public static function setBacklog() : string /*self*/
+    public static function setBacklog(?array $customBacklog = null) : string /*self*/
     {
         self::$bypassGenericMessage = false;
-        $backlogData = debug_backtrace()[1];
 
-        self::$backlogData[] = $backlogData;
+        self::$backlogData[] = $customBacklog ? $customBacklog[0] : debug_backtrace()[1];
 
         return __CLASS__;
     }
@@ -98,7 +99,10 @@ final class Debug
      */
     public static function getLastBacklog(?string $key = null)// : mixed
     {
-        return $key === null ? self::$backlogData[0] : self::$backlogData[0][$key];
+        $lastBacklog = self::$backlogData;
+        $lastBacklog = array_pop($lastBacklog);
+
+        return $key === null ? $lastBacklog : $lastBacklog[$key];
     }
     
     /**

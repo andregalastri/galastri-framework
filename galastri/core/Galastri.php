@@ -82,11 +82,14 @@ final class Galastri
         } catch (Exception $e) {
             PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
             Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
+        } catch (\Error | \Throwable | \Exception | \TypeError $e) {
+            Debug::setBacklog($e->getTrace());
+            Debug::setError($e->getMessage(), $e->getCode())::print();
         }
     }
     
     /**
-     * Checks if the resolved route has the global parameter 'offline' sets as true. In this case, a
+     * Checks if the resolved route has the route parameter 'offline' sets as true. In this case, a
      * offline message is shown.
      *
      * @return void
@@ -95,10 +98,10 @@ final class Galastri
     {
         Debug::setBacklog()::bypassGenericMessage();
 
-        $offline = Route::getGlobalParam('offline');
+        $offline = Route::getRouteParam('offline');
 
         if ($offline) {
-            $offlineMessage = Route::getGlobalParam('defaultmessage')['offline'];
+            $offlineMessage = Route::getRouteParam('defaultmessage')['offline'];
                 
             throw new Exception($offlineMessage, self::OFFLINE_CODE);
         }
@@ -109,14 +112,14 @@ final class Galastri
     }
     
     /**
-     * Checks if the resolved route has the global parameter 'forceRedirect' sets as true. In this
+     * Checks if the resolved route has the route parameter 'forceRedirect' sets as true. In this
      * case, the request is redirected.
      *
      * @return void
      */
     private static function checkForceRedirect() : void
     {
-        $forceRedirect = Route::getGlobalParam('forceRedirect');
+        $forceRedirect = Route::getRouteParam('forceRedirect');
 
         if ($forceRedirect) {
             Redirect::bypassUrlRoot()::to($forceRedirect);
@@ -127,7 +130,7 @@ final class Galastri
     }
     
     /**
-     * Checks if the resolved route has the global parameter 'solver' set properly. If not, an
+     * Checks if the resolved route has the route parameter 'solver' set properly. If not, an
      * exception is thrown.
      *
      * @return void
@@ -136,7 +139,7 @@ final class Galastri
     {
         Debug::setBacklog();
 
-        $solver = Route::getGlobalParam('solver');
+        $solver = Route::getRouteParam('solver');
         
         if ($solver) {
             if (!Toolbox::arrayValueExists($solver, ['view', 'json', 'file', 'text'])) {
@@ -164,8 +167,8 @@ final class Galastri
 
         $parentNodeName = Route::getParentNodeName();
         $childNodeName = Route::getChildNodeName();
-        $solver = Route::getGlobalParam('solver');
-        $notFoundRedirect = Route::getGlobalParam('notFoundRedirect');
+        $solver = Route::getRouteParam('solver');
+        $notFoundRedirect = Route::getRouteParam('notFoundRedirect');
 
         $error = false;
 
@@ -209,7 +212,7 @@ final class Galastri
         if ($nodeController = Route::getParentNodeParam('controller')) {
             $routeController = $nodeController;
         } else {
-            $baseNodeNamespace = Route::getGlobalParam('namespace') ?: self::DEFAULT_NODE_NAMESPACE;
+            $baseNodeNamespace = Route::getRouteParam('namespace') ?: self::DEFAULT_NODE_NAMESPACE;
             $routeController = $baseNodeNamespace.implode($controllerNamespace);
         }
 

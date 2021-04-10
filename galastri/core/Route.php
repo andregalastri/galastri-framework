@@ -106,7 +106,7 @@ final class Route
     private static array $controllerNamespace = [];
 
     /**
-     * When the global parameter 'namespace' is found in the parent's node, it is set to true
+     * When the route parameter 'namespace' is found in the parent's node, it is set to true
      * temporarily and all data stored in $controllerNamespace attribute is resetted.
      *
      * @var bool
@@ -172,7 +172,7 @@ final class Route
     private static array $dynamicNodeValues = [];
 
     /**
-     * Stores global parameters, inherited by parents nodes.
+     * Stores route parameters, inherited by parents nodes.
      *
      * @key null|string projectTitle                Defines a custom app title instead of the
      *                                              default defined in the \app\config\project.php
@@ -234,7 +234,7 @@ final class Route
      *
      * @var array
     */
-    private static array $globalParam = [
+    private static array $routeParam = [
         'offline' => GALASTRI_PROJECT['offline'],
         'projectTitle' => GALASTRI_PROJECT['projectTitle'],
         'pageTitle' => null,
@@ -250,7 +250,7 @@ final class Route
         'defaultmessage' => GALASTRI_PROJECT['defaultmessage'],
     ];
 
-    const GLOBAL_PARAM_VALID_TYPES = [
+    const ROUTE_PARAM_VALID_TYPES = [
         'offline' => ['boolean'],
         'projectTitle' => ['NULL', 'string'],
         'pageTitle' => ['NULL', 'string'],
@@ -265,6 +265,8 @@ final class Route
         'viewBaseFolder' => ['NULL', 'string'],
         'defaultmessage' => ['array'],
     ];
+
+
 
     /**
      * This is a singleton class, so, the __construct() method is private to avoid user to
@@ -304,11 +306,14 @@ final class Route
             //     /*4*/ self::$childNodeParam,
             //     /*5*/ self::$urlParam,
             //     /*6*/ self::$dynamicNodeValues,
-            //     /*7*/ self::$globalParam
+            //     /*7*/ self::$routeParam
             // );
         } catch (Exception $e) {
             PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
             Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
+        } catch (\Error | \Throwable | \Exception | \TypeError $e) {
+            Debug::setBacklog($e->getTrace());
+            Debug::setError($e->getMessage(), $e->getCode())::print();
         }
     }
 
@@ -394,7 +399,7 @@ final class Route
             array_shift(self::$urlWorkingArray);
             self::$nodeWorkingArray = $routeNodes[$key];
             self::resolveParentNodeParam($routeNodes[$key]);
-            self::resolveGlobalParam($routeNodes[$key]);
+            self::resolveRouteParam($routeNodes[$key]);
             self::addControllerNamespacePath($key);
             self::resolveRouteNodes($routeNodes[$key]);
             return true;
@@ -470,10 +475,10 @@ final class Route
     }
 
     /**
-     * Searchs in the found node if there is any parent global parameter. This parameters are
+     * Searchs in the found node if there is any parent route parameter. This parameters are
      * inherited by the subsequent nodes. If there is any, its value is overwrited by the new value.
      *
-     * NOTE: When the global parameter 'namespace' exists, a new namespace needs to be set as
+     * NOTE: When the route parameter 'namespace' exists, a new namespace needs to be set as
      * starting point from the node. This means that all the stored $controllerNamespace attribute
      * needs to restart. That is why there is a test to check if the parameter 'namespaces' exists.
      *
@@ -482,15 +487,15 @@ final class Route
      *
      * @return void
      */
-    private static function resolveGlobalParam(array $nodeFound) : void
+    private static function resolveRouteParam(array $nodeFound) : void
     {
-        foreach (self::$globalParam as $param => &$value) {
+        foreach (self::$routeParam as $param => &$value) {
             if (array_key_exists($param, $nodeFound)) {
                 if ($param === 'namespace') {
                     self::$resetNamespace = true;
                 }
 
-                $value = self::hasValidType($nodeFound, $param, self::GLOBAL_PARAM_VALID_TYPES);
+                $value = self::hasValidType($nodeFound, $param, self::ROUTE_PARAM_VALID_TYPES);
             }
         }
         unset($value);
@@ -586,7 +591,7 @@ final class Route
                 }
             }
 
-            self::resolveGlobalParam($childNodeParam);
+            self::resolveRouteParam($childNodeParam);
         } else {
             self::$childNodeName = null;
         }
@@ -648,12 +653,10 @@ final class Route
     }
     
     /**
-     * Gets all the remaining URL nodes and stores in the $urlParam attributes
-     * since there is a 'parameters' parameter configured in the routing
-     * configuration.
+     * Gets all the remaining URL nodes and stores in the $urlParam attributes since there is a
+     * 'parameters' parameter configured in the routing configuration.
      *
-     * There are two ways to configure parameters in the routing configuration
-     * file:
+     * There are two ways to configure parameters in the routing configuration file:
      *
      *      'parameters' => '/tag1/tag2',
      *
@@ -661,8 +664,8 @@ final class Route
      *
      *      'parameters' => ['tag1', 'tag2'],
      *
-     * The tag name will be stored as a key label on the $urlParam attribute,
-     * while its value in the url will be stored as value of this key.
+     * The tag name will be stored as a key label on the $urlParam attribute, while its value in the
+     * url will be stored as value of this key.
      *
      * @return void
      */
@@ -764,14 +767,14 @@ final class Route
     }
         
     /**
-     * Return the $globalParam attribute.
+     * Return the $routeParam attribute.
      *
      * @param  null|string $key                     Specify which key will be returned.
      *
      * @return mixed
      */
-    public static function getGlobalParam(?string $key = null)// : mixed
+    public static function getRouteParam(?string $key = null)// : mixed
     {
-        return $key === null ? self::$globalParam : self::$globalParam[$key];
+        return $key === null ? self::$routeParam : self::$routeParam[$key];
     }
 }
