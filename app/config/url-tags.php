@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file configures pre defined URLs, tagging them with labels that
  * identifies them. Any redirection parameter, function or class in the

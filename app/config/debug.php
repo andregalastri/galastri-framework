@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file configures the debug status of the framework. Useful while
  * developing, but turn all them to false when in production because any error

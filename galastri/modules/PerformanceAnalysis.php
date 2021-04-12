@@ -1,4 +1,5 @@
 <?php
+
 namespace galastri\modules;
 
 use \galastri\modules\Toolbox;
@@ -48,7 +49,7 @@ use \galastri\modules\Toolbox;
 final class PerformanceAnalysis
 {
     const LOG_DIRECTORY_PATH = '/logs/performance-analysis/';
-    
+
     /**
      * Stores the status when begin() method is called. When true, then the measures are active and
      * the data is being collected.
@@ -56,35 +57,35 @@ final class PerformanceAnalysis
      * @var array
      */
     private static array $status = [];
-    
+
     /**
      * Stores the start time of the execution that will be compared when the measure stops.
      *
      * @var array
      */
     private static array $microtimeStart = [];
-        
+
     /**
      * Stores the time when the execution stops and will be compared with the start time.
      *
      * @var array
      */
     private static array $microtimeStop = [];
-        
+
     /**
      * Stores the cumulative execution time.
      *
      * @var array
      */
     private static array $cumulativeTime = [];
-        
+
     /**
      * Stores the flushed data, created to be stored in the log file.
      *
      * @var array
      */
     private static array $flushedData = [];
-        
+
     /**
      * Stores the last label that was created. Helps to avoid informing the label of the analysis to
      * all methods.
@@ -102,7 +103,7 @@ final class PerformanceAnalysis
     private function __construct()
     {
     }
-    
+
     /**
      * Sets the start of the measures and also starts the microtimer. The microtime is the current
      * time when the execution starts in milliseconds. When a flush() method is executed, this start
@@ -116,7 +117,7 @@ final class PerformanceAnalysis
      *
      * @return void
      */
-    public static function begin(string $label, bool $status = true) : void
+    public static function begin(string $label, bool $status = true): void
     {
         self::$status[$label] = $status;
 
@@ -125,7 +126,7 @@ final class PerformanceAnalysis
             self::microtimeStart($label);
         }
     }
-    
+
     /**
      * Creates a section in the log file with the data measured from the start to this point. This
      * data is stored inside an array that will be processed when it is inserted inside the log
@@ -138,7 +139,7 @@ final class PerformanceAnalysis
      *
      * @return \galastri\modules\PerformanceAnalysis
      */
-    public static function flush(string $label = '') : string
+    public static function flush(string $label = ''): string
     {
         $label = $label ?: self::$lastLabel;
 
@@ -152,13 +153,13 @@ final class PerformanceAnalysis
 
             self::$flushedData[$label][] = [
                 str_replace(GALASTRI_PROJECT_DIR, '', $backlogData['file']),
-                '    Requested URI .......... '.$_SERVER['REQUEST_URI'],
-                '    Request Method ......... '.$_SERVER['REQUEST_METHOD'],
-                '    Execution .............. '.($backlogData['class'] ?? 'root').($backlogData['type'] ?? '..').($backlogData['function'] ?? 'root'),
-                '    Memory Usage (Current).. '.Toolbox::convertBytes(memory_get_usage()),
-                '    Memory Usage (Peak)..... '.Toolbox::convertBytes(memory_get_peak_usage()),
-                '    Execution Time ......... '.$executionTime.' ms',
-                '    Cumulative Time ........ '.self::$cumulativeTime[$label].' ms',
+                '    Requested URI .......... ' . $_SERVER['REQUEST_URI'],
+                '    Request Method ......... ' . $_SERVER['REQUEST_METHOD'],
+                '    Execution .............. ' . ($backlogData['class'] ?? 'root') . ($backlogData['type'] ?? '..') . ($backlogData['function'] ?? 'root'),
+                '    Memory Usage (Current).. ' . Toolbox::convertBytes(memory_get_usage()),
+                '    Memory Usage (Peak)..... ' . Toolbox::convertBytes(memory_get_peak_usage()),
+                '    Execution Time ......... ' . $executionTime . ' ms',
+                '    Cumulative Time ........ ' . self::$cumulativeTime[$label] . ' ms',
             ];
 
             self::microtimeStart($label);
@@ -166,7 +167,7 @@ final class PerformanceAnalysis
 
         return __CLASS__;
     }
-    
+
     /**
      * Stores the collected data inside the log file. All the data is converted to a string and it
      * is stored in the bottom of the file. The name of the file is the label that identifies the
@@ -176,31 +177,31 @@ final class PerformanceAnalysis
      *
      * @return void
      */
-    public static function store(string $label = '') : void
+    public static function store(string $label = ''): void
     {
         $label = $label ?: self::$lastLabel;
 
         if (self::$status[$label]) {
             foreach (self::$flushedData[$label] as $key => &$data) {
                 $key++;
-                $data = '  '.$key.'. '.implode(PHP_EOL, $data).PHP_EOL.PHP_EOL;
+                $data = '  ' . $key . '. ' . implode(PHP_EOL, $data) . PHP_EOL . PHP_EOL;
             }
 
-            $flushedData  = '-------------- GALASTRI PERFORMANCE ANALYSIS ['.date('Y-m-d   H:i:s').'] --------------';
-            $flushedData .= str_repeat(PHP_EOL, 3).implode(PHP_EOL, self::$flushedData[$label]);
+            $flushedData  = '-------------- GALASTRI PERFORMANCE ANALYSIS [' . date('Y-m-d   H:i:s') . '] --------------';
+            $flushedData .= str_repeat(PHP_EOL, 3) . implode(PHP_EOL, self::$flushedData[$label]);
             $flushedData .= 'END';
             $flushedData .= str_repeat(PHP_EOL, 4);
 
             $filename = $label === PERFORMANCE_ANALYSIS_LABEL ? '' : preg_replace('/[^a-zA-Z0-9]+/', '', $label);
-            $filename = $filename.date('Ymd-H').'.log';
+            $filename = $filename . date('Ymd-H') . '.log';
 
-            Toolbox::createFile(self::LOG_DIRECTORY_PATH.$filename);
-            Toolbox::fileInsertContent(self::LOG_DIRECTORY_PATH.$filename, $flushedData);
+            Toolbox::createFile(self::LOG_DIRECTORY_PATH . $filename);
+            Toolbox::fileInsertContent(self::LOG_DIRECTORY_PATH . $filename, $flushedData);
 
             self::reset($label);
         }
     }
-    
+
     /**
      * Starts the microtimer to define when the execution started.
      *
@@ -208,13 +209,13 @@ final class PerformanceAnalysis
      * 
      * @return void
      */
-    private static function microtimeStart(string $label) : void
+    private static function microtimeStart(string $label): void
     {
         if (self::$status[$label]) {
             self::$microtimeStart[$label] = microtime(true);
         }
     }
-    
+
     /**
      * Stops the microtimer to define when the execution stoped.
      *
@@ -222,13 +223,13 @@ final class PerformanceAnalysis
      * 
      * @return void
      */
-    private static function microtimeStop(string $label) : void
+    private static function microtimeStop(string $label): void
     {
         if (self::$status[$label]) {
             self::$microtimeStop[$label] = microtime(true);
         }
     }
-    
+
     /**
      * Reset all the data of an analysis.
      *
@@ -236,7 +237,7 @@ final class PerformanceAnalysis
      * 
      * @return void
      */
-    private static function reset(string $label) : void
+    private static function reset(string $label): void
     {
         self::$flushedData[$label] = [];
         self::$cumulativeTime[$label] = 0;

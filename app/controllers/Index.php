@@ -1,4 +1,5 @@
 <?php
+
 namespace app\controllers;
 
 /**
@@ -27,34 +28,34 @@ namespace app\controllers;
  * configuration, with 'requestMethod' paramenter.
  */
 class Index extends \galastri\core\Controller
-{    
+{
     /**
      * Optional method that is executed before the route method.
      *
      * @return array
      */
-    protected function __doBefore() : array
+    protected function __doBefore(): array
     {
         return [];
     }
-    
+
     /**
      * Main method that is required in all route controllers. This method refers to the index of the
      * route.
      *
      * @return array
      */
-    protected function main() : array
+    protected function main(): array
     {
         return [];
     }
-    
+
     /**
      * Optional method that is executed after the route method.
      *
      * @return void
      */
-    protected function __doAfter() : array
+    protected function __doAfter(): array
     {
         return [];
     }

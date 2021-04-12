@@ -1,4 +1,5 @@
 <?php
+
 namespace galastri\core;
 
 use \galastri\core\Debug;
@@ -6,6 +7,7 @@ use \galastri\extensions\Exception;
 use \galastri\modules\Redirect;
 use \galastri\modules\PerformanceAnalysis;
 use \galastri\modules\Toolbox;
+
 /**
  * This is the main core class. Here we will verify if the classes, methods and parameters defined
  * in the /app/config/routes.php are valid and then call the controller, if it is required, and
@@ -52,7 +54,7 @@ final class Galastri
      *
      * @return void
      */
-    public static function execute() : void
+    public static function execute(): void
     {
         try {
             /**
@@ -87,14 +89,14 @@ final class Galastri
             Debug::setError($e->getMessage(), $e->getCode())::print();
         }
     }
-    
+
     /**
      * Checks if the resolved route has the route parameter 'offline' sets as true. In this case, a
      * offline message is shown.
      *
      * @return void
      */
-    private static function checkOffline() : void
+    private static function checkOffline(): void
     {
         Debug::setBacklog()::bypassGenericMessage();
 
@@ -102,7 +104,7 @@ final class Galastri
 
         if ($offline) {
             $offlineMessage = Route::getRouteParam('defaultmessage')['offline'];
-                
+
             throw new Exception($offlineMessage, self::OFFLINE_CODE);
         }
 
@@ -110,37 +112,37 @@ final class Galastri
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-    
+
     /**
      * Checks if the resolved route has the route parameter 'forceRedirect' sets as true. In this
      * case, the request is redirected.
      *
      * @return void
      */
-    private static function checkForceRedirect() : void
+    private static function checkForceRedirect(): void
     {
         $forceRedirect = Route::getRouteParam('forceRedirect');
 
         if ($forceRedirect) {
             Redirect::bypassUrlRoot()::to($forceRedirect);
         }
-        
+
         self::$checkedForceRedirect = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-    
+
     /**
      * Checks if the resolved route has the route parameter 'solver' set properly. If not, an
      * exception is thrown.
      *
      * @return void
      */
-    private static function checkSolver() : void
+    private static function checkSolver(): void
     {
         Debug::setBacklog();
 
         $solver = Route::getRouteParam('solver');
-        
+
         if ($solver) {
             if (!Toolbox::arrayValueExists($solver, ['view', 'json', 'file', 'text'])) {
                 throw new Exception(self::INVALID_SOLVER[1], self::INVALID_SOLVER[0], [$solver]);
@@ -148,11 +150,11 @@ final class Galastri
         } else {
             throw new Exception(self::UNDEFINED_SOLVER[1], self::UNDEFINED_SOLVER[0]);
         }
-        
+
         self::$checkedRouteNodesExists = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-    
+
     /**
      * Checks if the route configuration file has the url nodes informed by the request. If the
      * child node and parent node exists in the route configuration, then everything is ok, but if
@@ -161,7 +163,7 @@ final class Galastri
      *
      * @return void
      */
-    private static function checkRouteNodesExists() : void
+    private static function checkRouteNodesExists(): void
     {
         Debug::setBacklog()::bypassGenericMessage();
 
@@ -180,11 +182,11 @@ final class Galastri
                 throw new Exception(self::ERROR_404[1], self::ERROR_404[0], [$solver]);
             }
         }
-        
+
         self::$checkedSolver = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-    
+
     /**
      * Checks if there is a class to be called, based on the resolved URL nodes in
      * \galastri\Core\Route.
@@ -203,7 +205,7 @@ final class Galastri
      *
      * @return void
      */
-    private static function checkController() : void
+    private static function checkController(): void
     {
         Debug::setBacklog();
 
@@ -213,12 +215,12 @@ final class Galastri
             $routeController = $nodeController;
         } else {
             $baseNodeNamespace = Route::getRouteParam('namespace') ?: self::DEFAULT_NODE_NAMESPACE;
-            $routeController = $baseNodeNamespace.implode($controllerNamespace);
+            $routeController = $baseNodeNamespace . implode($controllerNamespace);
         }
 
         if (class_exists($routeController) === false) {
             $workingController = explode('\\', $routeController);
-            
+
             $notFoundClass = str_replace('\\', '', array_pop($workingController));
             $notFoundNamespace = implode('/', $workingController);
 
@@ -226,42 +228,42 @@ final class Galastri
         }
 
         self::$routeControllerName = $routeController;
-        
+
         self::$checkedController = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
-    
+
     /**
      * Checks if the route controller extends the core controller, which is required. If it isn't,
      * an exception is thrown.
      *
      * @return void
      */
-    private static function checkControllerExtendsCore() : void
+    private static function checkControllerExtendsCore(): void
     {
         Debug::setBacklog();
 
         if (is_subclass_of(self::$routeControllerName, '\galastri\Core\Controller') === false) {
             throw new Exception(self::CONTROLLER_DOESNT_EXTENDS_CORE[1], self::CONTROLLER_DOESNT_EXTENDS_CORE[0], [self::$routeControllerName]);
         }
-        
+
         self::$checkedControllerExtendsCore = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-    
+
     /**
      * Checks if the child node exists as a method inside the route controller. If it isn't, an
      * exception is thrown.
      *
      * @return void
      */
-    private static function checkControllerMethod() : void
+    private static function checkControllerMethod(): void
     {
         Debug::setBacklog();
-        
+
         $method = Route::getChildNodeName();
-        
+
         if (method_exists(self::$routeControllerName, $method) === false) {
             throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $method]);
         }
@@ -269,14 +271,14 @@ final class Galastri
         self::$checkedControllerMethod = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-    
+
     /**
      * Checks if all stages of validation are true and then calls for the controller creating a
      * instance of it inside the $routeController attribute.
      *
      * @return void
      */
-    private static function callController() : void
+    private static function callController(): void
     {
         Debug::setBacklog();
 
@@ -302,7 +304,7 @@ final class Galastri
             if (!self::$checkedControllerMethod) {
                 return 'checkedControllerMethod';
             }
-            
+
             return false;
         })();
 

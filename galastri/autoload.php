@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Defines the function that will seek for the PHP class file when a class is called.
  *
@@ -18,7 +19,7 @@
  * namespace \app\controller\MyRoute;
  */
 spl_autoload_register(function ($className) {
-    $classFile = GALASTRI_PROJECT_DIR.'/'.str_replace('\\', '/', $className).'.php';
+    $classFile = GALASTRI_PROJECT_DIR . '/' . str_replace('\\', '/', $className) . '.php';
 
     if (file_exists($classFile)) {
         require_once($classFile);

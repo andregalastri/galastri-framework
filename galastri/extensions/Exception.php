@@ -1,4 +1,5 @@
 <?php
+
 namespace galastri\extensions;
 
 /**
@@ -15,7 +16,7 @@ class Exception extends \Exception
      * @var array
      */
     private array $data;
-    
+
     /**
      * Called when the Exception class is instanciated inside the try/catch commands, storing the
      * message, the code and additional data to be worked inside the catch when an exception occurs.
@@ -38,7 +39,7 @@ class Exception extends \Exception
         $this->code = $code;
         $this->data = $data;
     }
-    
+
     /**
      * Returns all additional data trasmitted to the exception or a specific key of the array.
      *
@@ -46,7 +47,7 @@ class Exception extends \Exception
      *                                              false, returns the entire array.
      * @return mixed
      */
-    public function getData(/*null|int|string*/ $key = null)// : mixed
+    public function getData(/*null|int|string*/$key = null) // : mixed
     {
         return $key === null ? $this->data : $this->data[$key];
     }

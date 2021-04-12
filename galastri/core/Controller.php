@@ -1,4 +1,5 @@
 <?php
+
 namespace galastri\core;
 
 use \galastri\core\Route;
@@ -29,28 +30,28 @@ abstract class Controller
      * @var array
      */
     private array $doBeforeData = [];
-        
+
     /**
      * Stores the returned data of the method __doAfter(), if it exists in the route controller.
      *
      * @var array
      */
     private array $doAfterData = [];
-        
+
     /**
      * Stores the returned data of the route method.
      *
      * @var array
      */
-    private array $controllerData = [];  
-      
+    private array $controllerData = [];
+
     /**
      * Stores the returned data of the request method, if it exists in the route configuration
      * parameter 'requestMethod'.
      *
      * @var array
      */
-    private array $requestMethodData = [];   
+    private array $requestMethodData = [];
 
     /**
      * Stores a merged array of $doBeforeData, $doAfterData, $controllerData and $requestMethodData
@@ -59,7 +60,7 @@ abstract class Controller
      * @var array
      */
     private array $resultData = [];
-        
+
     /**
      * Sets if the core controller will proceed to call other methods (false) or it will stop in the
      * current method and conclude the execution (true).
@@ -67,84 +68,84 @@ abstract class Controller
      * @var bool
      */
     private bool $stopControllerFlag = false;
-    
+
     /**
      * Stores the projectTitle route parameter.
      *
      * @var null|string
      */
     private ?string $projectTitle;
-        
+
     /**
      * Stores the pageTitle route parameter.
      *
      * @var null|string
      */
     private ?string $pageTitle;
-        
+
     /**
      * Stores the authTag route parameter.
      *
      * @var null|string
      */
     private ?string $authTag;
-        
+
     /**
      * Stores the authFailRedirect route parameter.
      *
      * @var null|string
      */
     private ?string $authFailRedirect;
-        
+
     /**
      * Stores the solver route parameter.
      *
      * @var string
      */
     private string $solver;
-        
+
     /**
      * Stores the viewTemplateFile route parameter.
      *
      * @var null|string
      */
     private ?string $viewTemplateFile;
-        
+
     /**
      * Stores the viewBaseFolder route parameter.
      *
      * @var null|string
      */
     private ?string $viewBaseFolder;
-        
+
     /**
      * Stores the fileDownloadable route parameter.
      *
      * @var bool
      */
     private bool $fileDownloadable;
-        
+
     /**
      * Stores the fileBaseFolder route parameter.
      *
      * @var null|string
      */
     private ?string $fileBaseFolder;
-        
+
     /**
      * Stores the viewFilePath route parameter.
      *
      * @var null|string
      */
     private ?string $viewFilePath;
-        
+
     /**
      * Stores the requestMethod route parameter.
      *
      * @var array
      */
     private array $requestMethod;
-    
+
     /**
      * Any route controller needs to have a main() method. This abstract method here makes it a
      * requirement that all child class need to declare.
@@ -152,7 +153,27 @@ abstract class Controller
      * @return array
      */
     abstract protected function main();
-    
+
+    /**
+     * This is just a declaration of the method __doBefore(). This method will be override by the
+     * route controller, when it is needed to run a code before the route method.
+     *
+     * @return array
+     */
+    protected function __doBefore()
+    {
+    }
+
+    /**
+     * This is just a declaration of the method __doAfter(). This method will be override by the
+     * route controller, when it is needed to run a code after the route method.
+     *
+     * @return array
+     */
+    protected function __doAfter()
+    {
+    }
+
     /**
      * When the route class is instanciated, the __construct() method will do some jobs.
      *
@@ -191,7 +212,7 @@ abstract class Controller
             }
         }
     }
-    
+
     /**
      * Gets all pertinent route parameters and stores it in attributes owned by this class.
      * The parameters stored are:
@@ -212,7 +233,7 @@ abstract class Controller
      *
      * @return void
      */
-    private function setInitialParameterValues() : void
+    private function setInitialParameterValues(): void
     {
         $childNodeParam = Route::getChildNodeParam();
         $routeParam = Route::getRouteParam();
@@ -229,7 +250,7 @@ abstract class Controller
         $this->setViewTemplateFile($routeParam['viewTemplateFile']);
         $this->setViewBaseFolder($routeParam['viewBaseFolder']);
     }
-    
+
     /**
      * This method checks if the method __doBefore() exists in the route controller. If it is true,
      * then the method is called.
@@ -238,9 +259,10 @@ abstract class Controller
      * set some data or object that will be used before any request.
      * 
      * The __doBefore() must return an array. If not, it will throw an exception.
+     * 
      * @return void
      */
-    private function callDoBefore() : void
+    private function callDoBefore(): void
     {
         if (method_exists($this, '__doBefore')) {
             $this->doBeforeData = $this->__doBefore();
@@ -248,7 +270,7 @@ abstract class Controller
             PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
         }
     }
-    
+
     /**
      * This method calls the route method define as child note in the \galastri\core\Route.
      * 
@@ -259,14 +281,14 @@ abstract class Controller
      *
      * @return void
      */
-    private function callControllerMethod() : void
+    private function callControllerMethod(): void
     {
         if (!$this->stopControllerFlag) {
             $controllerMethod = Route::getChildNodeName();
             $serverRequestMethod = Toolbox::lowerCase($_SERVER['REQUEST_METHOD']);
 
             $this->controllerData = $this->$controllerMethod();
-            
+
             if (Route::getChildNodeParam('requestMethod') and !$this->stopControllerFlag) {
                 $requestMethod = Route::getChildNodeParam('requestMethod')[$serverRequestMethod];
                 $this->requestMethodData = $this->$requestMethod();
@@ -275,7 +297,7 @@ abstract class Controller
             PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
         }
     }
-    
+
     /**
      * This method checks if the method __doAfter() exists in the route controller. If it is true,
      * then the method is called.
@@ -286,24 +308,24 @@ abstract class Controller
      * The __doAfter() must return an array. If not, it will throw an exception.
      * @return void
      */
-    private function callDoAfter() : void
+    private function callDoAfter(): void
     {
         if (!$this->stopControllerFlag) {
             if (method_exists($this, '__doBefore')) {
                 $this->doAfterData = $this->__doAfter();
-    
+
                 PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
             }
         }
     }
-    
+
     /**
      * This method merges all the returning arrays of the controller into one array and stores it in
      * the $resultData attribute.
      * 
      * @return void
      */
-    private function mergeResults() : void
+    private function mergeResults(): void
     {
         $this->resultData = array_merge(
             $this->doBeforeData,
@@ -314,34 +336,34 @@ abstract class Controller
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-    
+
     /**
      * This sets the $stopControllerFlag atribute as true, to define that the controller needs to
      * stop proceeding on the execution of the controller chain calls.
      *
      * @return void
      */
-    final protected function stopControllerFlag() : void
+    final protected function stopControllerFlag(): void
     {
         $this->stopControllerFlag = true;
     }
-    
+
     /**
      * Returns the data processed by the __doBefore() method.
      *
      * @return void
      */
-    final protected function getDoBeforeData() : array
+    final protected function getDoBeforeData(): array
     {
         return $this->doBeforeData;
     }
-    
+
     /**
      * Returns the data processed by the route controller method.
      *
      * @return void
      */
-    final protected function getControllerData() : array
+    final protected function getControllerData(): array
     {
         return $this->controllerData;
     }
@@ -354,21 +376,21 @@ abstract class Controller
      *
      * @return void
      */
-    final protected function setFileDownloadable(bool $fileDownloadable) : void
+    final protected function setFileDownloadable(bool $fileDownloadable): void
     {
         $this->fileDownloadable = $fileDownloadable;
     }
-        
+
     /**
      * Returns the fileDownloadable parameter value.
      *
      * @return bool
      */
-    final protected function getFileDownloadable() : bool
+    final protected function getFileDownloadable(): bool
     {
         return $this->fileDownloadable;
     }
-            
+
     /**
      * Overwrites the actual value of fileBaseFolder parameter set in the route configuration.
      *
@@ -377,21 +399,21 @@ abstract class Controller
      * 
      * @return void
      */
-    final protected function setFileBaseFolder(?string $fileBaseFolder) : void
+    final protected function setFileBaseFolder(?string $fileBaseFolder): void
     {
         $this->fileBaseFolder = $fileBaseFolder;
     }
-        
+
     /**
      * Returns the fileBaseFolder parameter value.
      *
      * @return null|string
      */
-    final protected function getFileBaseFolder() : ?string
+    final protected function getFileBaseFolder(): ?string
     {
         return $this->fileBaseFolder;
     }
-            
+
     /**
      * Overwrites the actual value of viewFilePath parameter set in the route configuration.
      *
@@ -400,21 +422,21 @@ abstract class Controller
      * 
      * @return void
      */
-    final protected function setViewFilePath(?string $viewFilePath) : void
+    final protected function setViewFilePath(?string $viewFilePath): void
     {
         $this->viewFilePath = $viewFilePath;
     }
-        
+
     /**
      * Returns the viewFilePath parameter value.
      *
      * @return null|string
      */
-    final protected function getViewFilePath() : ?string
+    final protected function getViewFilePath(): ?string
     {
         return $this->viewFilePath;
     }
-    
+
     /**
      * Overwrites the actual value of projectTitle parameter set in the project configuration or in
      * the route configuration.
@@ -424,21 +446,21 @@ abstract class Controller
      * 
      * @return void
      */
-    final protected function setProjectTitle(?string $projectTitle) : void
+    final protected function setProjectTitle(?string $projectTitle): void
     {
         $this->projectTitle = $projectTitle;
     }
-        
+
     /**
      * Returns the projectTitle parameter value.
      *
      * @return null|string
      */
-    final protected function getProjectTitle() : ?string
+    final protected function getProjectTitle(): ?string
     {
         return $this->projectTitle;
     }
-    
+
     /**
      * Overwrites the actual value of pageTitle parameter set in the route configuration.
      *
@@ -447,21 +469,21 @@ abstract class Controller
      * 
      * @return void
      */
-    final protected function setPageTitle(?string $pageTitle) : void
+    final protected function setPageTitle(?string $pageTitle): void
     {
         $this->pageTitle = $pageTitle;
     }
-        
+
     /**
      * Returns the pageTitle parameter value.
      *
      * @return null|string
      */
-    final protected function getPageTitle() : ?string
+    final protected function getPageTitle(): ?string
     {
         return $this->pageTitle;
     }
-        
+
     /**
      * Overwrites the actual value of authTag parameter set in the route configuration.
      *
@@ -470,21 +492,21 @@ abstract class Controller
      * 
      * @return void
      */
-    final protected function setAuthTag(?string $authTag) : void
+    final protected function setAuthTag(?string $authTag): void
     {
         $this->authTag = $authTag;
     }
-        
+
     /**
      * Returns the authTag parameter value.
      *
      * @return null|string
      */
-    final protected function getAuthTag() : ?string
+    final protected function getAuthTag(): ?string
     {
         return $this->authTag;
     }
-        
+
     /**
      * Overwrites the actual value of authFailRedirect parameter set in the route configuration.
      *
@@ -493,21 +515,21 @@ abstract class Controller
      * 
      * @return void
      */
-    final protected function setAuthFailRedirect(?string $authFailRedirect) : void
+    final protected function setAuthFailRedirect(?string $authFailRedirect): void
     {
         $this->authFailRedirect = $authFailRedirect;
     }
-        
+
     /**
      * Returns the authFailRedirect parameter value.
      *
      * @return null|string
      */
-    final protected function getAuthFailRedirect() : ?string
+    final protected function getAuthFailRedirect(): ?string
     {
         return $this->authFailRedirect;
     }
-        
+
     /**
      * Overwrites the actual value of solver parameter set in the route configuration.
      *
@@ -516,21 +538,21 @@ abstract class Controller
      * 
      * @return void
      */
-    final protected function setSolver(string $solver) : void
+    final protected function setSolver(string $solver): void
     {
         $this->solver = $solver;
     }
-        
+
     /**
      * Returns the solver parameter value.
      *
      * @return string
      */
-    final protected function getSolver() : string
+    final protected function getSolver(): string
     {
         return $this->solver;
     }
-        
+
     /**
      * Overwrites the actual value of viewFilePath parameter set in the project configuration or in
      * the route configuration.
@@ -540,21 +562,21 @@ abstract class Controller
      * 
      * @return void
      */
-    final protected function setViewTemplateFile(?string $viewTemplateFile) : void
+    final protected function setViewTemplateFile(?string $viewTemplateFile): void
     {
         $this->viewTemplateFile = $viewTemplateFile;
     }
-        
+
     /**
      * Returns the viewFilePath parameter value.
      *
      * @return null|string
      */
-    final protected function getViewTemplateFile() : ?string
+    final protected function getViewTemplateFile(): ?string
     {
         return $this->viewTemplateFile;
     }
-            
+
     /**
      * Overwrites the actual value of viewBaseFolder parameter set in the route configuration.
      *
@@ -563,21 +585,21 @@ abstract class Controller
      *
      * @return void
      */
-    final protected function setViewBaseFolder(?string $viewBaseFolder) : void
+    final protected function setViewBaseFolder(?string $viewBaseFolder): void
     {
         $this->viewBaseFolder = $viewBaseFolder;
     }
-        
+
     /**
      * Returns the viewBaseFolder parameter value.
      *
      * @return null|string
      */
-    final protected function getViewBaseFolder() : ?string
+    final protected function getViewBaseFolder(): ?string
     {
         return $this->viewBaseFolder;
     }
-        
+
     /**
      * Returns the dynamic node value stored in the tag.
      *
@@ -585,7 +607,7 @@ abstract class Controller
      * 
      * @return string
      */
-    final protected function getDynamicNodeValue(string $tag) : string
+    final protected function getDynamicNodeValue(string $tag): string
     {
         return Route::getDynamicNodeValue($tag);
     }

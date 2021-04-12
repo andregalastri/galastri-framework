@@ -1,4 +1,5 @@
 <?php
+
 namespace galastri\core;
 
 use \galastri\modules\Toolbox;
@@ -10,14 +11,14 @@ use \galastri\modules\Toolbox;
 final class Debug
 {
     const GENERIC_MESSAGE = "An error occurred. Please, contact the administrator.";
-    
+
     /**
      * The backlog array, provided by PHP debug_backtrace() function.
      *
      * @var array
      */
     private static array $backlogData = [];
-    
+
     /**
      * The message that will be shown when an exception is thrown.
      *
@@ -31,7 +32,7 @@ final class Debug
      * @var int|null|string
      */
     private static /*int|null|string*/ $code = null;
-    
+
     /**
      * When true, bypass the displayErrors = false configuration in \app\config\debug.php and shows
      * the error message anyway.
@@ -39,7 +40,7 @@ final class Debug
      * @var bool
      */
     private static bool $bypassGenericMessage = false;
-    
+
     /**
      * This is a singleton class, so, the __construct() method is private to avoid user to
      * instanciate this class.
@@ -49,7 +50,7 @@ final class Debug
     private function __construct()
     {
     }
-        
+
     /**
      * Stores the backlog array in the $backlog attribute.
      *
@@ -57,7 +58,7 @@ final class Debug
      *                                              debug_backtrace() one.
      * @return galastri\core\Debug
      */
-    public static function setBacklog(?array $customBacklog = null) : string /*self*/
+    public static function setBacklog(?array $customBacklog = null): string /*self*/
     {
         self::$bypassGenericMessage = false;
 
@@ -65,7 +66,7 @@ final class Debug
 
         return __CLASS__;
     }
-    
+
     /**
      * Returns every data of the backlog array.
      *
@@ -77,8 +78,8 @@ final class Debug
      *
      *
      * @return mixed
-     */    
-    public static function getBacklog(?int $index = null, ?string $key = null)// : mixed
+     */
+    public static function getBacklog(?int $index = null, ?string $key = null) // : mixed
     {
         if ($index === null and $key === null) {
             return self::$backlogData;
@@ -97,14 +98,14 @@ final class Debug
      *
      * @return mixed
      */
-    public static function getLastBacklog(?string $key = null)// : mixed
+    public static function getLastBacklog(?string $key = null) // : mixed
     {
         $lastBacklog = self::$backlogData;
         $lastBacklog = array_pop($lastBacklog);
 
         return $key === null ? $lastBacklog : $lastBacklog[$key];
     }
-    
+
     /**
      * Sets the exception message and code. Can return additional data to be converted if the
      * message have %s flags in it.
@@ -128,10 +129,10 @@ final class Debug
      *                                              Result: 'This is John and Paul'
      * @return \galastri\core\Debug
      */
-    public static function setError(string $message, /*int|string*/ $code, array ...$printfData) : string /*self*/
+    public static function setError(string $message, /*int|string*/ $code, array ...$printfData): string /*self*/
     {
         $printfData = Toolbox::flattenArray($printfData);
-        
+
         self::$message = (function ($message, $printfData) {
             if (!GALASTRI_DEBUG['displayErrors'] and !self::$bypassGenericMessage) {
                 return self::GENERIC_MESSAGE;
@@ -141,16 +142,16 @@ final class Debug
         })($message, $printfData);
 
         self::$code = $code;
-        
+
         return __CLASS__;
     }
-    
+
     /**
      * Prints the exception message as a JSON and stops executing the script.
      *
      * @return void
      */
-    public static function print() : void
+    public static function print(): void
     {
         if (GALASTRI_DEBUG['displayErrors']) {
             $data = [
@@ -171,7 +172,7 @@ final class Debug
                 'error' => true,
             ];
         }
-        
+
         if (GALASTRI_DEBUG['showBacklogData']) {
             $data = array_merge($data, [
                 'backlogTrace' => self::getBacklog(),
@@ -182,14 +183,14 @@ final class Debug
         echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         exit();
     }
-    
+
     /**
      * Sets the $bypassGenericMessage attribute to true temporarily to show the error message even
      * if the displayErrors debug configuration is false.
      *
      * @return void
      */
-    public static function bypassGenericMessage() : void
+    public static function bypassGenericMessage(): void
     {
         self::$bypassGenericMessage = true;
     }

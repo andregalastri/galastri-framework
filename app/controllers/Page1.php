@@ -16,7 +16,6 @@ class Page1 extends \galastri\core\Controller
     protected function myPutMethod()
     {
         echo 'eeeee';
-        vardump($this->getDynamicNodeValue());
         return ['myPutMethod' => '4'];
     }
 

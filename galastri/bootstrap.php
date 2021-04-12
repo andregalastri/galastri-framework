@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is the bootstrap of the framework, basically defines main constants, autoload behavior and
  * imports config files.

@@ -1,4 +1,5 @@
 <?php
+
 namespace galastri\modules;
 
 use \galastri\core\Debug;
@@ -53,7 +54,7 @@ final class Redirect
      *
      * @return void
      */
-    public static function to(string $location, string ...$printfData) : void
+    public static function to(string $location, string ...$printfData): void
     {
         Debug::setBacklog(debug_backtrace()[0]);
 
@@ -64,28 +65,28 @@ final class Redirect
         }
 
         preg_match(REDIRECT_IDENFITY_PROTOCOLS_REGEX, $location, $match);
-        
+
         if (empty($match)) {
-            $urlRoot = self::$bypassUrlRoot ? '' : '/'.self::sanitize(GALASTRI_PROJECT['urlRoot']);
-            $location = '/'.self::sanitize($urlRoot.$location);
+            $urlRoot = self::$bypassUrlRoot ? '' : '/' . self::sanitize(GALASTRI_PROJECT['urlRoot']);
+            $location = '/' . self::sanitize($urlRoot . $location);
         }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL)::store(PERFORMANCE_ANALYSIS_LABEL);
-        exit(header('Location: '.vsprintf($location, $printfData)));
+        exit(header('Location: ' . vsprintf($location, $printfData)));
     }
-    
+
     /**
      * Ignores the urlRoot parameter configured in \app\config\project.php file when the location is
      * internal and uses the exactly location given.
      *
      * @return \galastri\modules\Redirect
      */
-    public static function bypassUrlRoot() : string /*self*/
+    public static function bypassUrlRoot(): string /*self*/
     {
         self::$bypassUrlRoot = true;
         return __CLASS__;
     }
-    
+
     /**
      * Remove every special char and spaces that can be in the beginning and ending of a string.
      *
@@ -93,7 +94,7 @@ final class Redirect
      *
      * @return string
      */
-    private static function sanitize(string $string) : string
+    private static function sanitize(string $string): string
     {
         return Toolbox::trim($string, '/?:;<>,.[]{}!@#$%&*()_+-=\\|');
     }

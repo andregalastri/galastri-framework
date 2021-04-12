@@ -1,6 +1,6 @@
 <?php
 
-function jsonDump(...$values) : void
+function jsonDump(...$values): void
 {
     $debug = debug_backtrace()[0];
 
@@ -18,7 +18,7 @@ function jsonDump(...$values) : void
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 }
 
-function varDump(...$values) : void
+function varDump(...$values): void
 {
     $debug = debug_backtrace()[0];
 
@@ -37,7 +37,7 @@ function varDump(...$values) : void
     $varDump = preg_replace('/(bool)\((true)\)/', '<span class="bool text true">$2</span> <span class="bool solid true"><b>$1</b></span>', $varDump);
     $varDump = preg_replace('/(bool)\((false)\)/', '<span class="bool text false">$2</span> <span class="bool solid false"><b>$1</b></span>', $varDump);
     $varDump = preg_replace('/(int)\((.*)\)/', '<span class="numeric text">$2</span> <span class="numeric solid"><b>$1</b></span>', $varDump);
-    
+
     // Division between values
     $varDump = preg_replace('/(Result\s[0-9]\.)/', '<span class="division">$1</span>', $varDump);
 
@@ -53,7 +53,7 @@ function varDump(...$values) : void
     $varDump = preg_replace('/(=>\n[\s]*)/', ' => ', $varDump);
 
     echo "
-    <style>".file_get_contents(GALASTRI_PROJECT_DIR.'/galastri/misc/vardump.css')."</style>
+    <style>" . file_get_contents(GALASTRI_PROJECT_DIR . '/galastri/misc/vardump.css') . "</style>
     <div id='vardump'>
         <big><b>GALASTRI VARDUMP</b></big>
         <section>
@@ -65,7 +65,7 @@ function varDump(...$values) : void
     </div>";
 }
 
-function _getVarDump(int $type, ...$values) : string
+function _getVarDump(int $type, ...$values): string
 {
     ob_start();
     foreach ($values[0] as $key => $value) {

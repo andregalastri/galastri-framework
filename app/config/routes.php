@@ -11,21 +11,20 @@ return [
             //     'POST' => '@myPostMethod',
             // ],
         ],
-       
-        '@not-found' => [
-        ],
+
+        '@not-found' => [],
 
         '/?page1' => [
             'solver' => 'json',
             'notFoundRedirect' => 'index',
 
             '@main' => [
-                
+
                 'aaa' => true,
             ],
 
             // 'snippetExecAfter' => ['\app\snippets\MySnippet', '\app\snippets\OtherSnippet'],
-            
+
             '/page2' => [
 
                 '@main' => [
@@ -35,7 +34,7 @@ return [
                     'aaa' => true,
                 ],
                 '/page3' => [
-    
+
                     '@main' => [
                         'aaa' => true,
                     ],
@@ -44,7 +43,7 @@ return [
                     ],
 
                     '/page4' => [
-    
+
                         '@main' => [
                             'aaa' => true,
                         ],
@@ -55,8 +54,6 @@ return [
                 ],
             ],
         ],
-        '/page2' => [
-
-        ],
+        '/page2' => [],
     ],
 ];

@@ -1,7 +1,9 @@
 <?php
+
 namespace galastri\modules;
 
 use \galastri\core\Debug;
+use \galastri\extensions\Exception;
 
 /**
  * This class have many methods that execute functions that can help and to make things easy. It is
@@ -42,11 +44,11 @@ final class Toolbox
      * 
      * @return string
      */
-    public static function getRealPath(string $path) : string
+    public static function getRealPath(string $path): string
     {
         self::checkDebugTrack();
 
-        $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, GALASTRI_PROJECT_DIR.'/'.self::trim($path, DIRECTORY_SEPARATOR));
+        $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, GALASTRI_PROJECT_DIR . '/' . self::trim($path, DIRECTORY_SEPARATOR));
         $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
         $absolutes = array();
         foreach ($parts as $part) {
@@ -59,10 +61,10 @@ final class Toolbox
         }
 
         $finalPath = implode(DIRECTORY_SEPARATOR, $absolutes);
-        
-        return strncasecmp(PHP_OS, 'WIN', 3) == 0 ? $finalPath : DIRECTORY_SEPARATOR.$finalPath;
+
+        return strncasecmp(PHP_OS, 'WIN', 3) == 0 ? $finalPath : DIRECTORY_SEPARATOR . $finalPath;
     }
-    
+
     /**
      * Imports a script file, based on the given path.
      *
@@ -70,13 +72,13 @@ final class Toolbox
      * 
      * @return mixed
      */
-    public static function importFile(string $path)// : mixed
+    public static function importFile(string $path) // : mixed
     {
         self::checkDebugTrack();
-        
+
         return require(self::getRealPath($path));
     }
-    
+
     /**
      * Get the contents of a file.
      *
@@ -84,13 +86,13 @@ final class Toolbox
      * 
      * @return string
      */
-    public static function getFileContents(string $path) : string
+    public static function getFileContents(string $path): string
     {
         self::checkDebugTrack();
 
         return file_get_contents(self::getRealPath($path));
     }
-    
+
     /**
      * A better trim function. Removes many chars from the beginning and end of the given string.
      *
@@ -101,7 +103,7 @@ final class Toolbox
      *
      * @return string
      */
-    public static function trim(string $string, string ...$chars) : string
+    public static function trim(string $string, string ...$chars): string
     {
         self::checkDebugTrack();
 
@@ -116,7 +118,7 @@ final class Toolbox
 
         return $string;
     }
-    
+
     /**
      * Capitalizes a the given string.
      *
@@ -131,7 +133,7 @@ final class Toolbox
      *
      * @return string
      */
-    public static function capitalize(string $string, bool $asArticle = false, bool $keepChars = false) : string
+    public static function capitalize(string $string, bool $asArticle = false, bool $keepChars = false): string
     {
         self::checkDebugTrack();
 
@@ -145,7 +147,7 @@ final class Toolbox
         /**
          * An internal method to capitalize only the first letter of the string.
          */
-        $upperCaseFirst = function (string $string, bool $lowerStringEnd = false, string $encoding = 'UTF-8') : string {
+        $upperCaseFirst = function (string $string, bool $lowerStringEnd = false, string $encoding = 'UTF-8'): string {
             $firstLetter = mb_strtoupper(mb_substr($string, 0, 1, $encoding), $encoding);
             $stringingEnd = '';
             if ($lowerStringEnd) {
@@ -166,7 +168,7 @@ final class Toolbox
             }
 
             $space = $value != $match[1] ? ' ' : '';
-            $string[$key] = $space.$value;
+            $string[$key] = $space . $value;
         }
 
         $string = trim(implode('', $string));
@@ -181,7 +183,7 @@ final class Toolbox
      * 
      * @return string
      */
-    public static function upperCase(string $string) : string
+    public static function upperCase(string $string): string
     {
         self::checkDebugTrack();
 
@@ -195,13 +197,13 @@ final class Toolbox
      * 
      * @return string
      */
-    public static function lowerCase(string $string) : string
+    public static function lowerCase(string $string): string
     {
         self::checkDebugTrack();
 
         return mb_convert_case($string, MB_CASE_LOWER, 'UTF-8');
     }
-    
+
     /**
      * Converts the string to a specific type.
      *
@@ -212,7 +214,7 @@ final class Toolbox
      * 
      * @return string
      */
-    public static function convertCase(string $string, int $type) : string
+    public static function convertCase(string $string, int $type): string
     {
         self::checkDebugTrack();
 
@@ -246,7 +248,7 @@ final class Toolbox
 
         return implode($string);
     }
-     
+
     /**
      * This method search for keys in an array that is equal to a string. It has modifiers to match
      * any key that is equal to the string and keys that starts or ends with the given string.
@@ -260,7 +262,7 @@ final class Toolbox
      *
      * @return array|null
      */
-    public static function arrayKeySearch(string $search, array $array, int $matchType = MATCH_ANY) : ?array
+    public static function arrayKeySearch(string $search, array $array, int $matchType = MATCH_ANY): ?array
     {
         self::checkDebugTrack();
 
@@ -269,13 +271,17 @@ final class Toolbox
 
         $regex = (function ($a, $b) {
             switch ($b) {
-                case MATCH_EXACT: return "$a";
-                case MATCH_ANY: return "/$a/";
-                case MATCH_START: return "/^$a/";
-                case MATCH_END: return "/$a$/";
+                case MATCH_EXACT:
+                    return "$a";
+                case MATCH_ANY:
+                    return "/$a/";
+                case MATCH_START:
+                    return "/^$a/";
+                case MATCH_END:
+                    return "/$a$/";
             }
         })(preg_quote($search, '/'), $matchType);
-        
+
         foreach ($arrayKeys as $key) {
             preg_match($regex, $key, $match);
             if (!empty($match)) {
@@ -285,7 +291,7 @@ final class Toolbox
 
         return $found;
     }
-    
+
     /**
      * arrayValueSearch
      *
@@ -295,7 +301,7 @@ final class Toolbox
      * 
      * @return array|null
      */
-    public static function arrayValueSearch(string $search, array $array, int $matchType = MATCH_ANY) : ?array
+    public static function arrayValueSearch(string $search, array $array, int $matchType = MATCH_ANY): ?array
     {
         self::checkDebugTrack();
 
@@ -304,13 +310,17 @@ final class Toolbox
 
         $regex = (function ($a, $b) {
             switch ($b) {
-                case MATCH_EXACT: return "/\b$a\b/";
-                case MATCH_ANY: return "/$a/";
-                case MATCH_START: return "/^$a/";
-                case MATCH_END: return "/$a$/";
+                case MATCH_EXACT:
+                    return "/\b$a\b/";
+                case MATCH_ANY:
+                    return "/$a/";
+                case MATCH_START:
+                    return "/^$a/";
+                case MATCH_END:
+                    return "/$a$/";
             }
         })(preg_quote($search, '/'), $matchType);
-        
+
         foreach ($arrayValues as $key => $value) {
             preg_match($regex, $value, $match);
             if (!empty($match)) {
@@ -320,7 +330,7 @@ final class Toolbox
 
         return $found;
     }
-    
+
     /**
      * arrayValueExists
      *
@@ -330,7 +340,7 @@ final class Toolbox
      * 
      * @return bool
      */
-    public static function arrayValueExists(string $search, array $array, int $matchType = MATCH_EXACT) : bool
+    public static function arrayValueExists(string $search, array $array, int $matchType = MATCH_EXACT): bool
     {
         self::checkDebugTrack();
 
@@ -340,7 +350,7 @@ final class Toolbox
             return false;
         }
     }
-        
+
     /**
      * Converts a multidimensional array into a simple array, keeping the values of the keys, but
      * the indexes are lost.
@@ -367,7 +377,7 @@ final class Toolbox
      *
      * @return array
      */
-    public static function flattenArray(array $array, /*bool|int|string*/ $onlyKey = false, bool $unique = false) : array
+    public static function flattenArray(array $array, /*bool|int|string*/ $onlyKey = false, bool $unique = false): array
     {
         self::checkDebugTrack();
 
@@ -385,10 +395,10 @@ final class Toolbox
                     }
                 }
             }
-            
+
             return $result;
         };
-        
+
         $result = $recursive($array, $onlyKey, [], $recursive);
         return $unique ? array_unique($result) : $result;
     }
@@ -401,11 +411,11 @@ final class Toolbox
      *
      * @return void
      */
-    public static function createFile(string $path) : void
+    public static function createFile(string $path): void
     {
         self::checkDebugTrack();
 
-        $parentDir = self::getRealPath($path.'/..');
+        $parentDir = self::getRealPath($path . '/..');
         $filePath = self::getRealPath($path);
 
         if (!file_exists($parentDir)) {
@@ -431,7 +441,7 @@ final class Toolbox
      *
      * @return void
      */
-    public static function fileInsertContent(string $path, string $string, string $method = 'a') : void
+    public static function fileInsertContent(string $path, string $string, string $method = 'a'): void
     {
         self::checkDebugTrack();
 
@@ -451,13 +461,13 @@ final class Toolbox
      * @param  int $bytes                           Integer in bytes that will be converted.
      *
      * @return string
-     */    
-    public static function convertBytes(int $bytes) : string
+     */
+    public static function convertBytes(int $bytes): string
     {
         self::checkDebugTrack();
 
-        $unit = ['b','kb','mb','gb','tb','pb'];
-        return @round($bytes / pow(1024, ($i = floor(log($bytes, 1024)))), 2).' '.$unit[$i];
+        $unit = ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
+        return @round($bytes / pow(1024, ($i = floor(log($bytes, 1024)))), 2) . ' ' . $unit[$i];
     }
 
     /**
@@ -471,7 +481,7 @@ final class Toolbox
      *                                              will have.
      * @return string
      */
-    public static function randomBytes(int $length) : string
+    public static function randomBytes(int $length): string
     {
         self::checkDebugTrack();
 
@@ -486,26 +496,26 @@ final class Toolbox
 
         return bin2hex($bytes);
     }
-        
+
     /**
      * Define the $debugTrack as true which allow the next method to be included in the backlog
      * errors if something wrong occurs.
      *
      * @return \galastri\modules\Toolbox
      */
-    public static function debugTrack() : string
+    public static function debugTrack(): string
     {
         self::$debugTrack = true;
         return __CLASS__;
     }
-    
+
     /**
      * If $debugTrack is true, store a trace of the backlog for debugging. Right after store the
      * backlog, it turns the $debugTrack off (false).
      *
      * @return void
      */
-    private static function checkDebugTrack() : void
+    private static function checkDebugTrack(): void
     {
         if (self::$debugTrack) {
             Debug::setBacklog();
