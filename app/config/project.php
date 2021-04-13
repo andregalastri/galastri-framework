@@ -40,7 +40,7 @@ return [
     'projectTitle' => 'Galastri Framework',
 
     /**
-     * Works only with View solvers. Defines the template file where the view
+     * Works only with View output. Defines the template file where the view
      * will be printed.
      *
      * NOTE: It isn't the view itself, the view will be other file. This
@@ -53,7 +53,7 @@ return [
      *
      * @key title array
      */
-    'viewTemplateFile' => '',
+    'viewTemplateFile' => '/app/templates/main.php',
 
     'offline' => false,
 

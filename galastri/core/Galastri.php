@@ -3,6 +3,7 @@
 namespace galastri\core;
 
 use \galastri\core\Debug;
+use \galastri\core\Controller;
 use \galastri\extensions\Exception;
 use \galastri\modules\Redirect;
 use \galastri\modules\PerformanceAnalysis;
@@ -11,15 +12,17 @@ use \galastri\modules\Toolbox;
 /**
  * This is the main core class. Here we will verify if the classes, methods and parameters defined
  * in the /app/config/routes.php are valid and then call the controller, if it is required, and
- * finally call the solver, a script that will resolve the request and return a type of data.
+ * finally call the output, a script that will resolve the request and return a type of data.
  */
 final class Galastri
 {
+    use \galastri\extensions\output\View;
+    
     const DEFAULT_NODE_NAMESPACE = '\app\controllers';
 
     const OFFLINE_CODE = 'OFFLINE';
-    const UNDEFINED_SOLVER = ['UNDEFINED_SOLVER', "There is no parameter 'solver' defined to this route. Configure it in the '\app\config\routes.php'."];
-    const INVALID_SOLVER   = ['INVALID_SOLVER', "Invalid solver '%s'. Inform a valid solver: view, json, file or text."];
+    const UNDEFINED_OUTPUT = ['UNDEFINED_OUTPUT', "There is no parameter 'output' defined to this route. Configure it in the '\app\config\routes.php'."];
+    const INVALID_OUTPUT   = ['INVALID_OUTPUT', "Invalid output '%s'. These are the only valid output: view, json, file or text."];
     const ERROR_404 = ['ERROR_404', "Error 404: The requested route was not found."];
     const CONTROLLER_NOT_FOUND = ['CONTROLLER_NOT_FOUND', "Requested controller '%s' doesn't exist. Check if the file '%s.php' exists in directory '%s' or if its namespace was correctly set."];
     const CONTROLLER_DOESNT_EXTENDS_CORE = ['CONTROLLER_DOESNT_EXTENDS_CORE', "Controller '%s' is not extending the core class \galastri\core\Controller. Add the core class to your controller class."];
@@ -28,12 +31,12 @@ final class Galastri
     const VALIDATION_ERROR = ['VALIDATION_ERROR', "The validation '%s' was returned as invalid. The execution cannot proceed."];
 
     private static string $routeControllerName;
-    private static \galastri\core\Controller $routeController;
+    private static Controller $routeController;
 
     private static bool $checkedOffline = false;
     private static bool $checkedForceRedirect = false;
     private static bool $checkedRouteNodesExists = false;
-    private static bool $checkedSolver = false;
+    private static bool $checkedOutput = false;
     private static bool $checkedController = false;
     private static bool $checkedControllerExtendsCore = false;
     private static bool $checkedControllerMethod = false;
@@ -57,6 +60,7 @@ final class Galastri
     public static function execute(): void
     {
         try {
+            ob_start();
             /**
              * Sets the timezone if it is configured in /app/config/project.php. If it is false, the
              * timezone will not be configured here.
@@ -73,20 +77,22 @@ final class Galastri
 
             self::checkOffline();
             self::checkForceRedirect();
-            self::checkSolver();
+            self::checkOutput();
             self::checkRouteNodesExists();
             self::checkController();
             self::checkControllerExtendsCore();
             self::checkControllerMethod();
             self::callController();
-
-            PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
+            self::callOutput();
         } catch (Exception $e) {
-            PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
+            ob_get_clean();
             Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
         } catch (\Error | \Throwable | \Exception | \TypeError $e) {
+            ob_get_clean();
             Debug::setBacklog($e->getTrace());
             Debug::setError($e->getMessage(), $e->getCode())::print();
+        } finally {
+            PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
         }
     }
 
@@ -132,23 +138,23 @@ final class Galastri
     }
 
     /**
-     * Checks if the resolved route has the route parameter 'solver' set properly. If not, an
+     * Checks if the resolved route has the route parameter 'output' set properly. If not, an
      * exception is thrown.
      *
      * @return void
      */
-    private static function checkSolver(): void
+    private static function checkOutput(): void
     {
         Debug::setBacklog();
 
-        $solver = Route::getRouteParam('solver');
+        $output = Route::getRouteParam('output');
 
-        if ($solver) {
-            if (!Toolbox::arrayValueExists($solver, ['view', 'json', 'file', 'text'])) {
-                throw new Exception(self::INVALID_SOLVER[1], self::INVALID_SOLVER[0], [$solver]);
+        if ($output) {
+            if (!Toolbox::arrayValueExists($output, ['view', 'json', 'file', 'text'])) {
+                throw new Exception(self::INVALID_OUTPUT[1], self::INVALID_OUTPUT[0], [$output]);
             }
         } else {
-            throw new Exception(self::UNDEFINED_SOLVER[1], self::UNDEFINED_SOLVER[0]);
+            throw new Exception(self::UNDEFINED_OUTPUT[1], self::UNDEFINED_OUTPUT[0]);
         }
 
         self::$checkedRouteNodesExists = true;
@@ -158,8 +164,8 @@ final class Galastri
     /**
      * Checks if the route configuration file has the url nodes informed by the request. If the
      * child node and parent node exists in the route configuration, then everything is ok, but if
-     * it is not, then the request is redirected to the 404 page (if the solver is view of file) or
-     * return an exception text (if the solver is json or text).
+     * it is not, then the request is redirected to the 404 page (if the output is view of file) or
+     * return an exception text (if the output is json or text).
      *
      * @return void
      */
@@ -169,21 +175,19 @@ final class Galastri
 
         $parentNodeName = Route::getParentNodeName();
         $childNodeName = Route::getChildNodeName();
-        $solver = Route::getRouteParam('solver');
+        $output = Route::getRouteParam('output');
         $notFoundRedirect = Route::getRouteParam('notFoundRedirect');
 
-        $error = false;
-
         if ($parentNodeName === null and $childNodeName === null or $childNodeName === null) {
-            if ($solver === 'view' or $solver === 'file') {
+            if ($output === 'view' or $output === 'file') {
                 PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
                 Redirect::to($notFoundRedirect);
             } else {
-                throw new Exception(self::ERROR_404[1], self::ERROR_404[0], [$solver]);
+                throw new Exception(self::ERROR_404[1], self::ERROR_404[0], [$output]);
             }
         }
 
-        self::$checkedSolver = true;
+        self::$checkedOutput = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
@@ -292,8 +296,8 @@ final class Galastri
             if (!self::$checkedRouteNodesExists) {
                 return 'checkedRouteNodesExists';
             }
-            if (!self::$checkedSolver) {
-                return 'checkedSolver';
+            if (!self::$checkedOutput) {
+                return 'checkedOutput';
             }
             if (!self::$checkedController) {
                 return 'checkedController';
@@ -313,6 +317,21 @@ final class Galastri
         }
 
         self::$routeController = new self::$routeControllerName();
+
+        if (!empty(ob_get_contents())) {
+            throw new Exception('You cannot print data in the controller.', 'CONTROLLER_CANT_PRINT_DATA');
+        }
+
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+    }
+
+    private static function callOutput(): void
+    {
+        Debug::setBacklog();
+        
+        $output = self::$routeController->getOutput();
+
+        self::$output();
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }

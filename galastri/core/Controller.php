@@ -98,11 +98,11 @@ abstract class Controller
     private ?string $authFailRedirect;
 
     /**
-     * Stores the solver route parameter.
+     * Stores the output route parameter.
      *
      * @var string
      */
-    private string $solver;
+    private string $output;
 
     /**
      * Stores the viewTemplateFile route parameter.
@@ -227,7 +227,7 @@ abstract class Controller
      * - pageTitle
      * - authTag
      * - authFailRedirect
-     * - solver
+     * - output
      * - viewTemplateFile
      * - viewBaseFolder
      *
@@ -246,7 +246,7 @@ abstract class Controller
         $this->setPageTitle($routeParam['pageTitle']);
         $this->setAuthTag($routeParam['authTag']);
         $this->setAuthFailRedirect($routeParam['authFailRedirect']);
-        $this->setSolver($routeParam['solver']);
+        $this->setOutput($routeParam['output']);
         $this->setViewTemplateFile($routeParam['viewTemplateFile']);
         $this->setViewBaseFolder($routeParam['viewBaseFolder']);
     }
@@ -338,10 +338,24 @@ abstract class Controller
     }
 
     /**
+     * prepareOutputData
+     *
+     * @return void
+     */
+    // private function prepareOutputData(): void
+    // {
+    //     $output = self::getOutput();
+
+    //     if ($output === 'view') {
+    //     }
+    //     PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+    // }
+
+    /**
      * This sets the $stopControllerFlag atribute as true, to define that the controller needs to
      * stop proceeding on the execution of the controller chain calls.
      *
-     * @return void
+     * @return array
      */
     final protected function stopControllerFlag(): void
     {
@@ -351,7 +365,7 @@ abstract class Controller
     /**
      * Returns the data processed by the __doBefore() method.
      *
-     * @return void
+     * @return array
      */
     final protected function getDoBeforeData(): array
     {
@@ -361,11 +375,21 @@ abstract class Controller
     /**
      * Returns the data processed by the route controller method.
      *
-     * @return void
+     * @return array
      */
     final protected function getControllerData(): array
     {
         return $this->controllerData;
+    }
+
+    /**
+     * Returns the data processed by the route controller method.
+     *
+     * @return array
+     */
+    final public function getResultData(): array
+    {
+        return $this->resultData;
     }
 
     /**
@@ -386,7 +410,7 @@ abstract class Controller
      *
      * @return bool
      */
-    final protected function getFileDownloadable(): bool
+    final public function getFileDownloadable(): bool
     {
         return $this->fileDownloadable;
     }
@@ -409,7 +433,7 @@ abstract class Controller
      *
      * @return null|string
      */
-    final protected function getFileBaseFolder(): ?string
+    final public function getFileBaseFolder(): ?string
     {
         return $this->fileBaseFolder;
     }
@@ -432,7 +456,7 @@ abstract class Controller
      *
      * @return null|string
      */
-    final protected function getViewFilePath(): ?string
+    final public function getViewFilePath(): ?string
     {
         return $this->viewFilePath;
     }
@@ -456,7 +480,7 @@ abstract class Controller
      *
      * @return null|string
      */
-    final protected function getProjectTitle(): ?string
+    final public function getProjectTitle(): ?string
     {
         return $this->projectTitle;
     }
@@ -479,7 +503,7 @@ abstract class Controller
      *
      * @return null|string
      */
-    final protected function getPageTitle(): ?string
+    final public function getPageTitle(): ?string
     {
         return $this->pageTitle;
     }
@@ -502,7 +526,7 @@ abstract class Controller
      *
      * @return null|string
      */
-    final protected function getAuthTag(): ?string
+    final public function getAuthTag(): ?string
     {
         return $this->authTag;
     }
@@ -525,32 +549,32 @@ abstract class Controller
      *
      * @return null|string
      */
-    final protected function getAuthFailRedirect(): ?string
+    final public function getAuthFailRedirect(): ?string
     {
         return $this->authFailRedirect;
     }
 
     /**
-     * Overwrites the actual value of solver parameter set in the route configuration.
+     * Overwrites the actual value of output parameter set in the route configuration.
      *
-     * @param  string $solver                       The new value that will overwrite the previous
+     * @param  string $output                       The new value that will overwrite the previous
      *                                              value.
      * 
      * @return void
      */
-    final protected function setSolver(string $solver): void
+    final protected function setOutput(string $output): void
     {
-        $this->solver = $solver;
+        $this->output = $output;
     }
 
     /**
-     * Returns the solver parameter value.
+     * Returns the output parameter value.
      *
      * @return string
      */
-    final protected function getSolver(): string
+    final public function getOutput(): string
     {
-        return $this->solver;
+        return $this->output;
     }
 
     /**
@@ -572,7 +596,7 @@ abstract class Controller
      *
      * @return null|string
      */
-    final protected function getViewTemplateFile(): ?string
+    final public function getViewTemplateFile(): ?string
     {
         return $this->viewTemplateFile;
     }
@@ -595,7 +619,7 @@ abstract class Controller
      *
      * @return null|string
      */
-    final protected function getViewBaseFolder(): ?string
+    final public function getViewBaseFolder(): ?string
     {
         return $this->viewBaseFolder;
     }
@@ -607,7 +631,7 @@ abstract class Controller
      * 
      * @return string
      */
-    final protected function getDynamicNodeValue(string $tag): string
+    final public function getDynamicNodeValue(string $tag): string
     {
         return Route::getDynamicNodeValue($tag);
     }

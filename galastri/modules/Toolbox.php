@@ -15,6 +15,8 @@ use \galastri\extensions\Exception;
  */
 final class Toolbox
 {
+    const EMPTY_FILE_PATH = ['EMPTY_FILE_PATH', 'The $path parameter is empty in method %s'];
+    
     /**
      * Property that stores if the method will be executed with trace bracklog active or not. Useful
      * only for debuggin the framework, not for users.
@@ -66,15 +68,37 @@ final class Toolbox
     }
 
     /**
-     * Imports a script file, based on the given path.
+     * checkFileExists
      *
-     * @param  string $path                         The path of the file to be imported.
+     * @param null|string $path
      * 
-     * @return mixed
+     * @return bool
      */
-    public static function importFile(string $path) // : mixed
+    public static function checkFileExists(?string $path): bool
     {
         self::checkDebugTrack();
+
+        if (empty($path)) {
+            throw new Exception(self::EMPTY_FILE_PATH[1], self::EMPTY_FILE_PATH[0], __METHOD__);
+        }
+
+        return is_file(self::getRealPath($path));
+    }
+
+    /**
+     * Imports a script file, based on the given path.
+     *
+     * @param  null|string $path                    The path of the file to be imported.
+     * 
+     * @return resource
+     */
+    public static function importFile(?string $path) // : resource
+    {
+        self::checkDebugTrack();
+
+        if (empty($path)) {
+            throw new Exception(self::EMPTY_FILE_PATH[1], self::EMPTY_FILE_PATH[0], __METHOD__);
+        }
 
         return require(self::getRealPath($path));
     }
@@ -82,13 +106,17 @@ final class Toolbox
     /**
      * Get the contents of a file.
      *
-     * @param  string $path                         The path of the file to be got.
+     * @param  null|string $path                    The path of the file to be got.
      * 
      * @return string
      */
-    public static function getFileContents(string $path): string
+    public static function getFileContents(?string $path): string
     {
         self::checkDebugTrack();
+
+        if (empty($path)) {
+            throw new Exception(self::EMPTY_FILE_PATH[1], self::EMPTY_FILE_PATH[0], __METHOD__);
+        }
 
         return file_get_contents(self::getRealPath($path));
     }

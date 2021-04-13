@@ -51,6 +51,17 @@ class Index extends \galastri\core\Controller
     }
 
     /**
+     * Main method that is required in all route controllers. This method refers to the index of the
+     * route.
+     *
+     * @return array
+     */
+    protected function notFound(): array
+    {
+        return [];
+    }
+
+    /**
      * Optional method that is executed after the route method.
      *
      * @return void

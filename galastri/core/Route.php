@@ -125,13 +125,13 @@ final class Route
     /**
      * Stores child nodes specific parameters.
      *
-     * @key bool fileDownloadable                   Works only with File solvers. Defines if the
+     * @key bool fileDownloadable                   Works only with File output. Defines if the
      *                                              file is downloadable.
      *
-     * @key null|string fileBaseFolder              Works only with File solvers. Defines a custom
+     * @key null|string fileBaseFolder              Works only with File output. Defines a custom
      *                                              folder where the file is located.
      *
-     * @key null|string viewFilePath                Works only with View solvers. Defines a custom
+     * @key null|string viewFilePath                Works only with View output. Defines a custom
      *                                              view file instead the default.
      *
      * @key null|array requestMethod                Points to an internal method that will be called
@@ -196,7 +196,7 @@ final class Route
      *                                              node and its children, instead the default
      *                                              \app\controller.
      *
-     * @key null|string viewBaseFolder              Works only with View solvers. Defines a custom
+     * @key null|string viewBaseFolder              Works only with View output. Defines a custom
      *                                              folder where views are located.
      *
      * @key null|string notFoundRedirect            Defines a custom URL, path or URL alias when a
@@ -210,14 +210,14 @@ final class Route
      *                                              children. It can be changed in controller if the
      *                                              page title needs to be dynamic.
      *
-     * @key string solver                           Defines which solver will be used in the node
-     *                                              and its children. A solver is a trait that will
+     * @key string output                           Defines which output will be used in the node
+     *                                              and its children. A output is a trait that will
      *                                              return the data into a type. The currently
-     *                                              solvers are: - File: returns a file; - View:
+     *                                              outputs are: - File: returns a file; - View:
      *                                              returns a HTML; - Json: returns data in json
      *                                              format; - Text: returns data in plain text.
      *
-     * @key null|string viewTemplateFile            Works only with View solvers. Defines the
+     * @key null|string viewTemplateFile            Works only with View output. Defines the
      *                                              template base file where the view will be
      *                                              printed. This template base file can have
      *                                              template parts, defined in the parameter
@@ -244,7 +244,7 @@ final class Route
         'forceRedirect' => null,
         'namespace' => null,
         'notFoundRedirect' => GALASTRI_PROJECT['notFoundRedirect'],
-        'solver' => null,
+        'output' => null,
         'browserCache' => null,
         'viewTemplateFile' => GALASTRI_PROJECT['viewTemplateFile'],
         'viewBaseFolder' => null,
@@ -260,7 +260,7 @@ final class Route
         'forceRedirect' => ['NULL', 'string'],
         'namespace' => ['NULL', 'string'],
         'notFoundRedirect' => ['NULL', 'string'],
-        'solver' => ['string'],
+        'output' => ['string'],
         'browserCache' => ['NULL', 'integer'],
         'viewTemplateFile' => ['NULL', 'string'],
         'viewBaseFolder' => ['NULL', 'string'],
@@ -581,6 +581,7 @@ final class Route
             if ($param === '@' . self::$childNodeName) {
                 $found = true;
                 $childNodeParam = $value;
+                self::$childNodeName = Toolbox::convertCase(ltrim($param, '@'), CAMEL_CASE);
                 break;
             }
         }

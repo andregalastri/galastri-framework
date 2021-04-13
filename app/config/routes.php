@@ -1,11 +1,12 @@
 <?php
 return [
     '/' => [
-        'solver' => 'view',
+        'output' => 'view',
 
-        'viewTemplateFile' => '5',
 
         '@main' => [
+            // 'viewFilePath' => '/app/test/anhothner/asdasd/asdasd/asdasd/asd/a.php',
+
             // 'requestMethod' => [
             //     'GET' => '@ayPutMethod',
             //     'POST' => '@myPostMethod',
@@ -14,13 +15,15 @@ return [
 
         '@not-found' => [],
 
-        '/?page1' => [
-            'solver' => 'json',
+        '/page1' => [
+            'output' => 'view',
             'notFoundRedirect' => 'index',
 
             '@main' => [
-
-                'aaa' => true,
+                'requestMethod' => [
+                    'GET' => '@myPutMethod',
+                    'POST' => '@myPostMethod',
+                ],
             ],
 
             // 'snippetExecAfter' => ['\app\snippets\MySnippet', '\app\snippets\OtherSnippet'],
