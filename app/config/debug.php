@@ -44,4 +44,6 @@ return [
      * @key performanceAnalysis bool
      */
     'performanceAnalysis' => false,
+
+    'language' => 'English',
 ];

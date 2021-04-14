@@ -2,15 +2,12 @@
 
 namespace galastri\extensions;
 
-use \galastri\core\Debug;
-use \galastri\extensions\Exception;
-use \galastri\modules\Toolbox;
+use galastri\core\Debug;
+use galastri\extensions\Exception;
+use galastri\modules\Toolbox;
 
-final class ViewOutputData
+final class ViewOutputData implements \Language
 {
-    const EMPTY_DATA_KEY = ['EMPTY_DATA_KEY', "Inform a key of the data you want to get."];
-    const INVALID_DATA_KEY = ['INVALID_DATA_KEY', "Key '%s' doesn't exist in the data returned by controller."];
-
     private array $resultdata;
     private string $viewFilePath;
 
@@ -34,7 +31,7 @@ final class ViewOutputData
             if (isset($resultData[$value])) {
                 $resultData = $resultData[$value];
             } else {
-                throw new Exception(self::INVALID_DATA_KEY[1], self::INVALID_DATA_KEY[0], [$value]);
+                throw new Exception(self::VIEW_INVALID_DATA_KEY[1], self::VIEW_INVALID_DATA_KEY[0], [$value]);
             }
         }
 

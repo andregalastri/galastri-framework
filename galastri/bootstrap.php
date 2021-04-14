@@ -7,8 +7,8 @@
 
 namespace galastri;
 
-use \galastri\modules\Toolbox;
-use \galastri\modules\PerformanceAnalysis;
+use galastri\modules\Toolbox;
+use galastri\modules\PerformanceAnalysis;
 
 ini_set('display_errors', 1); // Will remove it. Just kept it here for debugging.
 
@@ -46,17 +46,22 @@ define('GALASTRI_PROJECT_DIR', (function () {
  *
  * - autoload.php : has the behavior of the autoload. More information inside this file.
  */
-require_once('autoload.php');
+require_once(GALASTRI_PROJECT_DIR.'/vendor/autoload.php');
 
 /**
  * Stores the debug configuration.
  */
-define('GALASTRI_DEBUG', Toolbox::importFile('/app/config/debug.php'));
+define('GALASTRI_DEBUG', require_once(GALASTRI_PROJECT_DIR.'/app/config/debug.php'));
 
 /**
  * Based on debug configuration, defines if PHP will display errors or not.
  */
 ini_set('display_errors', GALASTRI_DEBUG['displayErrors']);
+
+/**
+ * 
+ */
+class_alias('\galastri\\lang\\'.GALASTRI_DEBUG['language'], 'Language');
 
 /**
  * Definition of many constants

@@ -2,6 +2,8 @@
 
 namespace app\controllers;
 
+use galastri\core\Controller;
+
 /**
  * This is a route controller. Its defined by the parent node and its name needs to be in pascal
  * case.
@@ -27,7 +29,7 @@ namespace app\controllers;
  * called based on the request method (POST, GET, PUT, etc). It needs to be configured in the route
  * configuration, with 'requestMethod' paramenter.
  */
-class Index extends \galastri\core\Controller
+class Index extends Controller
 {
     /**
      * Optional method that is executed before the route method.

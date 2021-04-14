@@ -2,33 +2,24 @@
 
 namespace galastri\core;
 
-use \galastri\core\Debug;
-use \galastri\core\Controller;
-use \galastri\extensions\Exception;
-use \galastri\modules\Redirect;
-use \galastri\modules\PerformanceAnalysis;
-use \galastri\modules\Toolbox;
+use galastri\core\Debug;
+use galastri\core\Controller;
+use galastri\extensions\Exception;
+use galastri\extensions\output\View;
+use galastri\modules\Redirect;
+use galastri\modules\PerformanceAnalysis;
+use galastri\modules\Toolbox;
 
 /**
  * This is the main core class. Here we will verify if the classes, methods and parameters defined
  * in the /app/config/routes.php are valid and then call the controller, if it is required, and
  * finally call the output, a script that will resolve the request and return a type of data.
  */
-final class Galastri
+final class Galastri implements \Language
 {
-    use \galastri\extensions\output\View;
+    use View;
     
-    const DEFAULT_NODE_NAMESPACE = '\app\controllers';
-
-    const OFFLINE_CODE = 'OFFLINE';
-    const UNDEFINED_OUTPUT = ['UNDEFINED_OUTPUT', "There is no parameter 'output' defined to this route. Configure it in the '\app\config\routes.php'."];
-    const INVALID_OUTPUT   = ['INVALID_OUTPUT', "Invalid output '%s'. These are the only valid output: view, json, file or text."];
-    const ERROR_404 = ['ERROR_404', "Error 404: The requested route was not found."];
-    const CONTROLLER_NOT_FOUND = ['CONTROLLER_NOT_FOUND', "Requested controller '%s' doesn't exist. Check if the file '%s.php' exists in directory '%s' or if its namespace was correctly set."];
-    const CONTROLLER_DOESNT_EXTENDS_CORE = ['CONTROLLER_DOESNT_EXTENDS_CORE', "Controller '%s' is not extending the core class \galastri\core\Controller. Add the core class to your controller class."];
-    const CONTROLLER_METHOD_NOT_FOUND = ['CONTROLLER_METHOD_NOT_FOUND', "Controller '%s' doesn't have the requested method '@%s'."];
-    const CONTROLLER_PARENT_CONSTRUCT_NOT_CALLED = ['CONTROLLER_PARENT_CONSTRUCT_NOT_CALLED', "Controller '%s' has a __construct() method that is not calling the core's __contruct(). Please, add the code parent::__construct(); right after the definition of your controller's __construct()."];
-    const VALIDATION_ERROR = ['VALIDATION_ERROR', "The validation '%s' was returned as invalid. The execution cannot proceed."];
+    const DEFAULT_NODE_NAMESPACE = 'app\controllers';
 
     private static string $routeControllerName;
     private static Controller $routeController;
@@ -40,7 +31,6 @@ final class Galastri
     private static bool $checkedController = false;
     private static bool $checkedControllerExtendsCore = false;
     private static bool $checkedControllerMethod = false;
-
 
     /**
      * This is a singleton class, so, the __construct() method is private to avoid user to
@@ -104,14 +94,14 @@ final class Galastri
      */
     private static function checkOffline(): void
     {
-        Debug::setBacklog()::bypassGenericMessage();
+        Debug::setBacklog();
 
         $offline = Route::getRouteParam('offline');
 
         if ($offline) {
             $offlineMessage = Route::getRouteParam('defaultmessage')['offline'];
 
-            throw new Exception($offlineMessage, self::OFFLINE_CODE);
+            throw new Exception($offlineMessage, self::OFFLINE[0]);
         }
 
         self::$checkedOffline = true;
@@ -318,9 +308,9 @@ final class Galastri
 
         self::$routeController = new self::$routeControllerName();
 
-        if (!empty(ob_get_contents())) {
-            throw new Exception('You cannot print data in the controller.', 'CONTROLLER_CANT_PRINT_DATA');
-        }
+        // if (!empty(ob_get_contents())) {
+        //     throw new Exception('You cannot print data in the controller.', 'CONTROLLER_CANT_PRINT_DATA');
+        // }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }

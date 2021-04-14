@@ -2,16 +2,14 @@
 
 namespace galastri\core;
 
-use \galastri\modules\Toolbox;
+use galastri\modules\Toolbox;
 
 /**
  * This class is part of the core of the framework. It helps to handle the exceptions and shows
  * error messages when some configuration is wrong or a framework function is used incorrectly.
  */
-final class Debug
+final class Debug implements \Language
 {
-    const GENERIC_MESSAGE = "An error occurred. Please, contact the administrator.";
-
     /**
      * The backlog array, provided by PHP debug_backtrace() function.
      *

@@ -2,11 +2,11 @@
 
 namespace galastri\core;
 
-use \galastri\core\Route;
-use \galastri\core\Debug;
-use \galastri\extensions\Exception;
-use \galastri\modules\Toolbox;
-use \galastri\modules\PerformanceAnalysis;
+use galastri\core\Route;
+use galastri\core\Debug;
+use galastri\extensions\Exception;
+use galastri\modules\Toolbox;
+use galastri\modules\PerformanceAnalysis;
 
 /**
  * This is the core controller. This class stores the parameters resolved by the

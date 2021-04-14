@@ -2,8 +2,8 @@
 
 namespace galastri\modules;
 
-use \galastri\core\Debug;
-use \galastri\extensions\Exception;
+use galastri\core\Debug;
+use galastri\extensions\Exception;
 
 /**
  * This class have many methods that execute functions that can help and to make things easy. It is
@@ -13,10 +13,8 @@ use \galastri\extensions\Exception;
  * /app/config/additional-config. All the .php scripts there are automatically loaded with the
  * framework.
  */
-final class Toolbox
+final class Toolbox implements \Language
 {
-    const EMPTY_FILE_PATH = ['EMPTY_FILE_PATH', 'The $path parameter is empty in method %s'];
-    
     /**
      * Property that stores if the method will be executed with trace bracklog active or not. Useful
      * only for debuggin the framework, not for users.

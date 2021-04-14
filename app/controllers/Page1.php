@@ -1,7 +1,9 @@
 <?php
 namespace app\controllers;
 
-class Page1 extends \galastri\core\Controller
+use galastri\core\Controller;
+
+class Page1 extends Controller
 {
     protected function __doBefore()
     {

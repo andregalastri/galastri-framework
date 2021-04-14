@@ -2,8 +2,8 @@
 
 namespace galastri\modules;
 
-use \galastri\core\Debug;
-use \galastri\modules\Toolbox;
+use galastri\core\Debug;
+use galastri\modules\Toolbox;
 
 /**
  * This module class helps to redirect the request to another path or URL, even external.

@@ -2,10 +2,10 @@
 
 namespace galastri\core;
 
-use \galastri\core\Debug;
-use \galastri\extensions\Exception;
-use \galastri\modules\Toolbox;
-use \galastri\modules\PerformanceAnalysis;
+use galastri\core\Debug;
+use galastri\extensions\Exception;
+use galastri\modules\Toolbox;
+use galastri\modules\PerformanceAnalysis;
 
 /**
  * This class resolves the URL routing.
@@ -44,12 +44,8 @@ use \galastri\modules\PerformanceAnalysis;
  * children. So, mydomain.com/node-a/node-ab and so on. Every child node can be parent for other
  * children and this is the way the URL routing is configured.
  */
-final class Route
+final class Route implements \Language
 {
-    const INVALID_PARAM_TYPE = ['INVALID_PARAM_TYPE', "Invalid parameter configuration. Parameter '%s' needs to be '%s'. '%s' given."];
-    const REQUEST_METHOD_STARTS_WITH_AT = ['REQUEST_METHOD_STARTS_WITH_AT', "Request method '%s' need to start with @ as the first character"];
-    const INVALID_REQUEST_METHOD_NAME = ['INVALID_REQUEST_METHOD_NAME', "Request method '%s' has an invalid name."];
-
     /**
      * Stores the URL nodes in array format which will be worked to extract the parent's parameters,
      * define the node that will be called, its child and local parameters.

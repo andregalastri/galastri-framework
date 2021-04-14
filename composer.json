@@ -1,0 +1,21 @@
+{
+    "name": "galastri/framework",
+    "type": "project",
+    "description": "Galastri Framework is a simple MVC PHP microframework for websites and webapps",
+    "authors": [
+        {
+            "name": "André Galastri",
+            "email": "contato@andregalastri.com.br"
+        }
+    ],
+    "require": {
+        "php": ">=7.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "galastri\\": "galastri/",
+            "app\\": "app/"
+        }
+    },
+    "license": "MIT"
+}

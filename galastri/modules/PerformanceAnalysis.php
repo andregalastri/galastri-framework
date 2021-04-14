@@ -2,7 +2,7 @@
 
 namespace galastri\modules;
 
-use \galastri\modules\Toolbox;
+use galastri\modules\Toolbox;
 
 /**
  * This class creates a log file with an analysis of the entire request execution, or a other custom
@@ -22,7 +22,6 @@ use \galastri\modules\Toolbox;
  *   - Peak of memory usage in the entire script;
  *   - Execution time (in milliseconds) of the section measured;
  *   - Cumulative execution time (in milliseconds).
- *
  */
 
 /**
