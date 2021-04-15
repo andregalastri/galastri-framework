@@ -70,6 +70,13 @@ interface English
      * Constants used in \galastri\modules\Toolbox.
      */
     const EMPTY_FILE_PATH = [
-        'G0012', "The \path parameter is empty in method '%s'"
+        'G0012', "The path parameter is empty in method '%s'"
+    ];
+
+    /**
+     * Constants used in \galastri\extensions\types\TraitCommon.
+     */
+    const VALIDATION_DEFAULT_INVALID_MESSAGE = [
+        'G0013', "The value '%s' is not valid."
     ];
 }

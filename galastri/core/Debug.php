@@ -130,7 +130,7 @@ final class Debug implements \Language
     public static function setError(string $message, /*int|string*/ $code, array ...$printfData): string /*self*/
     {
         $printfData = Toolbox::flattenArray($printfData);
-
+        
         self::$message = (function ($message, $printfData) {
             if (!GALASTRI_DEBUG['displayErrors'] and !self::$bypassGenericMessage) {
                 return self::GENERIC_MESSAGE;
@@ -178,7 +178,7 @@ final class Debug implements \Language
         }
 
         header('Content-Type: application/json');
-        echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         exit();
     }
 

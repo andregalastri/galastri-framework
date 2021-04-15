@@ -4,7 +4,7 @@ namespace galastri\core;
 
 use galastri\core\Route;
 use galastri\core\Debug;
-use galastri\extensions\Exception;
+// use galastri\extensions\Exception;
 use galastri\modules\Toolbox;
 use galastri\modules\PerformanceAnalysis;
 
@@ -198,7 +198,7 @@ abstract class Controller
     final public function __construct()
     {
         if (!$this->isConstructed) {
-            try {
+            // try {
                 $this->setInitialParameterValues();
                 $this->callDoBefore();
                 $this->callControllerMethod();
@@ -206,10 +206,13 @@ abstract class Controller
                 $this->mergeResults();
 
                 $this->isConstructed = true;
-            } catch (\Error | \Throwable | \Exception | \TypeError $e) {
-                Debug::setBacklog($e->getTrace());
-                Debug::setError($e->getMessage(), $e->getCode())::print();
-            }
+            // } catch (Exception $e) {
+            //     Debug::setBacklog($e->getTrace());
+            //     Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
+            // } catch (\Error | \Throwable | \Exception | \TypeError $e) {
+            //     Debug::setBacklog($e->getTrace());
+            //     Debug::setError($e->getMessage(), $e->getCode())::print();
+            // }
         }
     }
 
@@ -264,6 +267,8 @@ abstract class Controller
      */
     private function callDoBefore(): void
     {
+        Debug::setBacklog();
+
         if (method_exists($this, '__doBefore')) {
             $this->doBeforeData = $this->__doBefore();
 
@@ -283,6 +288,8 @@ abstract class Controller
      */
     private function callControllerMethod(): void
     {
+        Debug::setBacklog();
+
         if (!$this->stopControllerFlag) {
             $controllerMethod = Route::getChildNodeName();
             $serverRequestMethod = Toolbox::lowerCase($_SERVER['REQUEST_METHOD']);
@@ -310,6 +317,8 @@ abstract class Controller
      */
     private function callDoAfter(): void
     {
+        Debug::setBacklog();
+
         if (!$this->stopControllerFlag) {
             if (method_exists($this, '__doBefore')) {
                 $this->doAfterData = $this->__doAfter();

@@ -72,4 +72,11 @@ interface BrazilianPortuguese
     const EMPTY_FILE_PATH = [
         'G0012', "O caminho do método '%s' está vazio."
     ];
+
+    /**
+     * Constants used in \galastri\extensions\types\TraitCommon.
+     */
+    const VALIDATION_DEFAULT_INVALID_MESSAGE = [
+        'G0013', "O valor '%s' é inválido."
+    ];
 }

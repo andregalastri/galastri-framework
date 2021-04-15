@@ -3,6 +3,8 @@
 namespace app\controllers;
 
 use galastri\core\Controller;
+use galastri\modules\types\TypeString;
+
 
 /**
  * This is a route controller. Its defined by the parent node and its name needs to be in pascal
@@ -49,6 +51,18 @@ class Index extends Controller
      */
     protected function main(): array
     {
+        $myString = new TypeString();
+        // $myString
+        // ->onError('Não pode ser maior que 5')
+                // ->denyEmpty()
+                    // ->onError('Campo obrigatorio')
+                //  ->maxLength(5)
+                    //  ->onError('nao pode mais que 5')
+
+// ;                
+// 
+            $myString->setValue('[a]');
+        echo '<br>';
         return [];
     }
 
