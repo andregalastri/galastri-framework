@@ -3,7 +3,6 @@
 namespace galastri\modules\types;
 
 use galastri\core\Debug;
-use galastri\extensions\Exception;
 use galastri\extensions\typeValidation\StringValidation;
 use galastri\extensions\typeValidation\EmptyValidation;
 use galastri\modules\types\traits\Common;
@@ -12,6 +11,7 @@ use galastri\modules\types\traits\ConvertCase;
 use galastri\modules\types\traits\Length;
 use galastri\modules\types\traits\Substring;
 use galastri\modules\types\traits\Trim;
+use galastri\modules\types\traits\Split;
 use galastri\modules\types\traits\Replace;
 use galastri\modules\types\traits\RandomStringValue;
 
@@ -29,6 +29,7 @@ final class TypeString implements \Language
     use Length;
     use Substring;
     use Trim;
+    use Split;
     use Replace;
     use RandomStringValue;
 
@@ -38,6 +39,20 @@ final class TypeString implements \Language
      * gettype() function.
      */
     const VALUE_TYPE = 'string';
+
+    /**
+     * Stores the string or null.
+     *
+     * @var null|string
+     */
+    private ?string $value = null;
+
+    /**
+     * Stores the first value set to the object that isn't null.
+     *
+     * @var null|string
+     */
+    private ?string $initialValue = null;
     
     /**
      * Stores an instance of the StringValidation class, to be used in the validation methods that
@@ -74,7 +89,7 @@ final class TypeString implements \Language
     {
         Debug::setBacklog();
 
-        $this->storeHistory = $saveHistory;
+        $this->saveHistory = $saveHistory;
         $this->stringValidation = new StringValidation();
         $this->emptyValidation = new EmptyValidation();
 

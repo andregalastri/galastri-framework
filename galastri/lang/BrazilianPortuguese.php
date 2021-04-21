@@ -116,4 +116,22 @@ interface BrazilianPortuguese
     const UNDEFINED_VALIDATION_REQUIRED_CHARSET = [
         'G0019', "O método 'requiredChars()' requer um ou mais charsets definidos. Nenhum foi informado."
     ];
+
+    /**
+     * Constants used in \galastri\modules\types\traits\Common
+     */
+    const TYPE_HISTORY_KEY_NOT_FOUND = [
+        'G0020', "Não há nenhuma chave '%s' no histórico do objeto de tipo."
+    ];
+
+    const TYPE_HISTORY_DISABLED = [
+        'G0020', "Salvamento de histório está desabilitado, não existem dados para se reverter. Se você quiser habilitá-lo, atribua 'true' para o segundo parâmetro do construtor na definição deste objeto de tipos."
+    ];
+
+    /**
+     * Constants used in \galastri\modules\types\traits\RandomStringValue
+     */
+    const SECURE_RANDOM_GENERATOR_NOT_FOUND = [
+        'G0022', "Nenhuma função de geração de string aleatória criptograficamente segura disponível. Você precisa verificar sua configuração do PHP para disponibilizar as funções 'random_bytes()' ou 'openssl_random_pseudo_bytes()'."
+    ];
 }

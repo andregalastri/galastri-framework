@@ -116,4 +116,22 @@ interface English
     const UNDEFINED_VALIDATION_REQUIRED_CHARSET = [
         'G0019', "Method 'requiredChars()' needs one or more charsets defined to work. None was given."
     ];
+
+    /**
+     * Constants used in \galastri\modules\types\traits\Common
+     */
+    const TYPE_HISTORY_KEY_NOT_FOUND = [
+        'G0020', "There is no key '%s' in the history of the type object."
+    ];
+
+    const TYPE_HISTORY_DISABLED = [
+        'G0021', "Save history is disabled, there is no data to be reverted. If you want enable this, set to 'true' the second constructor parameter in the definition of this object of types."
+    ];
+
+    /**
+     * Constants used in \galastri\modules\types\traits\RandomStringValue
+     */
+    const SECURE_RANDOM_GENERATOR_NOT_FOUND = [
+        'G0022', "No cryptographically secure random string generation function available. You need to check your PHP configuration to make the 'random_bytes()' or 'openssl_random_pseudo_bytes()' functions available."
+    ];
 }

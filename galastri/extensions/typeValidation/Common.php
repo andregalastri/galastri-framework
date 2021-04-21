@@ -6,10 +6,10 @@ use galastri\extensions\Exception;
 
 /**
  * This trait has the common methods that is used by various validation classes. To avoid code
- * repetition, this trait can be easily implemented to the classes that need these codes.
+ * repetition, this trait can be easily implemented in the classes that need these codes.
  */
 trait Common
-{    
+{
     /**
      * Stores the value that will be tested.
      *
@@ -58,7 +58,7 @@ trait Common
      * This method starts the chain execution. It first checks if the chain isn't empty. If there
      * are functions stored in the array, then it is inverted, because the execution needs to start
      * from the last added function to the first.
-     * 
+     *
      * Finally, all functions are executed one by one in a foreach loop.
      *
      * @return void
@@ -88,7 +88,7 @@ trait Common
      */
     public function onError(string $message, ?string $code = null): void
     {
-        $this->chain[] = function () use ($message, $code){
+        $this->chain[] = function () use ($message, $code) {
             $this->errorMessage[1] = $message;
 
             if ($code !== null) {
