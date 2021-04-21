@@ -47,7 +47,7 @@ final class Redirect
      * @param  string $location                     Internal path, external URL or URL Alias name
      *                                              set in \app\config\url-alias.php file.
      *
-     * @param  mixed $printfData                    The location can have %s tags to be replaced by
+     * @param  string ...$printfData                The location can have %s tags to be replaced by
      *                                              dynamic values. These array values will replace
      *                                              every %s tag in the location string, in order of
      *                                              appearance.

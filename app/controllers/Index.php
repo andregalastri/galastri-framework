@@ -51,18 +51,17 @@ class Index extends Controller
      */
     protected function main(): array
     {
-        $myString = new TypeString();
-        // $myString
-        // ->onError('Não pode ser maior que 5')
-                // ->denyEmpty()
-                    // ->onError('Campo obrigatorio')
-                //  ->maxLength(5)
-                    //  ->onError('nao pode mais que 5')
-
-// ;                
-// 
-            $myString->setValue('[a]');
-        echo '<br>';
+//         $myString = new TypeString();
+//         $myString
+//                 ->denyEmpty()
+//                     ->onError('Campo obrigatorio')
+//                  ->maxLength(5)
+//                      ->onError('nao pode mais que 5')
+//                      ->validate()
+//                      ;
+// // 
+//             $myString->setValue('12312231213213');
+//         echo '<br>';
         return [];
     }
 

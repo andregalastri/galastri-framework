@@ -50,7 +50,7 @@ final class Debug implements \Language
     }
 
     /**
-     * Stores the backlog array in the $backlog attribute.
+     * Stores the backlog array in the $backlog property.
      *
      * @param array|null $customBacklog             A custom array backlog instead of the
      *                                              debug_backtrace() one.
@@ -116,7 +116,7 @@ final class Debug implements \Language
      *
      * @param  int|string $code                     Code that identifies the exception.
      *
-     * @param  array ...$printfData                 Values that will replace %s flags in the
+     * @param  mixed d...$printfData                Values that will replace %s flags in the
      *                                              message, in the same order of appearance of the
      *                                              flags.
      *
@@ -127,7 +127,7 @@ final class Debug implements \Language
      *                                              Result: 'This is John and Paul'
      * @return \galastri\core\Debug
      */
-    public static function setError(string $message, /*int|string*/ $code, array ...$printfData): string /*self*/
+    public static function setError(string $message, /*int|string*/ $code, /*mixed*/ ...$printfData): string /*self*/
     {
         $printfData = Toolbox::flattenArray($printfData);
         
@@ -183,7 +183,7 @@ final class Debug implements \Language
     }
 
     /**
-     * Sets the $bypassGenericMessage attribute to true temporarily to show the error message even
+     * Sets the $bypassGenericMessage property to true temporarily to show the error message even
      * if the displayErrors debug configuration is false.
      *
      * @return void

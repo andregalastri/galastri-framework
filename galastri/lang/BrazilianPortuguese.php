@@ -2,6 +2,10 @@
 
 namespace galastri\lang;
 
+/**
+ * This interface stores the various messages in Brazilian Portuguese language. It is dynamically
+ * implemented in many classes based on the debug configuration 'language' parameter.
+ */
 interface BrazilianPortuguese
 {
     /**
@@ -9,7 +13,7 @@ interface BrazilianPortuguese
      */
     const GENERIC_MESSAGE = "Ocorreu um erro. Por favor, contate o administrador.";
     
-    /**
+    /************************************************
      * Constants used in \galastri\core\Galastri.
      */
     const OFFLINE = [
@@ -77,6 +81,39 @@ interface BrazilianPortuguese
      * Constants used in \galastri\extensions\types\TraitCommon.
      */
     const VALIDATION_DEFAULT_INVALID_MESSAGE = [
-        'G0013', "O valor '%s' é inválido."
+        'G0013', "O dado '%s' é inválido."
+    ];
+
+    /**
+     * Constants used in \galastri\types\ Type* files.
+     */
+    const TYPE_DEFAULT_INVALID_MESSAGE = [
+        'G0014', "Tipo de dado inválido. Esperando que seja '%s', mas '%s' foi atribuído."
+    ];
+
+    /**
+     * Constants used in \galastri\extensions\output\View
+     */
+    const UNDEFINED_TEMPLATE_FILE = [
+        'G0015', "Não foi definido um arquivo de template para este rota. Defina um template padrão nas configurações de projeto ou de rota."
+    ];
+
+    const TEMPLATE_FILE_NOT_FOUND = [
+        'G0016', "Arquivo de template '%s' não encontrado."
+    ];
+
+    const VIEW_FILE_NOT_FOUND = [
+        'G0017', "Arquivo de view '%s' não encontrado."
+    ];
+
+    /**
+     * Constants used in \galastri\extensions\typeValidation\StringValidation
+     */
+    const UNDEFINED_VALIDATION_ALLOWED_CHARSET = [
+        'G0018', "O método 'allowedCharset()' requer um ou mais charsets definidos. Nenhum foi informado."
+    ];
+
+    const UNDEFINED_VALIDATION_REQUIRED_CHARSET = [
+        'G0019', "O método 'requiredChars()' requer um ou mais charsets definidos. Nenhum foi informado."
     ];
 }

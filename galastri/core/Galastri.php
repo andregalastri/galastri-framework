@@ -20,6 +20,7 @@ final class Galastri implements \Language
     use View;
     
     const DEFAULT_NODE_NAMESPACE = 'app\controllers';
+    const VIEW_BASE_FOLDER = '/app/views';
 
     private static string $routeControllerName;
     private static Controller $routeController;
@@ -77,10 +78,10 @@ final class Galastri implements \Language
         } catch (Exception $e) {
             ob_get_clean();
             Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
-        } catch (\Error | \Throwable | \Exception | \TypeError $e) {
-            ob_get_clean();
-            Debug::setBacklog($e->getTrace());
-            Debug::setError($e->getMessage(), $e->getCode())::print();
+        // } catch (\Error | \Throwable | \Exception | \TypeError $e) {
+            // ob_get_clean();
+            // Debug::setBacklog($e->getTrace());
+            // Debug::setError($e->getMessage(), $e->getCode())::print();
         } finally {
             PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
         }
@@ -268,7 +269,7 @@ final class Galastri implements \Language
 
     /**
      * Checks if all stages of validation are true and then calls for the controller creating a
-     * instance of it inside the $routeController attribute.
+     * instance of it inside the $routeController property.
      *
      * @return void
      */

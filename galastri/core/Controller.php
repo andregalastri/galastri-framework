@@ -55,7 +55,7 @@ abstract class Controller
 
     /**
      * Stores a merged array of $doBeforeData, $doAfterData, $controllerData and $requestMethodData
-     * attributes.
+     * propertiess.
      *
      * @var array
      */
@@ -178,7 +178,7 @@ abstract class Controller
      * When the route class is instanciated, the __construct() method will do some jobs.
      *
      * It will set the parameters defined in the \galastri\core\Route class and will store it in
-     * internal attributes owned by this class. It makes things easier to get the route parameter
+     * internal propertiess owned by this class. It makes things easier to get the route parameter
      * values and also set new values, if it is needed.
      *
      * Then it calls for the __doBefore() method, if it exists in the route controller, the route
@@ -186,10 +186,10 @@ abstract class Controller
      * available and calls it and finally calls the __doAfter() method, if it exists.
      *
      * All the results of these calls are merged into one array, stored in the $resultData
-     * attribute.
+     * property.
      * 
      * NOTE: The __construct() method cannot be called by the route controller nor reexecuted by it.
-     * That is why the attribute $isContructed is tested. When false, the construction will do what
+     * That is why the property $isContructed is tested. When false, the construction will do what
      * is needed and then sets it to true. This way, it won't reexecute its code if it is called by
      * the route controller via parent::__construct();
      *
@@ -217,7 +217,7 @@ abstract class Controller
     }
 
     /**
-     * Gets all pertinent route parameters and stores it in attributes owned by this class.
+     * Gets all pertinent route parameters and stores it in propertiess owned by this class.
      * The parameters stored are:
      * 
      * Child node parameters
@@ -330,7 +330,7 @@ abstract class Controller
 
     /**
      * This method merges all the returning arrays of the controller into one array and stores it in
-     * the $resultData attribute.
+     * the $resultData property.
      * 
      * @return void
      */
@@ -345,20 +345,6 @@ abstract class Controller
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-
-    /**
-     * prepareOutputData
-     *
-     * @return void
-     */
-    // private function prepareOutputData(): void
-    // {
-    //     $output = self::getOutput();
-
-    //     if ($output === 'view') {
-    //     }
-    //     PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-    // }
 
     /**
      * This sets the $stopControllerFlag atribute as true, to define that the controller needs to

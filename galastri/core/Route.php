@@ -104,7 +104,7 @@ final class Route implements \Language
 
     /**
      * When the route parameter 'namespace' is found in the parent's node, it is set to true
-     * temporarily and all data stored in $controllerNamespace attribute is resetted.
+     * temporarily and all data stored in $controllerNamespace property is resetted.
      *
      * @var bool
      */
@@ -329,7 +329,7 @@ final class Route implements \Language
      * - Every key value will receive a '/' char in the beginning of their value like this:
      *   array('/foo', '/bar')
      *
-     * The result array is stored inside $urlWorkingArray attribute.
+     * The result array is stored inside $urlWorkingArray property.
      *
      * @return void
      */
@@ -366,8 +366,8 @@ final class Route implements \Language
      *
      * This function:
      * 1. Removes the current key off the $urlWorkingArray
-     * 2. Stores the node parameters in $nodeWorkingArray attribute
-     * 3. Add the key label in the $controllerNamespace attribute
+     * 2. Stores the node parameters in $nodeWorkingArray property
+     * 3. Add the key label in the $controllerNamespace property
      * 4. Calls the method again to repeat the process.
      *
      * However, if there is no key that matches with the URL node, then he searchs if there is a
@@ -375,14 +375,14 @@ final class Route implements \Language
      * matche the URL node.
      *
      * If there is a dynamic node, then its label and value is stored in the $dynamicNodeValues
-     * attribute and then it execute a closure function in the variable $resolveNode explained
+     * property and then it execute a closure function in the variable $resolveNode explained
      * above.
      *
      * If there ir no node nor dynamic node, then this means that the URL node doesn't exist, so the
      * $parentNodeName is set as null.
      *
      * After all the tests, all the remaining URL nodes is stored in the $remainingUrlNodes
-     * attribute.
+     * property.
      *
      * @param  array $routeNodes                    Multidimensional array with the configuration of
      *                                              the project routing.
@@ -476,7 +476,7 @@ final class Route implements \Language
      * inherited by the subsequent nodes. If there is any, its value is overwrited by the new value.
      *
      * NOTE: When the route parameter 'namespace' exists, a new namespace needs to be set as
-     * starting point from the node. This means that all the stored $controllerNamespace attribute
+     * starting point from the node. This means that all the stored $controllerNamespace property
      * needs to restart. That is why there is a test to check if the parameter 'namespaces' exists.
      *
      * @param  array $nodeFound                     Multidimensional array with the node parameters
@@ -543,7 +543,7 @@ final class Route implements \Language
      * Defines the name of the child node, based on the remaining URL nodes. If there are no
      * remaining URL nodes, then the child node name will be 'main'. If there are remaining URL
      * nodes, then the first node will be the name of the child node and that will be dropped from
-     * the $remainingUrlNodes attribute.
+     * the $remainingUrlNodes property.
      *
      * @return void
      */
@@ -603,7 +603,7 @@ final class Route implements \Language
      * etc.).
      *
      * The method gets the request method received by the server and checks if the requestMethod
-     * stored in the $childNodeParam attribute.
+     * stored in the $childNodeParam property.
      *
      * If it exists it compares the actual request method to the methods defined in the key of the
      * parameter. If it is equal, then the value is validated as a valid method name and, as
@@ -651,7 +651,7 @@ final class Route implements \Language
     }
 
     /**
-     * Gets all the remaining URL nodes and stores in the $urlParam attributes since there is a
+     * Gets all the remaining URL nodes and stores in the $urlParam properties since there is a
      * 'parameters' parameter configured in the routing configuration.
      *
      * There are two ways to configure parameters in the routing configuration file:
@@ -662,7 +662,7 @@ final class Route implements \Language
      *
      *      'parameters' => ['tag1', 'tag2'],
      *
-     * The tag name will be stored as a key label on the $urlParam attribute, while its value in the
+     * The tag name will be stored as a key label on the $urlParam property, while its value in the
      * url will be stored as value of this key.
      *
      * @return void
@@ -691,7 +691,7 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $urlParam attribute.
+     * Return the $urlParam property.
      *
      * @return array
      */
@@ -701,7 +701,7 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $parentNodeName attribute.
+     * Return the $parentNodeName property.
      *
      * @return null|string
      */
@@ -711,7 +711,7 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $nodeWorkingArray attribute.
+     * Return the $nodeWorkingArray property.
      *
      * @param  null|string $key                     Specify which key will be returned.
      * 
@@ -723,7 +723,7 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $controllerNamespace attribute.
+     * Return the $controllerNamespace property.
      *
      * @return array
      */
@@ -733,7 +733,7 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $childNodeName attribute.
+     * Return the $childNodeName property.
      *
      * @return null|string
      */
@@ -743,7 +743,7 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $childNodeParam attribute.
+     * Return the $childNodeParam property.
      *
      * @param  null|string $key                     Specify which key will be returned.
      * 
@@ -755,7 +755,7 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $dynamicNodeValues attribute.
+     * Return the $dynamicNodeValues property.
      *
      * @return array|string
      */
@@ -765,7 +765,7 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $routeParam attribute.
+     * Return the $routeParam property.
      *
      * @param  null|string $key                     Specify which key will be returned.
      *

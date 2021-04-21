@@ -2,6 +2,10 @@
 
 namespace galastri\lang;
 
+/**
+ * This interface stores the various messages in English language. It is dynamically implemented in
+ * many classes based on the debug configuration 'language' parameter.
+ */
 interface English
 {
     /**
@@ -74,9 +78,42 @@ interface English
     ];
 
     /**
-     * Constants used in \galastri\extensions\types\TraitCommon.
+     * Constants used in \galastri\extensions\typeValidation\Common.
      */
     const VALIDATION_DEFAULT_INVALID_MESSAGE = [
-        'G0013', "The value '%s' is not valid."
+        'G0013', "Invalid value '%s'."
+    ];
+
+    /**
+     * Constants used in \galastri\types\ Type* files.
+     */
+    const TYPE_DEFAULT_INVALID_MESSAGE = [
+        'G0014', "Wrong data type. Expecting '%s', but '%s' was given."
+    ];
+
+    /**
+     * Constants used in \galastri\extensions\output\View
+     */
+    const UNDEFINED_TEMPLATE_FILE = [
+        'G0015', "No template file set to this route. Set a default template in project or route configuration."
+    ];
+
+    const TEMPLATE_FILE_NOT_FOUND = [
+        'G0016', "Template file '%s' not found."
+    ];
+
+    const VIEW_FILE_NOT_FOUND = [
+        'G0017', "View file '%s' not found."
+    ];
+
+    /**
+     * Constants used in \galastri\extensions\typeValidation\StringValidation
+     */
+    const UNDEFINED_VALIDATION_ALLOWED_CHARSET = [
+        'G0018', "Method 'allowedCharset()' requires one or more charsets defined to work. None was given."
+    ];
+
+    const UNDEFINED_VALIDATION_REQUIRED_CHARSET = [
+        'G0019', "Method 'requiredChars()' needs one or more charsets defined to work. None was given."
     ];
 }
