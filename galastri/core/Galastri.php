@@ -51,7 +51,6 @@ final class Galastri implements \Language
     public static function execute(): void
     {
         try {
-            ob_start();
             /**
              * Sets the timezone if it is configured in /app/config/project.php. If it is false, the
              * timezone will not be configured here.
@@ -76,12 +75,7 @@ final class Galastri implements \Language
             self::callController();
             self::callOutput();
         } catch (Exception $e) {
-            ob_get_clean();
             Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
-        // } catch (\Error | \Throwable | \Exception | \TypeError $e) {
-            // ob_get_clean();
-            // Debug::setBacklog($e->getTrace());
-            // Debug::setError($e->getMessage(), $e->getCode())::print();
         } finally {
             PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
         }

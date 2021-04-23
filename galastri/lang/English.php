@@ -78,13 +78,6 @@ interface English
     ];
 
     /**
-     * Constants used in \galastri\extensions\typeValidation\Common.
-     */
-    const VALIDATION_DEFAULT_INVALID_MESSAGE = [
-        'G0013', "Invalid value '%s'."
-    ];
-
-    /**
      * Constants used in \galastri\types\ Type* files.
      */
     const TYPE_DEFAULT_INVALID_MESSAGE = [
@@ -117,6 +110,30 @@ interface English
         'G0019', "Method 'requiredChars()' needs one or more charsets defined to work. None was given."
     ];
 
+    const VALIDATION_STRING_LOWER_CASE_ONLY = [
+        'G0023', "Excepting the value to contain only lower case chars."
+    ];
+
+    const VALIDATION_STRING_UPPER_CASE_ONLY = [
+        'G0023', "Excepting the value to contain only upper case chars."
+    ];
+
+    const VALIDATION_STRING_MIN_LENGTH = [
+        'G0023', "Excepting the value to contain '%s' minimum char length, but it contains '%s'."
+    ];
+
+    const VALIDATION_STRING_MAX_LENGTH = [
+        'G0023', "Excepting the value to contain '%s' maximum char length, but it contains '%s'."
+    ];
+
+    const VALIDATION_STRING_INVALID_CHARS = [
+        'G0023', "The value cannot contain '%s' chars."
+    ];
+
+    const VALIDATION_STRING_REQUIRED_CHARS = [
+        'G0023', "The value needs to contain '%s' of these chars '%s' but '%s' were informed."
+    ];
+
     /**
      * Constants used in \galastri\modules\types\traits\Common
      */
@@ -133,5 +150,23 @@ interface English
      */
     const SECURE_RANDOM_GENERATOR_NOT_FOUND = [
         'G0022', "No cryptographically secure random string generation function available. You need to check your PHP configuration to make the 'random_bytes()' or 'openssl_random_pseudo_bytes()' functions available."
+    ];
+
+    /**
+     * Constants used in \galastri\extensions\typeValidation\NumericValidation
+     */
+    const VALIDATION_NUMERIC_MIN_VALUE = [
+        'G0023', "Expecting minimum value '%s' but '%s' were given."
+    ];
+
+    const VALIDATION_NUMERIC_MAX_VALUE = [
+        'G0023', "Expecting maximum value '%s' but '%s' were given."
+    ];
+
+    /**
+     * Constants used in \galastri\modules\types\traits\Math
+     */
+    const MATH_ROOT_CANNOT_BE_ZERO = [
+        'G0024', "The root() method cannot have the degree of root equals to zero."
     ];
 }

@@ -55,7 +55,7 @@ abstract class Controller
 
     /**
      * Stores a merged array of $doBeforeData, $doAfterData, $controllerData and $requestMethodData
-     * propertiess.
+     * properties.
      *
      * @var array
      */
@@ -178,7 +178,7 @@ abstract class Controller
      * When the route class is instanciated, the __construct() method will do some jobs.
      *
      * It will set the parameters defined in the \galastri\core\Route class and will store it in
-     * internal propertiess owned by this class. It makes things easier to get the route parameter
+     * internal properties owned by this class. It makes things easier to get the route parameter
      * values and also set new values, if it is needed.
      *
      * Then it calls for the __doBefore() method, if it exists in the route controller, the route
@@ -217,7 +217,7 @@ abstract class Controller
     }
 
     /**
-     * Gets all pertinent route parameters and stores it in propertiess owned by this class.
+     * Gets all pertinent route parameters and stores it in properties owned by this class.
      * The parameters stored are:
      * 
      * Child node parameters

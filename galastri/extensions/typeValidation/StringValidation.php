@@ -58,6 +58,10 @@ final class StringValidation implements \Language
     public function lowerCase(): void
     {
         $this->chain[] = function () {
+            $this->defaultMessageSet(
+                self::VALIDATION_STRING_LOWER_CASE_ONLY[1],
+                self::VALIDATION_STRING_LOWER_CASE_ONLY[0]
+            );
             self::validateCase('/[^\p{Ll}]/u');
         };
     }
@@ -71,6 +75,10 @@ final class StringValidation implements \Language
     public function upperCase(): void
     {
         $this->chain[] = function () {
+            $this->defaultMessageSet(
+                self::VALIDATION_STRING_UPPER_CASE_ONLY[1],
+                self::VALIDATION_STRING_UPPER_CASE_ONLY[0]
+            );
             self::validateCase('/[^\p{Lu}]/u');
         };
     }
@@ -80,14 +88,20 @@ final class StringValidation implements \Language
      * This method adds a chain link with a function that checks if the data has more length than
      * the number informed. If there is, an exception is thrown.
      *
-     * @param  int $length                          The max length of the data.
-     * 
+     * @param  int $length                          The maximum length of the data.
+     *
      * @return void
      */
     public function maxLength(int $length): void
     {
-        $this->chain[] = function () use ($length){
+        $this->chain[] = function () use ($length) {
             if (strlen($this->value) > $length) {
+                $this->defaultMessageSet(
+                    self::VALIDATION_STRING_MAX_LENGTH[1],
+                    self::VALIDATION_STRING_MAX_LENGTH[0],
+                    $length,
+                    strlen($this->value)
+                );
                 $this->throwErrorMessage();
             }
         };
@@ -97,23 +111,44 @@ final class StringValidation implements \Language
      * This method adds a chain link with a function that checks if the data has less length than
      * the number informed. If there is, an exception is thrown.
      *
-     * @param  int $length                          The max length of the data.
-     * 
+     * @param  int $length                          The minimum length of the data.
+     *
      * @return void
      */
     public function minLength(int $length): void
     {
-        $this->chain[] = function () use ($length){
+        $this->chain[] = function () use ($length) {
             if (strlen($this->value) < $length) {
+                $this->defaultMessageSet(
+                    self::VALIDATION_STRING_MIN_LENGTH[1],
+                    self::VALIDATION_STRING_MIN_LENGTH[0],
+                    $length,
+                    strlen($this->value)
+                );
                 $this->throwErrorMessage();
             }
         };
     }
     
     /**
+     * This method is a shortcut to set a minimum and maximum length to the string.
+     *
+     * @param  int $minLength                          The minimum length of the data.
+     *
+     * @param  int $maxLength                          The maximum length of the data.
+     *
+     * @return void
+     */
+    public function lengthRange(int $minLength, int $maxLength): void
+    {
+        $this->minLength($minLength);
+        $this->maxLength($maxLength);
+    }
+    
+    /**
      * This method adds a chain link with a function that checks if the data has only the allowed
      * groups of chars defined.
-     * 
+     *
      * It first converts possible flags to regex chars, based on the CHAR_FLAGS constant. Then, the
      * charset is tested if there are unmaches. If there are, an exception is thrown.
      *
@@ -131,7 +166,7 @@ final class StringValidation implements \Language
      */
     public function allowCharset(array $charSets): void
     {
-        $this->chain[] = function () use ($charSets){
+        $this->chain[] = function () use ($charSets) {
             if (empty($charSets)) {
                 throw new Exception(self::UNDEFINED_VALIDATION_ALLOWED_CHARSET[1], self::UNDEFINED_VALIDATION_ALLOWED_CHARSET[0]);
             }
@@ -144,6 +179,11 @@ final class StringValidation implements \Language
             preg_match_all('/[^' . implode($charSets) . ']/u', $this->value, $unmatches);
     
             if (!empty($unmatches[0])) {
+                $this->defaultMessageSet(
+                    self::VALIDATION_STRING_INVALID_CHARS[1],
+                    self::VALIDATION_STRING_INVALID_CHARS[0],
+                    implode(', ', array_unique($unmatches[0]))
+                );
                 $this->throwErrorMessage();
             }
         };
@@ -166,9 +206,12 @@ final class StringValidation implements \Language
      */
     public function requiredChars(int $minQty, array $charSets)
     {
-        $this->chain[] = function () use ($minQty, $charSets){
+        $this->chain[] = function () use ($minQty, $charSets) {
             if (empty($charSets)) {
-                throw new Exception(self::UNDEFINED_VALIDATION_REQUIRED_CHARSET[1], self::UNDEFINED_VALIDATION_REQUIRED_CHARSET[0]);
+                throw new Exception(
+                    self::UNDEFINED_VALIDATION_REQUIRED_CHARSET[1],
+                    self::UNDEFINED_VALIDATION_REQUIRED_CHARSET[0]
+                );
             }
 
             foreach ($charSets as $charGroup) {
@@ -177,6 +220,13 @@ final class StringValidation implements \Language
                 preg_match_all('/[' . $regex . ']/u', $this->value, $matches);
     
                 if (count($matches[0]) < $minQty) {
+                    $this->defaultMessageSet(
+                        self::VALIDATION_STRING_REQUIRED_CHARS[1],
+                        self::VALIDATION_STRING_REQUIRED_CHARS[0],
+                        $minQty,
+                        implode(', ', $matches[0]),
+                        count($matches[0])
+                    );
                     $this->throwErrorMessage();
                 }
             }
@@ -185,14 +235,14 @@ final class StringValidation implements \Language
     
     /**
      * This is an internal method, used by the lowerCase() and upperCase() methods.
-     * 
+     *
      * If first filters the value extracting all letters. Then, it matches all the upper or lower
      * case chars, defined by the $casedUtf8CharsRegex parameter. If there are unmaches, then an
      * exceptions is thrown.
      *
      * @param  mixed $casedUtf8CharsRegex           The regex string with the commands that sets the
      *                                              case it will look for.
-     * 
+     *
      * @return void
      */
     private function validateCase($casedUtf8CharsRegex)

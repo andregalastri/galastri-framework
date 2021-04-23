@@ -4,7 +4,7 @@ namespace app\controllers;
 
 use galastri\core\Controller;
 use galastri\modules\types\TypeString;
-
+use galastri\modules\types\TypeInt;
 
 /**
  * This is a route controller. Its defined by the parent node and its name needs to be in pascal
@@ -51,17 +51,23 @@ class Index extends Controller
      */
     protected function main(): array
     {
-//         $myString = new TypeString();
-//         $myString
-//                 ->denyEmpty()
-//                     ->onError('Campo obrigatorio')
-//                  ->maxLength(5)
-//                      ->onError('nao pode mais que 5')
-//                      ->validate()
-//                      ;
-// // 
-//             $myString->setValue('12312231213213');
-//         echo '<br>';
+        // $myInt = new TypeInt();
+        // $myString = new TypeString('123ABC');
+
+        // echo $myString->convertToMask('###.###.###', true);
+
+        // $myInt->setValue(4);
+        // echo $myInt->getValue();
+        // $myString
+        //         ->denyEmpty()
+        //             ->onError('Campo obrigatorio')
+        //          ->maxLength(5)
+        //              ->onError('nao pode mais que 5')
+        //              ->validate()
+        //              ;
+
+        //     $myString->setValue('12312231213213');
+        // echo '<br>';
         return [];
     }
 

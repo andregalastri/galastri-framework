@@ -78,13 +78,6 @@ interface BrazilianPortuguese
     ];
 
     /**
-     * Constants used in \galastri\extensions\types\TraitCommon.
-     */
-    const VALIDATION_DEFAULT_INVALID_MESSAGE = [
-        'G0013', "O dado '%s' é inválido."
-    ];
-
-    /**
      * Constants used in \galastri\types\ Type* files.
      */
     const TYPE_DEFAULT_INVALID_MESSAGE = [
@@ -117,6 +110,30 @@ interface BrazilianPortuguese
         'G0019', "O método 'requiredChars()' requer um ou mais charsets definidos. Nenhum foi informado."
     ];
 
+    const VALIDATION_STRING_LOWER_CASE_ONLY = [
+        'G0023', "O valor deve conter apenas characteres minúsculos."
+    ];
+
+    const VALIDATION_STRING_UPPER_CASE_ONLY = [
+        'G0023', "O valor deve conter apenas characteres maiúsculos."
+    ];
+
+    const VALIDATION_STRING_MIN_LENGTH = [
+        'G0023', "O valor deve conter no mínimo '%s' caracteres, mas o valor atual contém '%s'."
+    ];
+
+    const VALIDATION_STRING_MAX_LENGTH = [
+        'G0023', "O valor deve conter no máximo '%s' caracteres, mas o valor atual contém '%s'."
+    ];
+
+    const VALIDATION_STRING_INVALID_CHARS = [
+        'G0023', "O valor não pode conter os caracteres '%s'."
+    ];
+
+    const VALIDATION_STRING_REQUIRED_CHARS = [
+        'G0023', "É obrigatório o valor conter '%s' de um destes caracteres '%s'. Foi(ram) informado(s) '%s'."
+    ];
+
     /**
      * Constants used in \galastri\modules\types\traits\Common
      */
@@ -133,5 +150,23 @@ interface BrazilianPortuguese
      */
     const SECURE_RANDOM_GENERATOR_NOT_FOUND = [
         'G0022', "Nenhuma função de geração de string aleatória criptograficamente segura disponível. Você precisa verificar sua configuração do PHP para disponibilizar as funções 'random_bytes()' ou 'openssl_random_pseudo_bytes()'."
+    ];
+
+    /**
+     * Constants used in \galastri\extensions\typeValidation\NumericValidation
+     */
+    const VALIDATION_NUMERIC_MIN_VALUE = [
+        'G0023', "O valor mínimo é '%s'. Foi informado '%s'."
+    ];
+
+    const VALIDATION_NUMERIC_MAX_VALUE = [
+        'G0023', "O valor máximo é '%s'. Foi informado '%s'."
+    ];
+
+    /**
+     * Constants used in \galastri\modules\types\traits\Math
+     */
+    const MATH_ROOT_CANNOT_BE_ZERO = [
+        'G0024', "O método root() não pode ter um grau igual a zero."
     ];
 }

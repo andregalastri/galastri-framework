@@ -21,10 +21,10 @@ trait RandomIntValue
     public function setRandomValue(int $min = 0, ?int $max = null): self
     {
         if ($max === null) {
-            $max = getrandmax();
+            $max = mt_getrandmax();
         }
 
-        $this->execSetValue(rand($min, $max));
+        $this->execSetValue(mt_rand($min, $max));
         return $this;
     }
 }

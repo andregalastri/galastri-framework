@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace galastri\modules\types;
 
@@ -9,6 +10,7 @@ use galastri\modules\types\traits\Common;
 use galastri\modules\types\traits\Concat;
 use galastri\modules\types\traits\ConvertCase;
 use galastri\modules\types\traits\Length;
+use galastri\modules\types\traits\Mask;
 use galastri\modules\types\traits\Substring;
 use galastri\modules\types\traits\Trim;
 use galastri\modules\types\traits\Split;
@@ -27,6 +29,7 @@ final class TypeString implements \Language
     use Concat;
     use ConvertCase;
     use Length;
+    use Mask;
     use Substring;
     use Trim;
     use Split;
@@ -85,7 +88,7 @@ final class TypeString implements \Language
      * 
      * @return void
      */
-    public function __construct($value = null, $saveHistory = false)
+    public function __construct(/*?string*/ $value = null, bool $saveHistory = false)
     {
         Debug::setBacklog();
 
@@ -208,6 +211,26 @@ final class TypeString implements \Language
     {
         $this->stringValidation
             ->maxLength($length);
+
+        return $this;
+    }
+    
+    /**
+     * Sets a minimum and maximum length to the string.
+     *
+     * The method calls the lengthRange() method from the string validation class. More information
+     * in \galastri\extensions\typeValidation\StringValidation class file.
+     *
+     * @param  int $minLength                          The minimum length required.
+     * 
+     * @param  int $maxLength                          The maximum length allowed.
+     *
+     * @return self
+     */
+    public function lengthRange(int $minLength, int $maxLength): self
+    {
+        $this->stringValidation
+            ->lengthRange($minLength, $maxLength);
 
         return $this;
     }

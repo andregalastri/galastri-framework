@@ -2,6 +2,7 @@
 
 namespace galastri\extensions\typeValidation;
 
+use galastri\core\Debug;
 use galastri\extensions\Exception;
 
 /**
@@ -15,7 +16,7 @@ trait Common
      *
      * @var mixed
      */
-    private $value = null;
+    private /*mixed*/ $value = null;
 
     /**
      * Stores closure functions that will create a chain of validation executions. This chain will
@@ -29,9 +30,9 @@ trait Common
      * Stores an error message that will be shown if the value is considered invalid. It is an array
      * because the first key stores the error code and the second the message itself.
      *
-     * @var array
+     * @var array|null
      */
-    private array $errorMessage = self::VALIDATION_DEFAULT_INVALID_MESSAGE;
+    private ?array $errorMessage = null;
 
     
     /**
@@ -48,15 +49,16 @@ trait Common
      *
      * @return self
      */
-    public function setValue($value): self
+    public function setValue(/*mixed*/ $value): self
     {
         $this->value = $value;
         return $this;
     }
     
     /**
-     * This method starts the chain execution. It first checks if the chain isn't empty. If there
-     * are functions stored in the array, then it is inverted, because the execution needs to start
+     * This method starts the chain execution. It first checks if the chain isn't empty. If not,
+     * this means that there are functions stored in the array, so, each function is executed in a
+     * foreach statement. The execution occurs in inverted way because the execution needs to start
      * from the last added function to the first.
      *
      * Finally, all functions are executed one by one in a foreach loop.
@@ -66,10 +68,7 @@ trait Common
     public function validate(): void
     {
         if (!empty($this->chain)) {
-            $chain = $this->chain;
-            krsort($chain);
-
-            foreach ($this->chain as $function) {
+            foreach (array_reverse($this->chain) as $function) {
                 $function();
             }
         }
@@ -86,8 +85,10 @@ trait Common
      *
      * @return void
      */
-    public function onError(string $message, ?string $code = null): void
+    public function onError(string $message, ?string $code): void
     {
+        Debug::bypassGenericMessage();
+
         $this->chain[] = function () use ($message, $code) {
             $this->errorMessage[1] = $message;
 
@@ -105,8 +106,32 @@ trait Common
      *
      * @return void
      */
-    public function throwErrorMessage(...$data): void
+    public function throwErrorMessage(/*mixed*/ ...$data): void
     {
         throw new Exception($this->errorMessage[1], $this->errorMessage[0], [var_export($this->value, true), implode($data)]);
+    }
+
+    /**
+     * Internal method that sets a default message when an exception is thrown. This message is
+     * overwritten if the onError() method is set in the validation chain.
+     *
+     * @param  string $message                      The text message that will be retuned when a
+     *                                              exception is thrown.
+     *
+     * @param  null|string $code                    The code that identifies the exception.
+     *
+     * @param  array $printfData                    If the message has printf flags, each value of
+     *                                              this array replaces it.
+     *
+     * @return void
+     */
+    private function defaultMessageSet(string $message, ?string $code, /*mixed*/ ...$printfData): void
+    {
+        Debug::bypassGenericMessage();
+
+        if ($this->errorMessage === null) {
+            $this->errorMessage[1] = vsprintf($message, $printfData);
+            $this->errorMessage[0] = $code;
+        }
     }
 }

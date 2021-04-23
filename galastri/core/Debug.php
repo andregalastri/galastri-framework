@@ -116,7 +116,7 @@ final class Debug implements \Language
      *
      * @param  int|string $code                     Code that identifies the exception.
      *
-     * @param  mixed d...$printfData                Values that will replace %s flags in the
+     * @param  mixed ...$printfData                 Values that will replace %s flags in the
      *                                              message, in the same order of appearance of the
      *                                              flags.
      *
