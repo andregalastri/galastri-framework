@@ -53,6 +53,10 @@ trait Common
     {
         Debug::setBacklog();
 
+        if ($value instanceof \Closure) {
+            $value = $value($this->value);
+        }
+
         $this->execSetValue($value);
         return $this;
     }
@@ -104,7 +108,7 @@ trait Common
      *
      * @param int|null $key                         The state that will be returned. When null,
      *                                              return all the history in array format.
-     * 
+     *
      * @return array|mixed
      */
     public function getHistory(?int $key = null)// : mixed
@@ -127,11 +131,11 @@ trait Common
     /**
      * Reverts the value to some of the previous values stored in the history. It is required to
      * specify which key will be restored to the value.
-     * 
+     *
      * This method only works if the $saveHistory property is enabled.
      *
      * @param int $key                              The state that will be restored to the value.
-     * 
+     *
      * @return self
      */
     public function revertToHistory(int $key): self
@@ -152,31 +156,47 @@ trait Common
     }
 
     /**
+     * Execute the varDump function in the value to get its data and properties.
+     *
+     * @return void
+     */
+    public function varDump(): void
+    {
+        varDump($this->value);
+    }
+
+    /**
      * Internal executions.
      */
-
+    
     /**
      * This method stores the value into the $value property. It first checks its type; if it is
      * null or equal to the expected value type, then it is valid. If not, an exception is thrown.
      *
      * When it has a valid type, the value is validated the validation methods, if they were
      * configured and only after this the value is stored.
-     * 
+     *
      * This method also sets if the value is valid to define the object as initialized or not, by
      * checking if it is already initialized and if the value is not equal to null. The initial
      * value is set only if the value meets this requirements.
-     * 
+     *
      * Finally, it calls the save history method execution, that will store the value as a new state
      * inside the data history (only if $saveHistory property is enabled).
      *
      * @param mixed $value                          The value that will be checked and stored.
-     * 
+     *
      * @return void
      */
     private function execSetValue($value): void
     {
-        if (gettype($value) === 'NULL' or gettype($value) === self::VALUE_TYPE) {
+        if (in_array(static::VALUE_TYPE, ['double', 'integer'])) {
+            $this->convertToRightNumericType($value);
+        }
+
+        if (gettype($value) === 'NULL' or gettype($value) === static::VALUE_TYPE) {
             $this->validate($value);
+            $this->validate($value);
+
 
             $this->value = $value;
             
@@ -190,7 +210,11 @@ trait Common
             throw new Exception(
                 self::TYPE_DEFAULT_INVALID_MESSAGE[1],
                 self::TYPE_DEFAULT_INVALID_MESSAGE[0],
-                [self::VALUE_TYPE, gettype($value)]
+                [static::VALUE_TYPE, str_replace(
+                    ['double'],
+                    ['float'],
+                    gettype($value)
+                )]
             );
         }
     }
@@ -209,6 +233,24 @@ trait Common
             $this->history[] = $value;
         }
     }
+
+    /**
+     * Internal method that converts numeric values to the right type set in the VALUE_TYPE
+     * constant. This way it is always safe that a TypeInt will return an integer and a TypeFloat
+     * will return a float.
+     *
+     * @param  int|float &$value                    The value that will be converted.
+     *
+     * @return void
+     */
+    private function convertToRightNumericType(/*int|float*/ &$value): void
+    {
+        if (static::VALUE_TYPE === 'integer') {
+            $value = explode('.', $value)[0];
+        }
+        settype($value, static::VALUE_TYPE);
+        unset($value);
+    }
     
     /**
      * This method return if the actual value is empty (true) or not (false).
@@ -218,16 +260,5 @@ trait Common
     private function isEmpty(): bool
     {
         return empty($this->value);
-    }
-
-
-    /**
-     * Execute the varDump function in the value to get its data and properties.
-     *
-     * @return void
-     */
-    public function varDump(): void
-    {
-        varDump($this->value);
     }
 }

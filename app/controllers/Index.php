@@ -5,6 +5,7 @@ namespace app\controllers;
 use galastri\core\Controller;
 use galastri\modules\types\TypeString;
 use galastri\modules\types\TypeInt;
+use galastri\modules\types\TypeFloat;
 
 /**
  * This is a route controller. Its defined by the parent node and its name needs to be in pascal
@@ -26,7 +27,7 @@ use galastri\modules\types\TypeInt;
  *
  *   __doAfter() : It is called in every request to the parent node, regardless which child node
  *   the route is pointing. It is executed after the route method.
- * 
+ *
  * There are, also, the request methods. These methods are called after the route method and is
  * called based on the request method (POST, GET, PUT, etc). It needs to be configured in the route
  * configuration, with 'requestMethod' paramenter.
@@ -51,7 +52,13 @@ class Index extends Controller
      */
     protected function main(): array
     {
-        // $myInt = new TypeInt();
+        // $myInt = (new TypeFloat(3589))->numberFormatConfig(2, ',', '.');
+        // $external = new TypeFloat(5.233);
+
+        // echo $myInt->setValue(-4)
+        // ->abs()
+        // ->getValue();
+
         // $myString = new TypeString('123ABC');
 
         // echo $myString->convertToMask('###.###.###', true);

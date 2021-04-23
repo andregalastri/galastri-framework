@@ -18,7 +18,7 @@ use galastri\modules\types\traits\Replace;
 use galastri\modules\types\traits\RandomStringValue;
 
 /**
- * TypeString
+ * This class creates objects that will act as a string type.
  */
 final class TypeString implements \Language
 {
@@ -81,11 +81,11 @@ final class TypeString implements \Language
      *
      * @param null|string $value                    The value that will be stored. It is optional to
      *                                              set it in the construct.
-     * 
+     *
      * @param bool $saveHistory                     Defines if the changes of the value will be
      *                                              saved in a history, allowing to revert the value
      *                                              to previous values. Default is false.
-     * 
+     *
      * @return void
      */
     public function __construct(/*?string*/ $value = null, bool $saveHistory = false)
@@ -199,12 +199,12 @@ final class TypeString implements \Language
     
     /**
      * Sets the maximum length to the string.
-     * 
+     *
      * The method calls the maxLength() method from the string validation class. More information in
      * \galastri\extensions\typeValidation\StringValidation class file.
-     * 
+     *
      * @param  int $length                          The minimum length required.
-     * 
+     *
      * @return self
      */
     public function maxLength(int $length): self
@@ -222,7 +222,7 @@ final class TypeString implements \Language
      * in \galastri\extensions\typeValidation\StringValidation class file.
      *
      * @param  int $minLength                          The minimum length required.
-     * 
+     *
      * @param  int $maxLength                          The maximum length allowed.
      *
      * @return self
@@ -237,7 +237,7 @@ final class TypeString implements \Language
     
     /**
      * Defines that the value of the string cannot be null.
-     * 
+     *
      * The method calls the denyNull() method from the string validation class. More information in
      * \galastri\extensions\typeValidation\StringValidation class file.
      *
@@ -253,7 +253,7 @@ final class TypeString implements \Language
     
     /**
      * Defines that the value of the string cannot be empty.
-     * 
+     *
      * The method calls the denyEmpty() method from the string validation class. More information in
      * \galastri\extensions\typeValidation\StringValidation class file.
      *
@@ -271,13 +271,13 @@ final class TypeString implements \Language
      * Sets an returning error message when the validation fails. This method needs to be placed in
      * front of the validation method. If the validation fails, then the returning message set will
      * be the one set in this method here.
-     * 
+     *
      * Optionally, an error code can be set.
      *
      * @param  string $message                      The message when an validation returns error.
-     * 
+     *
      * @param  string $code                         A custom code to the error.
-     * 
+     *
      * @return self
      */
     public function onError(string $message, string $code = 'validationFail'): self

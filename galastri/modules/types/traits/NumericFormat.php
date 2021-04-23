@@ -34,11 +34,11 @@ trait NumericFormat
      * return the formatted value, it just configures it.
      *
      * @param  mixed $decimals                      Number of decimal places.
-     * 
+     *
      * @param  mixed $decimalSeparator              Char that is used as decimal separator.
-     * 
+     *
      * @param  mixed $thousandSeparator             Char that is used as thousand separator.
-     * 
+     *
      * @return self
      */
     public function numberFormatConfig(int $decimals, string $decimalSeparator = '.', string $thousandSeparator = ','): self
@@ -60,9 +60,9 @@ trait NumericFormat
      *                                              formatted number and any other char placed
      *                                              together will be place as part of the returning
      *                                              string.
-     * 
+     *
      *                                              Examples
-     * 
+     *
      *                                                  $myInt->setNumber(123)->getFormattedNumber()
      *                                                  - Result: '123,00'
      *
@@ -71,7 +71,7 @@ trait NumericFormat
      *
      * @return string
      */
-    public function getFormattedNumber(string $textReplace = '##'): string
+    public function getFormattedValue(string $textReplace = '##'): string
     {
         $numberFormat = number_format($this->value, $this->decimals, $this->decimalSeparator, $this->thousandSeparator);
         

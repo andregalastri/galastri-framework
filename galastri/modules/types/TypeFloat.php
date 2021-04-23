@@ -6,28 +6,28 @@ namespace galastri\modules\types;
 use galastri\modules\types\abstraction\TypeNumeric;
 
 /**
- * This class creates objects that will act as an integer type.
+ * This class creates objects that will act as a float type.
  */
-final class TypeInt extends TypeNumeric implements \Language
+final class TypeFloat extends TypeNumeric implements \Language
 {
     /**
      * This constant define the type of the data the $value property (defined in \galastri\modules\
      * types\traits\Common) will store. It needs to match the possible returning value given by the
      * gettype() function.
      */
-    const VALUE_TYPE = 'integer';
+    const VALUE_TYPE = 'double';
 
     /**
      * Stores the string or null.
      *
-     * @var null|int
+     * @var null|float
      */
-    protected ?int $value = null;
+    protected ?float $value = null;
 
     /**
      * Stores the first value set to the object that isn't null.
      *
-     * @var null|int
+     * @var null|float
      */
-    protected ?int $initialValue = null;
+    protected ?float $initialValue = null;
 }

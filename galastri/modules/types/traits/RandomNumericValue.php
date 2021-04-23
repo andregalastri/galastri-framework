@@ -5,7 +5,7 @@ namespace galastri\modules\types\traits;
 /**
  * This trait has the methods related to random generation of integers.
  */
-trait RandomIntValue
+trait RandomNumericValue
 {
         
     /**
@@ -13,9 +13,9 @@ trait RandomIntValue
      * $max parameters. The number generated is store as the value.
      *
      * @param  int $min                             Minimum value to the generated number.
-     * 
+     *
      * @param  int|null $max                        Maximum value to the generated number.
-     * 
+     *
      * @return self
      */
     public function setRandomValue(int $min = 0, ?int $max = null): self

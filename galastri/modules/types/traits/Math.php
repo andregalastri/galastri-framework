@@ -16,9 +16,7 @@ trait Math
      */
     public function sum(float $number): self
     {
-        $this->execSetValue(
-            $this->convertToRightType($this->value + $number)
-        );
+        $this->execSetValue($this->value + $number);
 
         return $this;
     }
@@ -32,9 +30,7 @@ trait Math
      */
     public function subtract(float $number): self
     {
-        $this->execSetValue(
-            $this->convertToRightType($this->value - $number)
-        );
+        $this->execSetValue($this->value - $number);
 
         return $this;
     }
@@ -48,9 +44,7 @@ trait Math
      */
     public function minuend(float $number): self
     {
-        $this->execSetValue(
-            $this->convertToRightType($number - $this->value)
-        );
+        $this->execSetValue($number - $this->value);
 
         return $this;
     }
@@ -64,9 +58,7 @@ trait Math
      */
     public function multiply(float $number): self
     {
-        $this->execSetValue(
-            $this->convertToRightType($this->value * $number)
-        );
+        $this->execSetValue($this->value * $number);
 
         return $this;
     }
@@ -80,9 +72,7 @@ trait Math
      */
     public function divide(float $number): self
     {
-        $this->execSetValue(
-            $this->convertToRightType($this->value / $number)
-        );
+        $this->execSetValue($this->value / $number);
 
         return $this;
     }
@@ -96,9 +86,7 @@ trait Math
      */
     public function dividend(float $number): self
     {
-        $this->execSetValue(
-            $this->convertToRightType($number / $this->value)
-        );
+        $this->execSetValue($number / $this->value);
 
         return $this;
     }
@@ -112,9 +100,7 @@ trait Math
      */
     public function mod(float $number): self
     {
-        $this->execSetValue(
-            $this->convertToRightType($this->value % $number)
-        );
+        $this->execSetValue($this->value % $number);
 
         return $this;
     }
@@ -129,9 +115,7 @@ trait Math
      */
     public function pow(float $exponent): self
     {
-        $this->execSetValue(
-            $this->convertToRightType(pow($this->value, $exponent))
-        );
+        $this->execSetValue(pow($this->value, $exponent));
 
         return $this;
     }
@@ -146,9 +130,7 @@ trait Math
      */
     public function powBase(float $base): self
     {
-        $this->execSetValue(
-            $this->convertToRightType(pow($exponent, $this->value))
-        );
+        $this->execSetValue(pow($exponent, $this->value));
 
         return $this;
     }
@@ -186,10 +168,10 @@ trait Math
      *
      *                                                  $myFloat->setValue(3.5)->ceil(5)
      *                                                  - Result: 5
-     * 
+     *
      *                                                  $myFloat->setValue(6)->ceil(5)
      *                                                  - Result: 10
-     * 
+     *
      *                                                  $myFloat->setValue(7.12)->ceil(0.5)
      *                                                  - Result: 7.5
      *
@@ -199,13 +181,11 @@ trait Math
     {
         $result = ceil($this->value / $nearestMultiple) * $nearestMultiple;
 
-        if ($result % 2 > 1 and self::VALUE_TYPE === 'integer') {
+        if ($result % 2 > 1 and static::VALUE_TYPE === 'integer') {
             $result = ceil($result);
         }
 
-        $this->execSetValue(
-            $this->convertToRightType($result)
-        );
+        $this->execSetValue($result);
 
         return $this;
     }
@@ -219,10 +199,10 @@ trait Math
      *
      *                                                  $myFloat->setValue(3.5)->floor(5)
      *                                                  - Result: 0
-     * 
+     *
      *                                                  $myFloat->setValue(6)->floor(5)
      *                                                  - Result: 5
-     * 
+     *
      *                                                  $myFloat->setValue(7.12)->floor(0.5)
      *                                                  - Result: 7.0
      *
@@ -232,13 +212,11 @@ trait Math
     {
         $result = floor($this->value / $nearestMultiple) * $nearestMultiple;
 
-        if ($result % 2 > 1 and self::VALUE_TYPE === 'integer') {
+        if ($result % 2 > 1 and static::VALUE_TYPE === 'integer') {
             $result = floor($result);
         }
 
-        $this->execSetValue(
-            $this->convertToRightType($result)
-        );
+        $this->execSetValue($result);
 
         return $this;
     }
@@ -266,13 +244,11 @@ trait Math
     {
         $result = round($this->value / $nearestMultiple) * $nearestMultiple;
 
-        if ($result % 2 > 1 and self::VALUE_TYPE === 'integer') {
+        if ($result % 2 > 1 and static::VALUE_TYPE === 'integer') {
             $result = round($result);
         }
 
-        $this->execSetValue(
-            $this->convertToRightType($result)
-        );
+        $this->execSetValue($result);
 
         return $this;
     }
@@ -299,16 +275,14 @@ trait Math
      */
     public function root(int $degree): self
     {
-        if ($root === 0) {
+        if ($degree === 0) {
             throw new Exception(
                 self::MATH_ROOT_CANNOT_BE_ZERO[1],
                 self::MATH_ROOT_CANNOT_BE_ZERO[0]
             );
         }
 
-        $this->execSetValue(
-            $this->convertToRightType()
-        );
+        $this->execSetValue(pow($this->value, 1/$degree));
 
         return $this;
     }
@@ -349,6 +323,6 @@ trait Math
      */
     private function convertToRightType(float $value)// : int|float
     {
-        return self::VALUE_TYPE === 'integer' ? (int)$value : (float)$value;
+        return static::VALUE_TYPE === 'integer' ? (int)$value : (float)$value;
     }
 }
