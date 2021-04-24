@@ -13,7 +13,7 @@ final class EmptyValidation implements \Language
     /**
      * Importing traits to the class.
      */
-    use Common;
+    use traits\Common;
     
     /**
      * This method adds a chain link with a function that checks if the data is strictly equal to

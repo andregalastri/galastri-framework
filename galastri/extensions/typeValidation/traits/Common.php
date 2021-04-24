@@ -1,6 +1,6 @@
 <?php
 
-namespace galastri\extensions\typeValidation;
+namespace galastri\extensions\typeValidation\traits;
 
 use galastri\core\Debug;
 use galastri\extensions\Exception;

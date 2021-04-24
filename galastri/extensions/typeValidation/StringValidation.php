@@ -14,7 +14,8 @@ final class StringValidation implements \Language
     /**
      * Importing traits to the class.
      */
-    use Common;
+    use traits\Common;
+    use traits\AllowedValueList;
 
     /**
      * Constants that store special and accented chars. This is used by the charset method to allow

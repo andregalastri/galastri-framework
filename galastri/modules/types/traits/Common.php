@@ -195,8 +195,6 @@ trait Common
 
         if (gettype($value) === 'NULL' or gettype($value) === static::VALUE_TYPE) {
             $this->validate($value);
-            $this->validate($value);
-
 
             $this->value = $value;
             

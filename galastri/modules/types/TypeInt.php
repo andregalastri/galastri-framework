@@ -18,7 +18,7 @@ final class TypeInt extends TypeNumeric implements \Language
     const VALUE_TYPE = 'integer';
 
     /**
-     * Stores the string or null.
+     * Stores a integer or null value.
      *
      * @var null|int
      */

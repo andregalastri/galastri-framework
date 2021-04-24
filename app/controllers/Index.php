@@ -6,6 +6,7 @@ use galastri\core\Controller;
 use galastri\modules\types\TypeString;
 use galastri\modules\types\TypeInt;
 use galastri\modules\types\TypeFloat;
+use galastri\modules\types\TypeBool;
 
 /**
  * This is a route controller. Its defined by the parent node and its name needs to be in pascal
@@ -52,7 +53,10 @@ class Index extends Controller
      */
     protected function main(): array
     {
-        // $myInt = (new TypeFloat(3589))->numberFormatConfig(2, ',', '.');
+        // $myString = new TypeString();
+        // $myString->setValue('2')->allowedValueList(1, 2)->validate();
+        // $myBool->setValue(2);
+        // echo $myString->getValue();
         // $external = new TypeFloat(5.233);
 
         // echo $myInt->setValue(-4)

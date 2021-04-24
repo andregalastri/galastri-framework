@@ -164,6 +164,21 @@ interface BrazilianPortuguese
     ];
 
     /**
+     * Constants used in \galastri\extensions\typeValidation\traits\AllowedValueList
+     */
+    const VALIDATION_UNDEFINED_VALUES_ALLOWED_LIST = [
+        'G0023', "É necessário definir ao menos um valor no método 'allowedValueList'."
+    ];
+
+    const VALIDATION_INVALID_TYPE_ALLOWED_VALUE_LIST = [
+        'G0023', "O método de validação 'allowedValueList' possui um valor inválido '%s'. Era esperado um tipo '%s', mas um tipo '%s' foi atribuído."
+    ];
+
+    const VALIDATION_NO_VALUE_IN_ALLOWED_LIST = [
+        'G0023', "O valor %s não é permitido. Os valores possíveis são '%s'."
+    ];
+
+    /**
      * Constants used in \galastri\modules\types\traits\Math
      */
     const MATH_ROOT_CANNOT_BE_ZERO = [

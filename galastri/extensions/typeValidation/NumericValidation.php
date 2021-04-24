@@ -14,7 +14,8 @@ final class NumericValidation implements \Language
     /**
      * Importing traits to the class.
      */
-    use Common;
+    use traits\Common;
+    use traits\AllowedValueList;
 
     /**
      * This method adds a chain link with a function that checks if the number is lesser than the

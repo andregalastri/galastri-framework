@@ -6,16 +6,6 @@ namespace galastri\modules\types;
 use galastri\core\Debug;
 use galastri\extensions\typeValidation\StringValidation;
 use galastri\extensions\typeValidation\EmptyValidation;
-use galastri\modules\types\traits\Common;
-use galastri\modules\types\traits\Concat;
-use galastri\modules\types\traits\ConvertCase;
-use galastri\modules\types\traits\Length;
-use galastri\modules\types\traits\Mask;
-use galastri\modules\types\traits\Substring;
-use galastri\modules\types\traits\Trim;
-use galastri\modules\types\traits\Split;
-use galastri\modules\types\traits\Replace;
-use galastri\modules\types\traits\RandomStringValue;
 
 /**
  * This class creates objects that will act as a string type.
@@ -25,26 +15,25 @@ final class TypeString implements \Language
     /**
      * Importing traits to the class.
      */
-    use Common;
-    use Concat;
-    use ConvertCase;
-    use Length;
-    use Mask;
-    use Substring;
-    use Trim;
-    use Split;
-    use Replace;
-    use RandomStringValue;
+    use traits\Common;
+    use traits\Concat;
+    use traits\ConvertCase;
+    use traits\Length;
+    use traits\Mask;
+    use traits\Substring;
+    use traits\Trim;
+    use traits\Split;
+    use traits\Replace;
 
     /**
-     * This constant define the type of the data the $value property (defined in \galastri\modules\
+     * This constant define the type of the data the $value property (defined in galastri\modules\
      * types\traits\Common) will store. It needs to match the possible returning value given by the
      * gettype() function.
      */
     const VALUE_TYPE = 'string';
 
     /**
-     * Stores the string or null.
+     * Stores a string or null value.
      *
      * @var null|string
      */
@@ -62,7 +51,7 @@ final class TypeString implements \Language
      * uses string validation. This is uses composition because it gives better control to the
      * visibility of validation methods and properties.
      *
-     * @var \galastri\extensions\typeValidation\StringValidation
+     * @var galastri\extensions\typeValidation\StringValidation
      */
     private StringValidation $stringValidation;
 
@@ -71,7 +60,7 @@ final class TypeString implements \Language
      * uses empty validation. This is uses composition because it gives better control to the
      * visibility of validation methods and properties.
      *
-     * @var \galastri\extensions\typeValidation\EmptyValidation
+     * @var galastri\extensions\typeValidation\EmptyValidation
      */
     private EmptyValidation $emptyValidation;
 
@@ -100,13 +89,35 @@ final class TypeString implements \Language
     }
 
     /**
+     * Generate a random string with hexadecimal chars, which the length can bet set with the length
+     * parameter and store as the value.
+     * 
+     * @param  int $length                          Length of the random generated string.
+     * 
+     * @return self
+     */
+    public function setRandomValue(int $length = 15): self
+    {
+        if (function_exists("random_bytes")) {
+            $bytes = random_bytes(ceil($length / 2));
+        } elseif (function_exists("openssl_random_pseudo_bytes")) {
+            $bytes = openssl_random_pseudo_bytes(ceil($length / 2));
+        } else {
+            throw new Exception(self::SECURE_RANDOM_GENERATOR_NOT_FOUND[0], self::SECURE_RANDOM_GENERATOR_NOT_FOUND[1]);
+        }
+
+        $this->execSetValue(bin2hex($bytes));
+        return $this;
+    }
+
+    /**
      * Validation methods via composition. The names of the methods follow the validation classes
      * methods.
      */
 
     /**
      * Allow only lower case strings. Calls the lowerCase() method from the string validation class.
-     * More information in \galastri\extensions\typeValidation\StringValidation class file.
+     * More information in galastri\extensions\typeValidation\StringValidation class file.
      *
      * @return self
      */
@@ -119,7 +130,7 @@ final class TypeString implements \Language
     
     /**
      * Allow only upper case strings. Calls the upperCase() method from the string validation class.
-     * More information in \galastri\extensions\typeValidation\StringValidation class file.
+     * More information in galastri\extensions\typeValidation\StringValidation class file.
      *
      * @return self
      */
@@ -137,7 +148,7 @@ final class TypeString implements \Language
      * multiple charsets and/or minimum quantities of them in the string.
      *
      * The method calls the requiredChars() method from the string validation class. More
-     * information in \galastri\extensions\typeValidation\StringValidation class file.
+     * information in galastri\extensions\typeValidation\StringValidation class file.
      *
      * @param  int $minQty                          Number that defines how many chars of each
      *                                              charset needs to be in the string.
@@ -165,7 +176,7 @@ final class TypeString implements \Language
      * $charset parameter.
      *
      * The method calls the allowCharset() method from the string validation class. More information
-     * in \galastri\extensions\typeValidation\StringValidation class file.
+     * in galastri\extensions\typeValidation\StringValidation class file.
 
      * @param  string ...$charSet                   Charsets that are allowed to be in the string.
      *
@@ -183,7 +194,7 @@ final class TypeString implements \Language
      * Sets the minimum length to the string.
      *
      * The method calls the minLength() method from the string validation class. More information in
-     * \galastri\extensions\typeValidation\StringValidation class file.
+     * galastri\extensions\typeValidation\StringValidation class file.
      *
      * @param  int $length                          The minimum length required.
      *
@@ -201,7 +212,7 @@ final class TypeString implements \Language
      * Sets the maximum length to the string.
      *
      * The method calls the maxLength() method from the string validation class. More information in
-     * \galastri\extensions\typeValidation\StringValidation class file.
+     * galastri\extensions\typeValidation\StringValidation class file.
      *
      * @param  int $length                          The minimum length required.
      *
@@ -215,11 +226,31 @@ final class TypeString implements \Language
         return $this;
     }
     
+       
+    /**
+     * Sets a restrict list for the allowed values.
+     *
+     * The method calls the allowedValueList() method from the string validation class. This class
+     * imports the trait galastri\extensions\typeValidation\traits\AllowedValueList. More
+     * information in the file of the trait.
+     *
+     * @param  mixed $allowedValues                 List of the allowed values.
+     * 
+     * @return self
+     */
+    public function allowedValueList(/*mixed*/ ...$allowedValues): self
+    {
+        $this->stringValidation
+            ->allowedValueList($allowedValues);
+
+        return $this;
+    }
+    
     /**
      * Sets a minimum and maximum length to the string.
      *
      * The method calls the lengthRange() method from the string validation class. More information
-     * in \galastri\extensions\typeValidation\StringValidation class file.
+     * in galastri\extensions\typeValidation\StringValidation class file.
      *
      * @param  int $minLength                          The minimum length required.
      *
@@ -239,7 +270,7 @@ final class TypeString implements \Language
      * Defines that the value of the string cannot be null.
      *
      * The method calls the denyNull() method from the string validation class. More information in
-     * \galastri\extensions\typeValidation\StringValidation class file.
+     * galastri\extensions\typeValidation\StringValidation class file.
      *
      * @return self
      */
@@ -255,7 +286,7 @@ final class TypeString implements \Language
      * Defines that the value of the string cannot be empty.
      *
      * The method calls the denyEmpty() method from the string validation class. More information in
-     * \galastri\extensions\typeValidation\StringValidation class file.
+     * galastri\extensions\typeValidation\StringValidation class file.
      *
      * @return self
      */

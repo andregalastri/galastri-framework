@@ -1,17 +1,11 @@
 <?php
 declare(strict_types = 1);
 
-namespace galastri\modules\types\abstraction;
+namespace galastri\modules\types;
 
 use galastri\core\Debug;
 use galastri\extensions\typeValidation\NumericValidation;
 use galastri\extensions\typeValidation\EmptyValidation;
-use galastri\modules\types\traits\Common;
-use galastri\modules\types\traits\Length;
-use galastri\modules\types\traits\Math;
-use galastri\modules\types\traits\Mask;
-use galastri\modules\types\traits\NumericFormat;
-use galastri\modules\types\traits\RandomNumericValue;
 
 /**
  * This class abstracts numeric types to be inherited by numeric types.
@@ -21,6 +15,11 @@ abstract class TypeNumeric implements \Language
     /**
      * Importing traits to the class.
      */
+    use traits\Common;
+    use traits\Length;
+    use traits\Math;
+    use traits\Mask;
+    use traits\NumericFormat;
 
     /**
      * The TypeNumeric class need to override the getValue method, which is part of the
@@ -34,7 +33,6 @@ abstract class TypeNumeric implements \Language
     use Math;
     use Mask;
     use NumericFormat;
-    use RandomNumericValue;
 
     /**
      * Stores an instance of the NumericValidation class, to be used in the validation methods that
@@ -96,6 +94,31 @@ abstract class TypeNumeric implements \Language
     }
 
     /**
+     * Generate a random number which the minimum and maximum value can bet set with the $min and
+     * $max parameters. The number generated is store as the value.
+     *
+     * @param  int $min                             Minimum value to the generated number.
+     *
+     * @param  int|null $max                        Maximum value to the generated number.
+     *
+     * @return self
+     */
+    public function setRandomValue(int $min = 0, ?int $max = null): self
+    {
+        if ($max === null) {
+            $max = mt_getrandmax();
+        }
+
+        $this->execSetValue(mt_rand($min, $max));
+        return $this;
+    }
+
+    /**
+     * Validation methods via composition. The names of the methods follow the validation classes
+     * methods.
+     */
+
+    /**
      * Sets the minimum value to the number.
      *
      * The method calls the minValue() method from the numeric validation class. More information in
@@ -153,6 +176,25 @@ abstract class TypeNumeric implements \Language
 
         $this->numericValidation
             ->valueRange($minValue, $maxValue);
+
+        return $this;
+    }
+
+    /**
+     * Sets a restrict list for the allowed values.
+     *
+     * The method calls the allowedValueList() method from the numeric validation class. This class
+     * imports the trait galastri\extensions\typeValidation\traits\AllowedValueList. More
+     * information in the file of the trait.
+     *
+     * @param  mixed $allowedValues                 List of the allowed values.
+     * 
+     * @return self
+     */
+    public function allowedValueList(/*mixed*/ ...$allowedValues): self
+    {
+        $this->numericValidation
+            ->allowedValueList($allowedValues);
 
         return $this;
     }

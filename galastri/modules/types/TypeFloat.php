@@ -18,7 +18,7 @@ final class TypeFloat extends TypeNumeric implements \Language
     const VALUE_TYPE = 'double';
 
     /**
-     * Stores the string or null.
+     * Stores a float or null value.
      *
      * @var null|float
      */

@@ -164,6 +164,21 @@ interface English
     ];
 
     /**
+     * Constants used in \galastri\extensions\typeValidation\traits\AllowedValueList
+     */
+    const VALIDATION_UNDEFINED_VALUES_ALLOWED_LIST = [
+        'G0023', "It is required to define at least one value in 'allowedValueList' method."
+    ];
+
+    const VALIDATION_INVALID_TYPE_ALLOWED_VALUE_LIST = [
+        'G0023', "The validation method 'allowedValueList' has an invalid value '%s'. Expecting '%s' value type, but '%s' was given."
+    ];
+
+    const VALIDATION_NO_VALUE_IN_ALLOWED_LIST = [
+        'G0023', "The value (%s) isn't an allowed value. The allowed values are [%s]."
+    ];
+
+    /**
      * Constants used in \galastri\modules\types\traits\Math
      */
     const MATH_ROOT_CANNOT_BE_ZERO = [
