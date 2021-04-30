@@ -60,12 +60,14 @@ final class TypeArray implements \Language
             if (isset($array[$key]) and gettype($array) === 'array') {
                 $array = $array[$key];
 
-                if (!$array instanceof TypeString and
+                if (
+                    !is_object($array) and
+                    !$array instanceof TypeString and
                     !$array instanceof TypeBool and
                     !$array instanceof TypeInt and
                     !$array instanceof TypeFloat and
-                    !$array instanceof TypeArray)
-                {
+                    !$array instanceof TypeArray
+                ) {
                     $class = $this->execTypeClassName($array, 'galastri\modules\types\\');
 
                     $result = new $class($storedValue[$key]);
@@ -263,7 +265,7 @@ final class TypeArray implements \Language
     {
         $array = [];
 
-        foreach($this->getValue() as $key => $value) {
+        foreach ($this->getValue() as $key => $value) {
             $array[$key] = $value->get() ?? $this->key($key)->get();
         }
 

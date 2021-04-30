@@ -12,7 +12,7 @@ trait StringMatch
         
     public function regexMatch(string $regex, ?array &$crudeMatch = null): self
     {
-        preg_match_all('/^[0-9]|[^a-zA-Z0-9_]*/', $this->getValue(), $crudeMatch);
+        preg_match_all($regex, $this->getValue(), $crudeMatch);
 
         $this->execHandleValue(new TypeArray($crudeMatch));
 
