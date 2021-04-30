@@ -2,7 +2,8 @@
 
 namespace galastri\modules;
 
-use galastri\modules\Toolbox;
+use galastri\modules\types\TypeString;
+use galastri\modules\types\TypeInt;
 
 /**
  * This class creates a log file with an analysis of the entire request execution, or a other custom
@@ -155,8 +156,8 @@ final class PerformanceAnalysis
                 '    Requested URI .......... ' . $_SERVER['REQUEST_URI'],
                 '    Request Method ......... ' . $_SERVER['REQUEST_METHOD'],
                 '    Execution .............. ' . ($backlogData['class'] ?? 'root') . ($backlogData['type'] ?? '..') . ($backlogData['function'] ?? 'root'),
-                '    Memory Usage (Current).. ' . Toolbox::convertBytes(memory_get_usage()),
-                '    Memory Usage (Peak)..... ' . Toolbox::convertBytes(memory_get_peak_usage()),
+                '    Memory Usage (Current).. ' . (new TypeInt(memory_get_usage()))->formatBytes()->get(),
+                '    Memory Usage (Peak)..... ' . (new TypeInt(memory_get_peak_usage()))->formatBytes()->get(),
                 '    Execution Time ......... ' . $executionTime . ' ms',
                 '    Cumulative Time ........ ' . self::$cumulativeTime[$label] . ' ms',
             ];
@@ -191,11 +192,11 @@ final class PerformanceAnalysis
             $flushedData .= 'END';
             $flushedData .= str_repeat(PHP_EOL, 4);
 
-            $filename = $label === PERFORMANCE_ANALYSIS_LABEL ? '' : preg_replace('/[^a-zA-Z0-9]+/', '', $label);
-            $filename = $filename . date('Ymd-H') . '.log';
+            $filename = preg_replace('/[^a-zA-Z0-9]+/', '-', ($label === PERFORMANCE_ANALYSIS_LABEL ? '' : $label) . $_SERVER['REQUEST_URI']);
+            $filename = 'path_' . ltrim($filename . '.log', '-');
 
-            Toolbox::createFile(self::LOG_DIRECTORY_PATH . $filename);
-            Toolbox::fileInsertContent(self::LOG_DIRECTORY_PATH . $filename, $flushedData);
+            $file = new TypeString(self::LOG_DIRECTORY_PATH . $filename);
+            $file->createFile()->insertContent($flushedData, 'w+');
 
             self::reset($label);
         }

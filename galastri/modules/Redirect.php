@@ -3,12 +3,13 @@
 namespace galastri\modules;
 
 use galastri\core\Debug;
-use galastri\modules\Toolbox;
+use galastri\core\Parameters;
+use galastri\modules\types\TypeString;
 
 /**
  * This module class helps to redirect the request to another path or URL, even external.
  */
-final class Redirect
+final class Redirect implements \Language
 {
     /**
      * Defines if the urlRoot parameter will be ignored (true) or not (false).
@@ -54,20 +55,26 @@ final class Redirect
      *
      * @return void
      */
-    public static function to(string $location, string ...$printfData): void
+    public static function to(/*string*/ $location, string ...$printfData): void
     {
-        Debug::setBacklog(debug_backtrace()[0]);
+        Debug::setBacklog();
 
-        if (array_key_exists($location, GALASTRI_URL_TAGS)) {
-            $location = self::sanitize(GALASTRI_URL_TAGS[$location]);
-        } else {
-            $location = self::sanitize($location);
-        }
+        $locationString = new TypeString(null);
+        $locationString
+            ->denyEmpty()
+            ->onError([
+                self::INVALID_LOCATION_DATA_TYPE[1],
+                self::INVALID_LOCATION_DATA_TYPE[0]
+            ])
+            ->set(GALASTRI_URL_TAGS[$location] ?? $location);
+
+    
+        $location = self::sanitize($locationString->get());
 
         preg_match(REDIRECT_IDENFITY_PROTOCOLS_REGEX, $location, $match);
 
         if (empty($match)) {
-            $urlRoot = self::$bypassUrlRoot ? '' : '/' . self::sanitize(GALASTRI_PROJECT['urlRoot']);
+            $urlRoot = self::$bypassUrlRoot ? '' : '/' . self::sanitize(Parameters::getUrlRoot());
             $location = '/' . self::sanitize($urlRoot . $location);
         }
 
@@ -94,8 +101,12 @@ final class Redirect
      *
      * @return string
      */
-    private static function sanitize(string $string): string
+    private static function sanitize(/*string*/ $string): string
     {
-        return Toolbox::trim($string, '/?:;<>,.[]{}!@#$%&*()_+-=\\|');
+        Debug::setBacklog();
+
+        $string = new TypeString($string);
+
+        return $string->trim('/?:;<>,.[]{}!@#$%&*()_+-=\\|')->get();
     }
 }

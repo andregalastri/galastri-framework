@@ -4,7 +4,7 @@ namespace galastri\extensions\output;
 
 use \galastri\core\Route;
 use \galastri\core\Debug;
-use \galastri\modules\Toolbox;
+use \galastri\modules\types\TypeString;
 use \galastri\extensions\Exception;
 use \galastri\extensions\output\helpers\ViewHelper;
 
@@ -21,14 +21,14 @@ trait View
      *
      * @var string
      */
-    private static string $viewTemplateFile; 
+    private static TypeString $viewTemplateFile; 
        
     /**
      * Stores the path of the view file or null if the view file doesn't exists.
      *
      * @var null|string
      */
-    private static ?string $viewFilePath;
+    private static TypeString $viewFilePath;
     
     /**
      * Main method that call the verification chain that checks if the template and view files exist
@@ -39,6 +39,8 @@ trait View
      */
     private static function view(): void
     {
+        Debug::setBacklog();
+
         self::viewCheckTemplateFile();
         self::viewDefineViewPath();
         self::checkFileExists();
@@ -66,7 +68,7 @@ trait View
             throw new Exception(self::UNDEFINED_TEMPLATE_FILE[1], self::UNDEFINED_TEMPLATE_FILE[0]);
         }
 
-        self::$viewTemplateFile = $viewTemplateFile;
+        self::$viewTemplateFile = new TypeString($viewTemplateFile);
     }
     
     /**
@@ -104,7 +106,9 @@ trait View
             $viewBaseFolder = '';
         }
 
-        self::$viewFilePath = $viewBaseFolder.$viewFilePath;
+        
+        self::$viewFilePath = new TypeString($viewBaseFolder.$viewFilePath);
+
     }
     
     /**
@@ -117,15 +121,15 @@ trait View
      */
     private static function checkFileExists(): void
     {
-        if (!Toolbox::checkFileExists(self::$viewTemplateFile)) {
-            throw new Exception(self::TEMPLATE_FILE_NOT_FOUND[1], self::TEMPLATE_FILE_NOT_FOUND[0], [self::$viewTemplateFile]);
+        if (self::$viewTemplateFile->fileNotExists()) {
+            throw new Exception(self::TEMPLATE_FILE_NOT_FOUND[1], self::TEMPLATE_FILE_NOT_FOUND[0], [self::$viewTemplateFile->get()]);
         }
 
-        if (!Toolbox::checkFileExists(self::$viewFilePath)) {
+        if (self::$viewFilePath->fileNotExists()) {
             if (empty(self::$routeController->getViewFilePath())) {
-                self::$viewFilePath = null;
+                self::$viewFilePath->setNull();
             } else {
-                throw new Exception(self::VIEW_FILE_NOT_FOUND[1], self::VIEW_FILE_NOT_FOUND[0], [self::$viewFilePath]);
+                throw new Exception(self::VIEW_FILE_NOT_FOUND[1], self::VIEW_FILE_NOT_FOUND[0], [self::$viewFilePath->get()]);
             }
         }
     }
@@ -139,12 +143,12 @@ trait View
      *                                              get and manipulate the data returned by the
      *                                              route controller.
      *
-     * @param  string $templatePath                 The path of the template file.
+     * @param  TypeString $templatePath             The path of the template file.
      *
      * @return void
      */
-    private static function requireTemplate(ViewHelper $galastri, string $templatePath): void
+    private static function requireTemplate(ViewHelper $galastri, TypeString $templatePath): void
     {
-        require_once(Toolbox::getRealPath($templatePath));
+        require($templatePath->realPath()->get());
     }
 }

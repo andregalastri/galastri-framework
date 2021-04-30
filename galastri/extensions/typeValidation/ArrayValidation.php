@@ -9,13 +9,11 @@ use galastri\extensions\Exception;
  * characters, or force the data to have some of them. It also strict the length of the data, and
  * many other verifications.
  */
-final class NumericValidation implements \Language
+final class ArrayValidation implements interfaces\StringConstants, \Language
 {
     /**
      * Importing traits to the class.
      */
     use traits\Common;
-    use traits\RestrictLists;
     use traits\EmptyValues;
-    use traits\NumericValues;
 }

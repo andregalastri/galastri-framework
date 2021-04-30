@@ -16,17 +16,18 @@ interface English
     /**
      * Constants used in \galastri\core\Galastri.
      */
-    const OFFLINE = [
-        'G0000', ""
+    const DEFAULT_OFFLINE_MESSAGE = [
+        'G0000', "This area is currently offline. Please, try again later."
     ];
 
-    const UNDEFINED_OUTPUT = [
-        'G0001', "There is no parameter 'output' defined to this route. Configure it in the '\app\config\routes.php'."
+    const DEFAULT_AUTH_FAIL_MESSAGE = [
+        'G0025', "You aren't authorized to access this area."
     ];
 
-    const INVALID_OUTPUT = [
-        'G0002', "Invalid output '%s'. These are the only valid output: view, json, file or text."
+    const DEFAULT_PERMISSION_FAIL_MESSAGE = [
+        'G0025', "You don't have permission to execute this action."
     ];
+
 
     const ERROR_404 = [
         'G0003', "Error 404: The requested route was not found."
@@ -71,7 +72,7 @@ interface English
     ];
 
     /**
-     * Constants used in \galastri\modules\Toolbox.
+     * Constants used in \galastri\modules\types\traits\FilePath.
      */
     const EMPTY_FILE_PATH = [
         'G0012', "The path parameter is empty in method '%s'"
@@ -111,19 +112,19 @@ interface English
     ];
 
     const VALIDATION_STRING_LOWER_CASE_ONLY = [
-        'G0023', "Excepting the value to contain only lower case chars."
+        'G0023', "Expecting only lower case chars."
     ];
 
     const VALIDATION_STRING_UPPER_CASE_ONLY = [
-        'G0023', "Excepting the value to contain only upper case chars."
+        'G0023', "Expecting only upper case chars."
     ];
 
     const VALIDATION_STRING_MIN_LENGTH = [
-        'G0023', "Excepting the value to contain '%s' minimum char length, but it contains '%s'."
+        'G0023', "Expecting '%s' minimum char length, but it contains '%s'."
     ];
 
     const VALIDATION_STRING_MAX_LENGTH = [
-        'G0023', "Excepting the value to contain '%s' maximum char length, but it contains '%s'."
+        'G0023', "Expecting '%s' maximum char length, but it contains '%s'."
     ];
 
     const VALIDATION_STRING_INVALID_CHARS = [
@@ -167,17 +168,148 @@ interface English
      * Constants used in \galastri\extensions\typeValidation\traits\AllowedValueList
      */
     const VALIDATION_UNDEFINED_VALUES_ALLOWED_LIST = [
-        'G0023', "It is required to define at least one value in 'allowedValueList' method."
-    ];
-
-    const VALIDATION_INVALID_TYPE_ALLOWED_VALUE_LIST = [
-        'G0023', "The validation method 'allowedValueList' has an invalid value '%s'. Expecting '%s' value type, but '%s' was given."
+        'G0023', "It is required to define at least one value in 'allowedValues' method."
     ];
 
     const VALIDATION_NO_VALUE_IN_ALLOWED_LIST = [
-        'G0023', "The value (%s) isn't an allowed value. The allowed values are [%s]."
+        'G0023', "The value (%s) is not an allowed value. The allowed values are [%s]."
     ];
 
+    const VALIDATION_UNDEFINED_VALUES_DENIED_LIST = [
+        'G0023', "It is required to define at least one value in 'deniedValues' method."
+    ];
+
+    const VALIDATION_VALUE_IN_DENIED_LIST = [
+        'G0023', "The value (%s) is not an allowed value. The values that aren't allowed are [%s]."
+    ];
+
+    /**
+     * Constants used in \galastri\core\Config
+     */
+    const INVALID_KEY_PARAMETER_TYPE = [
+        'G0026', "Wrong key type. There is a node in this route whose key was set as %s. Check the route configuration file and define any non-string keys to string type."
+    ];
+
+    const INVALID_TIMEZONE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'timezone' need to be 'string' or 'null'."
+    ];
+
+    const INVALID_OFFLINE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'offline' need to be 'bool'."
+    ];
+
+    const UNDEFINED_OFFLINE = [
+        'G0026', "Undefined route parameter 'offline'. Set it in the project or route configuration files."
+    ];
+
+    const INVALID_OFFLINE_MESSAGE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'offlineMessage' need to be 'string'."
+    ];
+
+    const INVALID_FORCE_REDIRECT_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'forceRedirect' need to be 'string' or 'null'."
+    ];
+
+    const INVALID_OUTPUT = [
+        'G0026', "Output %s doesn't exist. The existing outputs are 'view', 'json', 'file' and 'text'."
+    ];
+
+    const UNDEFINED_OUTPUT = [
+        'G0026', "Undefined route parameter 'output' to this route. Set it in the route configuration file."
+    ];
+
+    const INVALID_NOT_FOUND_REDIRECT_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'notFoundRedirect' need to be 'string' or 'null'."
+    ];
+
+    const INVALID_CONTROLLER_TYPE = [
+        'G0026', "Wrong value type. Type of parent node parameter 'controller' need to be 'string' or 'null'."
+    ];
+
+    const INVALID_NAMESPACE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'namespace' need to be 'string' or 'null'."
+    ];
+
+    const INVALID_PROJECT_TITLE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'projectTitle' need to be 'string' or 'null'."
+    ];
+
+    const INVALID_PAGE_TITLE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'pageTitle' need to be 'string' or 'null'."
+    ];
+    
+    const INVALID_AUTH_TAGE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'authTag' need to be 'string' or 'null'."
+    ];
+    
+    const INVALID_AUTH_FAIL_REDIRECT_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'authFailRedirect' need to be 'string' or 'null'."
+    ];
+    
+    const INVALID_VIEW_TEMPLATE_FILE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'viewTemplateFile' need to be 'string' or 'null'."
+    ];
+    
+    const INVALID_VIEW_BASE_FOLDER_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'viewBaseFolder' need to be 'string' or 'null'."
+    ];
+    
+    const INVALID_FILE_DOWNLOADABLE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'fileDownloadable' need to be 'bool' or 'null'."
+    ];
+    
+    const INVALID_FILE_BASE_FOLDER_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'fileBaseFolder' need to be 'string' or 'null'."
+    ];
+    
+    const INVALID_VIEW_FILE_PATH_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'viewFilePath' need to be 'string' or 'null'."
+    ];
+
+    const INVALID_URL_ROOT_TYPE = [
+        'G0026', "Wrong value type. Type of project parameter 'urlRoot' need to be 'string'."
+    ];
+
+    const UNDEFINED_URL_ROOT = [
+        'G0026', "Undefined project parameter 'urlRoot' to this route. Set it in the route configuration file."
+    ];
+
+    const INVALID_DISPLAY_ERRORS_TYPE = [
+        'G0026', "Wrong value type. Type of debug parameter 'displayErrors' need to be 'bool'."
+    ];
+
+    const UNDEFINED_DISPLAY_ERRORS = [
+        'G0026', "Undefined debug parameter 'displayErrors' to this route. Set it in the route configuration file."
+    ];
+
+    const INVALID_SHOW_BACKLOG_DATA_TYPE = [
+        'G0026', "Wrong value type. Type of debug parameter 'showBacklogData' need to be 'bool'."
+    ];
+
+    const UNDEFINED_SHOW_BACKLOG_DATA = [
+        'G0026', "Undefined debug parameter 'showBacklogData' to this route. Set it in the route configuration file."
+    ];
+
+    const INVALID_PERFORMANCE_ANALYSIS_TYPE = [
+        'G0026', "Wrong value type. Type of debug parameter 'performanceAnalysis' need to be 'bool'."
+    ];
+
+    const UNDEFINED_PERFORMANCE_ANALYSIS = [
+        'G0026', "Undefined route debug 'performanceAnalysis' to this route. Set it in the route configuration file."
+    ];
+
+    const INVALID_LANGUAGE_TYPE = [
+        'G0026', "Wrong value type. Type of debug parameter 'language' need to be 'string'."
+    ];
+ 
+    const UNDEFINED_LANGUAGE = [
+        'G0026', "Undefined debug parameter 'language' to this route. Set it in the route configuration file."
+    ];
+
+    const INVALID_LOCATION_DATA_TYPE = [
+        'G0027', "Wrong value type. Location URL or URL Tag value need to be 'string' and cannot be empty."
+    ];
+    
     /**
      * Constants used in \galastri\modules\types\traits\Math
      */

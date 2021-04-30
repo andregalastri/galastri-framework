@@ -18,7 +18,7 @@ trait Trim
      */
     public function trim(string ...$charSet): self
     {
-        $this->execSetValue($this->execTrim($this->getValue(), $charSet));
+        $this->execHandleValue($this->execTrim($this->getValue(), $charSet));
         return $this;
     }
 
@@ -32,7 +32,7 @@ trait Trim
      */
     public function trimStart(string ...$charSet): self
     {
-        $this->execSetValue($this->execTrimStart($this->getValue(), $charSet));
+        $this->execHandleValue($this->execTrimStart($this->getValue(), $charSet));
         return $this;
     }
 
@@ -46,7 +46,7 @@ trait Trim
      */
     public function trimEnd(string ...$charSet): self
     {
-        $this->execSetValue($this->execTrimEnd($this->getValue(), $charSet));
+        $this->execHandleValue($this->execTrimEnd($this->getValue(), $charSet));
         return $this;
     }
 

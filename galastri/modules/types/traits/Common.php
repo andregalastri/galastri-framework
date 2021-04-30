@@ -2,8 +2,8 @@
 
 namespace galastri\modules\types\traits;
 
-use galastri\extensions\Exception;
 use galastri\core\Debug;
+use galastri\extensions\Exception;
 
 /**
  * This trait has the common methods that is used by various type classes. To avoid code repetition,
@@ -25,22 +25,16 @@ trait Common
      * @var array|null
      */
     private ?array $errorMessage = null;
-    
+
     /**
-     * Defines if the history will be enabled (true) or not (false).
+     * Stores the debug tracking . This is used for internal framework, change this value while
+     * developing your app.
      *
      * @var bool
      */
-    private bool $saveHistory = false;
+    private int $debugTrack;
 
-    /**
-     * When the $saveHistory property is enabled, stores each value changes creating a history that
-     * make possible to revert to previous values.
-     *
-     * @var array
-     */
-    private array $history = [];
-
+    
     /**
      * Set a value to the object. The value will be checked, to make shure it matches the expected
      * type of data or null. If not, throws an exception.
@@ -49,15 +43,22 @@ trait Common
      *
      * @return self
      */
-    public function setValue($value): self
+    public function set($value = null): self
     {
         Debug::setBacklog();
 
-        if ($value instanceof \Closure) {
-            $value = $value($this->value);
+        if ($value === null) {
+            $this->execHandleValue($this->getValue());
+        } else {
+            if ($value instanceof \Closure) {
+                $value = $value($this);
+            }
+
+            $this->execHandleValue($value);
         }
 
-        $this->execSetValue($value);
+        $this->execStoreValue();
+
         return $this;
     }
 
@@ -67,102 +68,89 @@ trait Common
      *
      * @return mixed
      */
-    public function getValue()// : mixed
+    public function get()// : mixed
     {
-        return $this->value;
+        $handlingValue = $this->handlingValue;
+        $this->handlingValue = null;
+
+        return $handlingValue ?? $this->storedValue;
     }
 
-
-    /**
-     * Returns the initial value, but not change it.
-     * NOTE: The type hint is mixed because this trait can be used in any type class.
-     *
-     * @return mixed
-     */
-    public function getInitialValue()// : mixed
+    public function disableDebugTrack(): self
     {
-        return $this->initialValue;
-    }
+        $this->disableDebug = false;
 
-    /**
-     * Restarts the value to the initial value.
-     *
-     * @return self
-     */
-    public function resetValue(): self
-    {
-        Debug::setBacklog();
-
-        $this->execSetValue($this->initialValue);
         return $this;
     }
 
-
-    /**
-     * History methods
-     */
-
-    /**
-     * Returns a specific state of the history, when it is enabled. Return all the history data when
-     * no key is specified.
-     *
-     * @param int|null $key                         The state that will be returned. When null,
-     *                                              return all the history in array format.
-     *
-     * @return array|mixed
-     */
-    public function getHistory(?int $key = null)// : mixed
+    public function preview()// : mixed
     {
-        Debug::setBacklog();
-
-        if ($this->saveHistory) {
-            if ($key) {
-                if (isset($this->history[$key])) {
-                    return $this->history[$key];
-                } else {
-                    throw new Exception(self::TYPE_HISTORY_KEY_NOT_FOUND[1], self::TYPE_HISTORY_KEY_NOT_FOUND[0], [$key]);
-                }
-            }
-        }
-
-        return $this->history;
+        return $this->getValue();
     }
 
-    /**
-     * Reverts the value to some of the previous values stored in the history. It is required to
-     * specify which key will be restored to the value.
-     *
-     * This method only works if the $saveHistory property is enabled.
-     *
-     * @param int $key                              The state that will be restored to the value.
-     *
-     * @return self
-     */
-    public function revertToHistory(int $key): self
+    public function clear()// : mixed
     {
-        Debug::setBacklog();
-
-        if ($this->saveHistory) {
-            if (isset($this->history[$key])) {
-                $this->execSetValue($this->history[$key]);
-            } else {
-                throw new Exception(self::TYPE_HISTORY_KEY_NOT_FOUND[1], self::TYPE_HISTORY_KEY_NOT_FOUND[0], [$key]);
-            }
-        } else {
-            throw new Exception(self::TYPE_HISTORY_DISABLED[1], self::TYPE_HISTORY_DISABLED[0]);
-        }
+        $this->handlingValue = null;
 
         return $this;
     }
+
 
     /**
      * Execute the varDump function in the value to get its data and properties.
      *
-     * @return void
+     * @return self
      */
-    public function varDump(): void
+    public function dump($exit = DONT_STOP): self
     {
-        varDump($this->value);
+        vardump($this);
+        
+        if ($exit === STOP) {
+            exit;
+        }
+
+        return $this;
+    }
+
+    public function valdump($exit = DONT_STOP): self
+    {
+        vardump($this->getValue());
+        
+        if ($exit === STOP) {
+            exit;
+        }
+
+        return $this;
+    }
+
+    /**
+     * This method return if the actual object is initilialized.
+     *
+     * @return bool
+     */
+    public function isInitialized(): bool
+    {
+        return $this->initialized;
+    }
+
+    public function isNull(): bool
+    {
+        return $this->getValue() === null;
+    }
+
+    public function isNotNull(): bool
+    {
+        return $this->getValue() !== null;
+    }
+
+    public function isEmpty(): bool
+    {
+        return empty($this->getValue());
+    }
+
+    public function isNotEmpty(): bool
+    {
+        return !empty($this->getValue());
     }
 
     /**
@@ -180,56 +168,96 @@ trait Common
      * checking if it is already initialized and if the value is not equal to null. The initial
      * value is set only if the value meets this requirements.
      *
-     * Finally, it calls the save history method execution, that will store the value as a new state
-     * inside the data history (only if $saveHistory property is enabled).
-     *
      * @param mixed $value                          The value that will be checked and stored.
+     *
+     * @param bool $forceInitialize                 Force initialize even if the value to be set is
+     *                                              null.
      *
      * @return void
      */
-    private function execSetValue($value): void
+    private function execHandleValue($value): void
     {
-        if (in_array(static::VALUE_TYPE, ['double', 'integer'])) {
+        if (
+            in_array(static::VALUE_TYPE, ['double', 'integer']) and
+            in_array(gettype($value), ['double', 'integer'])
+        ) {
             $this->convertToRightNumericType($value);
         }
 
-        if (gettype($value) === 'NULL' or gettype($value) === static::VALUE_TYPE) {
-            $this->validate($value);
+        $this->handlingValue = $value;
+    }
 
-            $this->value = $value;
-            
-            if (!$this->initialized and $value !== null) {
+    private function execStoreValue(bool $forceInitialize = true): void
+    {
+        $value = $this->handlingValue;
+
+        if (gettype($value) === 'NULL' or gettype($value) === static::VALUE_TYPE) {
+            $this->storedValue = $this->validate();
+            $this->handlingValue = null;
+
+            if ((!$this->initialized and $this->getValue() !== null) or (!$this->initialized and $forceInitialize)) {
                 $this->initialized = true;
-                $this->initialValue = $value;
             }
-            
-            $this->execSaveHistory($value);
         } else {
             throw new Exception(
-                self::TYPE_DEFAULT_INVALID_MESSAGE[1],
-                self::TYPE_DEFAULT_INVALID_MESSAGE[0],
-                [static::VALUE_TYPE, str_replace(
-                    ['double'],
-                    ['float'],
-                    gettype($value)
-                )]
+                $this->errorMessage[1] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[1],
+                $this->errorMessage[0] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[0],
+                [static::VALUE_TYPE, $this->execGetVarType($value)]
             );
         }
     }
-
+    
     /**
-     * This method checks if the $saveHistory property is enabled. If it is, then any value set will
-     * be saved in an array, creating a history with each change of the value.
+     * execBuildErrorMessage
      *
-     * @param string $value                         The value that will be stored.
-     *
-     * @return void
+     * @param  array|string $messageCode
+     * @param  float|int|string $printfData
+     * @return array
      */
-    private function execSaveHistory($value): void
+    private function execBuildErrorMessage(/*array|string*/ $messageCode, /*float|int|string*/$printfData): array
     {
-        if ($this->saveHistory) {
-            $this->history[] = $value;
+        $message = vsprintf(is_array($messageCode) ? $messageCode[0] : $messageCode, $printfData);
+        $code = is_array($messageCode) ? $messageCode[1] : 'G0023';
+
+        if (empty($this->errorMessage)) {
+            $this->errorMessage[0] = $code;
+            $this->errorMessage[1] = $message;
         }
+
+        return [$code, $message];
+    }
+
+    private function execGetVarType($variable): string
+    {
+        return str_replace([
+            'boolean', 'double', 'integer', 'NULL'
+        ],
+        [
+            'bool', 'float', 'int', 'null'
+        ],
+        gettype($variable));
+    }
+
+    private function execSetVarType($type): string
+    {
+        $type = str_replace([
+            'bool', 'float', 'int', 'null'
+        ],
+        [
+            'boolean', 'double', 'integer', 'NULL'
+        ],
+        $type);
+
+        return settype($type);
+    }
+
+    private function execTypeClassName($data, string $location = ''): string
+    {
+        return $location . str_replace(
+            ['string', 'double', 'integer', 'boolean', 'array'],
+            ['TypeString', 'TypeFloat', 'TypeInt', 'TypeBool', 'TypeArray'],
+            gettype($data)
+        );
     }
 
     /**
@@ -241,22 +269,20 @@ trait Common
      *
      * @return void
      */
-    private function convertToRightNumericType(/*int|float*/ &$value): void
+    private function convertToRightNumericType(/*int|float*/ &...$values): void
     {
-        if (static::VALUE_TYPE === 'integer') {
-            $value = explode('.', $value)[0];
+        foreach ($values as &$value) {
+            if (static::VALUE_TYPE === 'integer') {
+                $value = (int)explode('.', $value)[0];
+            }
+            
+            settype($value, static::VALUE_TYPE);
         }
-        settype($value, static::VALUE_TYPE);
         unset($value);
     }
-    
-    /**
-     * This method return if the actual value is empty (true) or not (false).
-     *
-     * @return bool
-     */
-    private function isEmpty(): bool
+
+    private function getValue()
     {
-        return empty($this->value);
+        return $this->handlingValue ?? $this->storedValue;
     }
 }

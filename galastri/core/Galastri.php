@@ -4,11 +4,13 @@ namespace galastri\core;
 
 use galastri\core\Debug;
 use galastri\core\Controller;
+use galastri\core\Parameters;
 use galastri\extensions\Exception;
 use galastri\extensions\output\View;
+use galastri\extensions\output\Json;
+use galastri\extensions\output\Text;
 use galastri\modules\Redirect;
 use galastri\modules\PerformanceAnalysis;
-use galastri\modules\Toolbox;
 
 /**
  * This is the main core class. Here we will verify if the classes, methods and parameters defined
@@ -18,16 +20,19 @@ use galastri\modules\Toolbox;
 final class Galastri implements \Language
 {
     use View;
+    use Json;
+    use Text;
     
     const DEFAULT_NODE_NAMESPACE = 'app\controllers';
     const VIEW_BASE_FOLDER = '/app/views';
+    const CORE_CONTROLLER = '\galastri\Core\Controller';
 
     private static string $routeControllerName;
     private static Controller $routeController;
 
     private static bool $checkedOffline = false;
     private static bool $checkedForceRedirect = false;
-    private static bool $checkedRouteNodesExists = false;
+    private static bool $checkedRouteNodesExists = true;
     private static bool $checkedOutput = false;
     private static bool $checkedController = false;
     private static bool $checkedControllerExtendsCore = false;
@@ -52,14 +57,6 @@ final class Galastri implements \Language
     {
         try {
             /**
-             * Sets the timezone if it is configured in /app/config/project.php. If it is false, the
-             * timezone will not be configured here.
-             */
-            if (GALASTRI_PROJECT['timezone']) {
-                date_default_timezone_set(GALASTRI_PROJECT['timezone']);
-            }
-
-            /**
              * Starts the resolution of the URL routes and its configurations in
              * the /app/config/routes.php file.
              */
@@ -67,8 +64,8 @@ final class Galastri implements \Language
 
             self::checkOffline();
             self::checkForceRedirect();
-            self::checkOutput();
             self::checkRouteNodesExists();
+            self::checkOutput();
             self::checkController();
             self::checkControllerExtendsCore();
             self::checkControllerMethod();
@@ -91,12 +88,8 @@ final class Galastri implements \Language
     {
         Debug::setBacklog();
 
-        $offline = Route::getRouteParam('offline');
-
-        if ($offline) {
-            $offlineMessage = Route::getRouteParam('defaultmessage')['offline'];
-
-            throw new Exception($offlineMessage, self::OFFLINE[0]);
+        if (Parameters::getOffline()) {
+            throw new Exception(Parameters::getOfflineMessage(), self::DEFAULT_OFFLINE_MESSAGE[0]);
         }
 
         self::$checkedOffline = true;
@@ -112,37 +105,13 @@ final class Galastri implements \Language
      */
     private static function checkForceRedirect(): void
     {
-        $forceRedirect = Route::getRouteParam('forceRedirect');
+        $forceRedirect = Parameters::getForceRedirect();
 
-        if ($forceRedirect) {
+        if ($forceRedirect !== null) {
             Redirect::bypassUrlRoot()::to($forceRedirect);
         }
 
         self::$checkedForceRedirect = true;
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-    }
-
-    /**
-     * Checks if the resolved route has the route parameter 'output' set properly. If not, an
-     * exception is thrown.
-     *
-     * @return void
-     */
-    private static function checkOutput(): void
-    {
-        Debug::setBacklog();
-
-        $output = Route::getRouteParam('output');
-
-        if ($output) {
-            if (!Toolbox::arrayValueExists($output, ['view', 'json', 'file', 'text'])) {
-                throw new Exception(self::INVALID_OUTPUT[1], self::INVALID_OUTPUT[0], [$output]);
-            }
-        } else {
-            throw new Exception(self::UNDEFINED_OUTPUT[1], self::UNDEFINED_OUTPUT[0]);
-        }
-
-        self::$checkedRouteNodesExists = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
@@ -158,23 +127,45 @@ final class Galastri implements \Language
     {
         Debug::setBacklog()::bypassGenericMessage();
 
-        $parentNodeName = Route::getParentNodeName();
-        $childNodeName = Route::getChildNodeName();
-        $output = Route::getRouteParam('output');
-        $notFoundRedirect = Route::getRouteParam('notFoundRedirect');
+        if (
+            Route::getParentNodeName() === null and
+            Route::getChildNodeName() === null or
+            Route::getChildNodeName() === null
+        ) {
+            self::$checkedRouteNodesExists = false;
+        }
+        
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+    }
 
-        if ($parentNodeName === null and $childNodeName === null or $childNodeName === null) {
-            if ($output === 'view' or $output === 'file') {
-                PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-                Redirect::to($notFoundRedirect);
+
+    /**
+     * Checks if the resolved route has the route parameter 'output' set properly. If not, an
+     * exception is thrown.
+     *
+     * @return void
+     */
+    private static function checkOutput(): void
+    {
+        Debug::setBacklog();
+
+        if (!self::$checkedRouteNodesExists) {
+            if (Parameters::getNotFoundRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text') {
+                throw new Exception(self::ERROR_404[1], self::ERROR_404[0]);
             } else {
-                throw new Exception(self::ERROR_404[1], self::ERROR_404[0], [$output]);
+                PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+                Redirect::to(Parameters::getNotFoundRedirect());
+            }
+        } else {
+            if (Parameters::getOutput() === null) {
+                throw new Exception(self::UNDEFINED_OUTPUT[1], self::UNDEFINED_OUTPUT[0]);
             }
         }
 
         self::$checkedOutput = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
+
 
     /**
      * Checks if there is a class to be called, based on the resolved URL nodes in
@@ -200,10 +191,10 @@ final class Galastri implements \Language
 
         $controllerNamespace = Route::getControllerNamespace();
 
-        if ($nodeController = Route::getParentNodeParam('controller')) {
+        if ($nodeController = Parameters::getController()) {
             $routeController = $nodeController;
         } else {
-            $baseNodeNamespace = Route::getRouteParam('namespace') ?: self::DEFAULT_NODE_NAMESPACE;
+            $baseNodeNamespace = Parameters::getNamespace() ?: self::DEFAULT_NODE_NAMESPACE;
             $routeController = $baseNodeNamespace . implode($controllerNamespace);
         }
 
@@ -233,7 +224,7 @@ final class Galastri implements \Language
     {
         Debug::setBacklog();
 
-        if (is_subclass_of(self::$routeControllerName, '\galastri\Core\Controller') === false) {
+        if (is_subclass_of(self::$routeControllerName, self::CORE_CONTROLLER) === false) {
             throw new Exception(self::CONTROLLER_DOESNT_EXTENDS_CORE[1], self::CONTROLLER_DOESNT_EXTENDS_CORE[0], [self::$routeControllerName]);
         }
 
@@ -244,6 +235,9 @@ final class Galastri implements \Language
     /**
      * Checks if the child node exists as a method inside the route controller. If it isn't, an
      * exception is thrown.
+     * 
+     * It also checks if there is a request method defined in the route parameter requestMethod and,
+     * if it is, checks if it exists in the route controller.
      *
      * @return void
      */
@@ -252,9 +246,16 @@ final class Galastri implements \Language
         Debug::setBacklog();
 
         $method = Route::getChildNodeName();
+        $requestMethod = Parameters::getRequestMethod();
 
         if (method_exists(self::$routeControllerName, $method) === false) {
             throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $method]);
+        }
+
+        if (!empty($requestMethod)) {
+            if (!method_exists(self::$routeControllerName, $requestMethod)){
+                throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $requestMethod]);
+            }
         }
 
         self::$checkedControllerMethod = true;
@@ -302,10 +303,6 @@ final class Galastri implements \Language
         }
 
         self::$routeController = new self::$routeControllerName();
-
-        // if (!empty(ob_get_contents())) {
-        //     throw new Exception('You cannot print data in the controller.', 'CONTROLLER_CANT_PRINT_DATA');
-        // }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }

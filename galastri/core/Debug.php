@@ -2,8 +2,6 @@
 
 namespace galastri\core;
 
-use galastri\modules\Toolbox;
-
 /**
  * This class is part of the core of the framework. It helps to handle the exceptions and shows
  * error messages when some configuration is wrong or a framework function is used incorrectly.
@@ -58,6 +56,11 @@ final class Debug implements \Language
      */
     public static function setBacklog(?array $customBacklog = null): string /*self*/
     {
+        if (isset(self::getLastBacklog()['class'])) {
+            if (self::getLastBacklog()['class'] === 'galastri\core\Parameters') {
+                return __CLASS__;
+            }
+        }
         self::$bypassGenericMessage = false;
 
         self::$backlogData[] = $customBacklog ? $customBacklog[0] : debug_backtrace()[1];
@@ -129,15 +132,13 @@ final class Debug implements \Language
      */
     public static function setError(string $message, /*int|string*/ $code, /*mixed*/ ...$printfData): string /*self*/
     {
-        $printfData = Toolbox::flattenArray($printfData);
-        
-        self::$message = (function ($message, $printfData) {
-            if (!GALASTRI_DEBUG['displayErrors'] and !self::$bypassGenericMessage) {
+        self::$message = (function () use ($message, $printfData) {
+            if (!Parameters::getDisplayErrors() and !self::$bypassGenericMessage) {
                 return self::GENERIC_MESSAGE;
             } else {
-                return vsprintf($message, $printfData);
+                return vsprintf($message, ...$printfData);
             }
-        })($message, $printfData);
+        })();
 
         self::$code = $code;
 
@@ -151,7 +152,7 @@ final class Debug implements \Language
      */
     public static function print(): void
     {
-        if (GALASTRI_DEBUG['displayErrors']) {
+        if (Parameters::getDisplayErrors()) {
             $data = [
                 'code' => self::$code,
                 'origin' => self::getLastBacklog('file'),
@@ -171,14 +172,20 @@ final class Debug implements \Language
             ];
         }
 
-        if (GALASTRI_DEBUG['showBacklogData']) {
+        if (Parameters::getShowBacklogData()) {
             $data = array_merge($data, [
                 'backlogTrace' => self::getBacklog(),
             ]);
         }
 
-        header('Content-Type: application/json');
-        echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if (Parameters::getOutput() === 'text') {
+            header('Content-Type: text/plain');
+            echo 'Error '.$data['code'].PHP_EOL;
+            echo $data['message'].PHP_EOL;
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
         exit();
     }
 

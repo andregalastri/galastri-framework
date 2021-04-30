@@ -15,9 +15,9 @@ trait ConvertCase
      *
      * @return self
      */
-    public function setUpperCase()
+    public function toUpperCase()
     {
-        $this->execSetValue(mb_convert_case($this->value, MB_CASE_UPPER, 'UTF-8'));
+        $this->execHandleValue(mb_convert_case($this->getValue(), MB_CASE_UPPER, 'UTF-8'));
         return $this;
     }
 
@@ -29,9 +29,9 @@ trait ConvertCase
      * 
      * @return self
      */
-    public function setLowerCase()
+    public function toLowerCase()
     {
-        $this->execSetValue(mb_convert_case($this->value, MB_CASE_LOWER, 'UTF-8'));
+        $this->execHandleValue(mb_convert_case($this->getValue(), MB_CASE_LOWER, 'UTF-8'));
         return $this;
     }
 
@@ -43,11 +43,10 @@ trait ConvertCase
      * 
      * @return self
      */
-    public function setCamelCase()
+    public function toCamelCase()
     {
-        $string = $this->execFilterProgrammingCase($this->value, 'CAMEL_CASE');
-
-        $this->execSetValue($string);
+        $string = $this->execFilterProgrammingCase($this->getValue(), 'CAMEL_CASE');
+        $this->execHandleValue($string);
         
         return $this;
     }
@@ -60,11 +59,11 @@ trait ConvertCase
      * 
      * @return self
      */
-    public function setPascalCase()
+    public function toPascalCase()
     {
-        $string = $this->execFilterProgrammingCase($this->value, 'PASCAL_CASE');
-        
-        $this->execSetValue($string);
+        $string = $this->execFilterProgrammingCase($this->getValue(), 'PASCAL_CASE');
+
+        $this->execHandleValue($string);
         return $this;
     }
     
@@ -76,11 +75,11 @@ trait ConvertCase
      * 
      * @return self
      */
-    public function setConstantCase()
+    public function toConstantCase()
     {
-        $string = $this->execFilterProgrammingCase($this->value, 'CONSTANT_CASE');
+        $string = $this->execFilterProgrammingCase($this->getValue(), 'CONSTANT_CASE');
 
-        $this->execSetValue($string);
+        $this->execHandleValue($string);
         return $this;
     }
     
@@ -92,11 +91,11 @@ trait ConvertCase
      * 
      * @return self
      */
-    public function setSnakeCase()
+    public function toSnakeCase()
     {
-        $string = $this->execFilterProgrammingCase($this->value, 'SNAKE_CASE');
+        $string = $this->execFilterProgrammingCase($this->getValue(), 'SNAKE_CASE');
 
-        $this->execSetValue($string);
+        $this->execHandleValue($string);
         return $this;
     }
     
@@ -108,11 +107,11 @@ trait ConvertCase
      * 
      * @return self
      */
-    public function setParamCase()
+    public function toParamCase()
     {
-        $string = $this->execFilterProgrammingCase($this->value, 'PARAM_CASE');
+        $string = $this->execFilterProgrammingCase($this->getValue(), 'PARAM_CASE');
         
-        $this->execSetValue($string);
+        $this->execHandleValue($string);
         return $this;
     }
     
@@ -124,11 +123,11 @@ trait ConvertCase
      * 
      * @return self
      */
-    public function setDotCase()
+    public function toDotCase()
     {
-        $string = $this->execFilterProgrammingCase($this->value, 'DOT_CASE');
+        $string = $this->execFilterProgrammingCase($this->getValue(), 'DOT_CASE');
         
-        $this->execSetValue($string);
+        $this->execHandleValue($string);
         return $this;
     }
 
@@ -156,7 +155,7 @@ trait ConvertCase
          * When this occurs, the first char is kept in upper case, but the others will be converted
          * to lower case.
          * 
-         * It is stored in a closure because it is used multiple times.
+         * It is stored as a closure because it is used multiple times.
          */
         $funcConvertUpperGroups = function ($string) {
             return preg_replace_callback('/([A-Z]{2,})/', function($match){
@@ -165,10 +164,24 @@ trait ConvertCase
         };
 
         /**
+         * Internal closure function used in trail cases (cases that are separated by a char and all
+         * the alphabetic chars are in upper or lower cases).
+         *
+         * It converts the first letter to upper, add the separator on the left side of each upper
+         * case chars, converts each char to upper or lower (defined by $resultCase parameter) and
+         * clear it by removing possible non-alphanumeric chars from the left edge.
+         */
+        $funcConvertTrailCases = function ($string, $separator, $resultCase) use ($funcConvertUpperGroups){
+            $string[0] = mb_convert_case($string[0], MB_CASE_UPPER, 'UTF-8');
+            $string = preg_replace('/([A-Z])/', $separator.'$1', $funcConvertUpperGroups($string));
+            return ltrim(mb_convert_case($string, $resultCase, 'UTF-8'), $separator);
+        };
+
+        /**
          * The first action is to get any alphanumeric char whose position it right after a
          * non-alphanumeric char and convert it to upper case.
          * 
-         * Example: THis! .sTring  ->  THis! .STring
+         * Example: tHIs! .sTring  ->  tHIs! .STring
          */
         $string = preg_replace_callback('/([^a-zA-Z0-9][a-zA-Z0-9]+?)/', function($match){
             return mb_convert_case($match[0], MB_CASE_TITLE, 'UTF-8');
@@ -178,7 +191,7 @@ trait ConvertCase
          * The internal closure function is called. Its execution will convert all upper case chars
          * into title case:
          * 
-         * Example: THis! .STring  ->  This! .String
+         * Example: tHIs! .STring  ->  tHis! .String
          */
         $string = $funcConvertUpperGroups($string);
 
@@ -186,81 +199,101 @@ trait ConvertCase
          * Next, this remove every non-alphanumeric char from the string. Following the example
          * above, the result is:
          *
-         * Example: This! .String  ->  ThisString
+         * Example: tHis! .String  ->  tHisString
          */
         $string = preg_replace('/([^a-zA-Z0-9])/', '', $string);
+
+        /**
+         * If the result of these replaces is an empty string, then it is returned as empty string.
+         */
+        if (empty($string)) {
+            return '';
+        }
 
         /**
          * After this filters, the case itself will be set, based on the $type parameter:
          */
         switch ($type) {
             /**
-             * When CAMEL_CASE, it gets the first char of the string and converts to lower case and
+             * When CAMEL_CASE, it gets the first char of the string, converts to lower case and
              * return the result.
              *
-             * Example: ThisString  ->  thisString
+             * Example: tHisString  ->  thisString
              */
             case 'CAMEL_CASE':
                 $string[0] = mb_convert_case($string[0], MB_CASE_LOWER, 'UTF-8');
                 return $funcConvertUpperGroups($string);
 
             /**
-             * When PASCAL_CASE, it just gets string filtered until now and return (it is already in
-             * pascal case).
+             * When PASCAL_CASE, it gets the first char of the string, converts to upper case and
+             * return the result.
              * 
-             * Example: ThisString  ->  ThisString
+             * Example: tHisString  ->  ThisString
              */
             case 'PASCAL_CASE':
-                return $string;
+                $string[0] = mb_convert_case($string[0], MB_CASE_UPPER, 'UTF-8');
+                return $funcConvertUpperGroups($string);
 
             /**
              * When CONSTANT_CASE, it gets every upper case in the filtered string and adds a
              * underscore _ in front of it. Next, it trims the underscore from the left and converts
              * all the chars into upper case and return the result.
              *
-             * Example: ThisString  ->  THIS_STRING
+             * Example: tHisString  ->  THIS_STRING
              */
             case 'CONSTANT_CASE':
-                $string = preg_replace('/([A-Z])/', '_$1', $string);
-                return ltrim(mb_convert_case($string, MB_CASE_UPPER, 'UTF-8'), '_');
+                return $funcConvertTrailCases($string, '_', MB_CASE_UPPER);
 
             /**
              * When SNAKE_CASE, it gets every upper case in the filtered string and adds a
              * underscore _ in front of it. Next, it trims the underscore from the left and converts
              * all the chars into lower case and return the result.
              *
-             * Example: ThisString  ->  this_string
+             * Example: tHisString  ->  this_string
              */
             case 'SNAKE_CASE':
-                $string = preg_replace('/([A-Z])/', '_$1', $string);
-                return ltrim(mb_convert_case($string, MB_CASE_LOWER, 'UTF-8'), '_');
+                return $funcConvertTrailCases($string, '_', MB_CASE_LOWER);
     
             /**
              * When PARAM_CASE, it gets every upper case in the filtered string and adds a dash - in
              * front of it. Next, it trims the dash from the left and converts all the chars into
              * lower case and return the result.
              *
-             * Example: ThisString  ->  this-string
+             * Example: tHisString  ->  this-string
              */
             case 'PARAM_CASE':
-                $string = preg_replace('/([A-Z])/', '-$1', $string);
-                return ltrim(mb_convert_case($string, MB_CASE_LOWER, 'UTF-8'), '-');
+                return $funcConvertTrailCases($string, '-', MB_CASE_LOWER);
     
             /**
              * When DOT_CASE, it gets every upper case in the filtered string and adds a dot . in
              * front of it. Next, it trims the dot from the left and converts all the chars into
              * lower case and return the result.
              *
-             * Example: ThisString  ->  this.string
+             * Example: tHisString  ->  this.string
              */
             case 'DOT_CASE':
-                $string = preg_replace('/([A-Z])/', '.$1', $string);
-                return ltrim(mb_convert_case($string, MB_CASE_LOWER, 'UTF-8'), '.');
+                return $funcConvertTrailCases($string, '.', MB_CASE_LOWER);
         }
     }
 
-    // private function _capitalize($string, bool $asArticle = false, bool $keepUpperChars = false)
+    // /**
+    //  * Capitalizes a the given string.
+    //  *
+    //  * @param  string $string                       The string that will be converted.
+    //  *
+    //  * @param  bool $asArticle                      Capitalize the letters the are in the beginning
+    //  *                                              of the string and also the ones next to periods,
+    //  *                                              exclamation and question marks.
+    //  *
+    //  * @param  bool $keepChars                      If true, will keep capitalized letters that
+    //  *                                              already are in the string.
+    //  *
+    //  * @return string
+    //  */
+    // public static function capitalize(string $string, bool $asArticle = false, bool $keepChars = false): string
     // {
+    //     self::checkDebugTrack();
+
     //     if ($asArticle) {
     //         $string = preg_split('/(\.|\!|\?)/', $string, -1, PREG_SPLIT_DELIM_CAPTURE);
     //         $string = array_map('trim', $string);
@@ -284,7 +317,7 @@ trait ConvertCase
     //     };
 
     //     foreach ($string as $key => $value) {
-    //         $value = $asArticle ? $upperCaseFirst($value, !$keepUpperChars) : mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+    //         $value = $asArticle ? $upperCaseFirst($value, !$keepChars) : mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
 
     //         preg_match('/(\.|\!|\?)/', $value, $match);
     //         if (!array_key_exists(1, $match)) {
@@ -295,6 +328,8 @@ trait ConvertCase
     //         $string[$key] = $space . $value;
     //     }
 
-    //     return trim(implode('', $string));
+    //     $string = trim(implode('', $string));
+
+    //     return $string;
     // }
 }

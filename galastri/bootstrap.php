@@ -7,78 +7,107 @@
 
 namespace galastri;
 
-use galastri\modules\Toolbox;
+use galastri\core\Parameters;
+use galastri\extensions\Exception;
 use galastri\modules\PerformanceAnalysis;
 
-ini_set('display_errors', 1); // Will remove it. Just kept it here for debugging.
+try {
+    ini_set('display_errors', 1); // Will remove it. Just kept it here for debugging.
 
-/**
- * Importing files:
- *
- * - const.php : has all constants, which each value is bitwise ready to be used in many functions.
- *
- * - vardump.php : has vardump() function, an alternative to the PHP's var_dump() function. It shows
- *   data in more readable way.
- */
-require_once('const.php');
-require_once('vardump.php');
+    /**
+     * Importing files:
+     *
+     * - const.php : has all constants, which each value is bitwise ready to be used in many functions.
+     *
+     * - vardump.php : has vardump() function, an alternative to the PHP's var_dump() function. It shows
+     *   data in more readable way.
+     */
+    require('const.php');
+    require('vardump.php');
 
-/**
- * Stores the root of the project. This helps to always call the same current project folder.
- *
- * It gets the current __DIR__, which will return a directory like this:
- *
- * Current path:  /home/project/galastri
- *
- * The last direct of this path is removed, so with this we have the project directory.
- *
- * Project Path:  /home/project
- *
- */
-define('GALASTRI_PROJECT_DIR', (function () {
-    $currentDir = explode(DIRECTORY_SEPARATOR, __DIR__);
-    array_pop($currentDir);
-    return implode(DIRECTORY_SEPARATOR, $currentDir);
-})());
+    /**
+     * Stores the root of the project. This helps to always call the same current project folder.
+     *
+     * It gets the current __DIR__, which will return a directory like this:
+     *
+     * Current path:  /home/project/galastri
+     *
+     * The last direct of this path is removed, so with this we have the project directory.
+     *
+     * Project Path:  /home/project
+     *
+     */
+    define('GALASTRI_PROJECT_DIR', (function () {
+        $currentDir = explode(DIRECTORY_SEPARATOR, __DIR__);
+        array_pop($currentDir);
+        return implode(DIRECTORY_SEPARATOR, $currentDir);
+    })());
 
-/**
- * Importing file:
- *
- * - autoload.php : has the behavior of the autoload. More information inside this file.
- */
-require_once(GALASTRI_PROJECT_DIR.'/vendor/autoload.php');
+    /**
+     * Importing file:
+     *
+     * - autoload.php : has the behavior of the autoload. More information inside this file.
+     */
+    require(GALASTRI_PROJECT_DIR.'/vendor/autoload.php');
 
-/**
- * Stores the debug configuration.
- */
-define('GALASTRI_DEBUG', require_once(GALASTRI_PROJECT_DIR.'/app/config/debug.php'));
+    /**
+     * Stores the debug configuration temporarily.
+     */
+    $GALASTRI_DEBUG = require(GALASTRI_PROJECT_DIR.'/app/config/debug.php');
 
-/**
- * Based on debug configuration, defines if PHP will display errors or not.
- */
-ini_set('display_errors', GALASTRI_DEBUG['displayErrors']);
+    Parameters::setDisplayErrors($GALASTRI_DEBUG['displayErrors']);
+    Parameters::setShowBacklogData($GALASTRI_DEBUG['showBacklogData']);
+    Parameters::setPerformanceAnalysis($GALASTRI_DEBUG['performanceAnalysis']);
+    Parameters::setLanguage($GALASTRI_DEBUG['language'] ?? null);
 
-/**
- * 
- */
-class_alias('\galastri\\lang\\'.GALASTRI_DEBUG['language'], 'Language');
+    unset($GALASTRI_DEBUG);
 
-/**
- * Definition of many constants
- *
- * - GALASTRI_PROJECT : stores the project configuration.
- * - GALASTRI_VERSION : stores the framework version (only used on the default template).
- * - GALASTRI_ROUTES : stores all the routes configured, which will be used to define how framework
- *   will work based on the URL.
- */
-define('GALASTRI_PROJECT', Toolbox::importFile('/app/config/project.php'));
-define('GALASTRI_ROUTES', Toolbox::importFile('/app/config/routes.php'));
-define('GALASTRI_URL_TAGS', Toolbox::importFile('/app/config/url-tags.php'));
-define('GALASTRI_VERSION', Toolbox::getFileContents('/galastri/VERSION'));
+    /**
+     * Based on debug configuration, defines if PHP will display errors or not.
+     */
+    ini_set('display_errors', Parameters::getDisplayErrors());
 
-PerformanceAnalysis::begin(PERFORMANCE_ANALYSIS_LABEL, GALASTRI_DEBUG['performanceAnalysis']);
+    /**
+     * 
+     */
+    class_alias('\galastri\\lang\\'.Parameters::getLanguage(), 'Language');
 
-/**
- * Starts the framework.
- */
-core\Galastri::execute();
+    /**
+     * Definition of globals (will be unset after use);
+     *
+     * - GALASTRI_PROJECT : stores the project configuration.
+     * - GALASTRI_ROUTES : stores all the routes configured, which will be used to define how framework
+     */
+    $GALASTRI_PROJECT = require(GALASTRI_PROJECT_DIR.'/app/config/project.php');
+    $GALASTRI_ROUTES = require(GALASTRI_PROJECT_DIR.'/app/config/routes.php');
+
+    /**
+     * Definition of constants
+     *
+     * - GALASTRI_URL_TAGS : stores the framework version (only used on the default template).
+     * - GALASTRI_VERSION : stores the framework version (only used on the default template).
+     *   will work based on the URL.
+     */
+    define('GALASTRI_URL_TAGS', require(GALASTRI_PROJECT_DIR.'/app/config/url-tags.php'));
+    define('GALASTRI_VERSION', file_get_contents(GALASTRI_PROJECT_DIR.'/galastri/VERSION'));
+
+    PerformanceAnalysis::begin(PERFORMANCE_ANALYSIS_LABEL, Parameters::getPerformanceAnalysis());
+
+    /**
+     * Starts the framework.
+     */
+    core\Galastri::execute();
+} catch (Exception $e) {
+    $data = [
+        'code' => $e->getCode(),
+        'origin' => null,
+        'line' => null,
+        'message' => vsprintf($e->getMessage(), $e->getData()),
+        'warning' => true,
+        'error' => true,
+    ];
+
+    header('Content-Type: application/json');
+    echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+}
+

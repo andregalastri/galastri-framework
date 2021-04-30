@@ -4,7 +4,7 @@ declare(strict_types = 1);
 namespace galastri\modules\types;
 
 use galastri\core\Debug;
-use galastri\extensions\typeValidation\StringValidation;
+use galastri\extensions\Exception;
 use galastri\extensions\typeValidation\EmptyValidation;
 
 /**
@@ -25,18 +25,18 @@ final class TypeBool implements \Language
     const VALUE_TYPE = 'boolean';
 
     /**
-     * Stores a bool or null value.
+     * Stores the value after handling.
      *
      * @var null|bool
      */
-    private ?bool $value = null;
+    private ?bool $storedValue = null;
 
     /**
-     * Stores the first value set to the object that isn't null.
+     * Stores the temporary value while handling.
      *
-     * @var null|bool
+     * @var mixed
      */
-    private ?bool $initialValue = null;
+    protected $handlingValue = null;
     
     /**
      * Stores an instance of the EmptyValidation class, to be used in the validation methods that
@@ -48,26 +48,21 @@ final class TypeBool implements \Language
     private EmptyValidation $emptyValidation;
 
     /**
-     * Sets up the value and if it will save or not a history of the value changes. It also create
-     * the object composition of the validation classes.
+     * Sets up the type It also create the object composition of the validation classes.
      *
-     * @param null|string $value                    The value that will be stored. It is optional to
+     * @param null|bool $value                      The value that will be stored. It is optional to
      *                                              set it in the construct.
-     *
-     * @param bool $saveHistory                     Defines if the changes of the value will be
-     *                                              saved in a history, allowing to revert the value
-     *                                              to previous values. Default is false.
      *
      * @return void
      */
-    public function __construct(/*?bool*/ $value = null, bool $saveHistory = false)
+    public function __construct(/*?bool*/ $value = null,)
     {
         Debug::setBacklog();
 
-        $this->saveHistory = $saveHistory;
         $this->emptyValidation = new EmptyValidation();
 
-        $this->execSetValue($value);
+        $this->execHandleValue($value);
+        $this->execStoreValue(false);
     }
     
     /**
@@ -77,8 +72,39 @@ final class TypeBool implements \Language
      */
     public function invert(): self
     {
-        $this->execSetValue(!$this->value);
+        if ($this->getValue() !== null) {
+            $this->execHandleValue(!$this->getValue());
+        }
+
         return $this;
+    }
+
+    public function true(): self
+    {
+        $this->execHandleValue(true);
+        return $this;
+    }
+
+    public function false(): self
+    {
+        $this->execHandleValue(false);
+        return $this;
+    }
+
+    public function null(): self
+    {
+        $this->execHandleValue(null);
+        return $this;
+    }
+
+    public function isTrue(): ?bool
+    {
+        return $this->getValue();
+    }
+
+    public function isFalse(): ?bool
+    {
+        return !$this->getValue();
     }
 
     /**
@@ -125,18 +151,24 @@ final class TypeBool implements \Language
      *
      * Optionally, an error code can be set.
      *
-     * @param  string $message                      The message when an validation returns error.
+     * @param  array|string $messageCode            The message when an validation returns error.
+     *                                              The message can have printf flags to be replaced
+     *                                              by the $printfData parameter. When it is a
+     *                                              array, then the first key is the message and the
+     *                                              second is a custom code that will replace the
+     *                                              custom G0023 code that refers to invalid data.
      *
-     * @param  string $code                         A custom code to the error.
+     * @param  float|int|string ...$printfData      When there are printf flags in the message, they
+     *                                              will be replaced by the values set in this
+     *                                              ellipsis array.
      *
      * @return self
      */
-    public function onError(string $message, string $code = 'validationFail'): self
+    public function onError(/*array|string*/ $messageCode, /*float|int|string*/ ...$printfData): self
     {
-        $this->errorMessage[0] = $code;
-        $this->errorMessage[1] = $message;
+        $message = $this->execBuildErrorMessage($messageCode, $printfData);
 
-        $this->emptyValidation->onError($message, $code);
+        $this->emptyValidation->onError($message[1], $message[0]);
 
         return $this;
     }
@@ -148,14 +180,12 @@ final class TypeBool implements \Language
      * in the construct of the TypeString class and only after that set up the validation
      * configuration.
      *
-     * @param  mixed $value                         The value that will be tested.
-     *
-     * @return self
+     * @return bool
      */
-    public function validate(?string $value = null): self
+    public function validate(): ?bool
     {
-        $this->emptyValidation->setValue($value ?? $this->value)->validate();
+        $this->emptyValidation->setValue($this->getValue())->validate();
 
-        return $this;
+        return $this->getValue();
     }
 }

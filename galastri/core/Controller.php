@@ -4,8 +4,8 @@ namespace galastri\core;
 
 use galastri\core\Route;
 use galastri\core\Debug;
-// use galastri\extensions\Exception;
-use galastri\modules\Toolbox;
+use galastri\core\Parameters;
+use galastri\modules\types\TypeString;
 use galastri\modules\PerformanceAnalysis;
 
 /**
@@ -70,83 +70,6 @@ abstract class Controller
     private bool $stopControllerFlag = false;
 
     /**
-     * Stores the projectTitle route parameter.
-     *
-     * @var null|string
-     */
-    private ?string $projectTitle;
-
-    /**
-     * Stores the pageTitle route parameter.
-     *
-     * @var null|string
-     */
-    private ?string $pageTitle;
-
-    /**
-     * Stores the authTag route parameter.
-     *
-     * @var null|string
-     */
-    private ?string $authTag;
-
-    /**
-     * Stores the authFailRedirect route parameter.
-     *
-     * @var null|string
-     */
-    private ?string $authFailRedirect;
-
-    /**
-     * Stores the output route parameter.
-     *
-     * @var string
-     */
-    private string $output;
-
-    /**
-     * Stores the viewTemplateFile route parameter.
-     *
-     * @var null|string
-     */
-    private ?string $viewTemplateFile;
-
-    /**
-     * Stores the viewBaseFolder route parameter.
-     *
-     * @var null|string
-     */
-    private ?string $viewBaseFolder;
-
-    /**
-     * Stores the fileDownloadable route parameter.
-     *
-     * @var bool
-     */
-    private bool $fileDownloadable;
-
-    /**
-     * Stores the fileBaseFolder route parameter.
-     *
-     * @var null|string
-     */
-    private ?string $fileBaseFolder;
-
-    /**
-     * Stores the viewFilePath route parameter.
-     *
-     * @var null|string
-     */
-    private ?string $viewFilePath;
-
-    /**
-     * Stores the requestMethod route parameter.
-     *
-     * @var array
-     */
-    private array $requestMethod;
-
-    /**
      * Any route controller needs to have a main() method. This abstract method here makes it a
      * requirement that all child class need to declare.
      *
@@ -162,6 +85,7 @@ abstract class Controller
      */
     protected function __doBefore()
     {
+        return [];
     }
 
     /**
@@ -172,6 +96,7 @@ abstract class Controller
      */
     protected function __doAfter()
     {
+        return [];
     }
 
     /**
@@ -198,60 +123,13 @@ abstract class Controller
     final public function __construct()
     {
         if (!$this->isConstructed) {
-            // try {
-                $this->setInitialParameterValues();
-                $this->callDoBefore();
-                $this->callControllerMethod();
-                $this->callDoAfter();
-                $this->mergeResults();
+            $this->callDoBefore();
+            $this->callControllerMethod();
+            $this->callDoAfter();
+            $this->mergeResults();
 
-                $this->isConstructed = true;
-            // } catch (Exception $e) {
-            //     Debug::setBacklog($e->getTrace());
-            //     Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
-            // } catch (\Error | \Throwable | \Exception | \TypeError $e) {
-            //     Debug::setBacklog($e->getTrace());
-            //     Debug::setError($e->getMessage(), $e->getCode())::print();
-            // }
+            $this->isConstructed = true;
         }
-    }
-
-    /**
-     * Gets all pertinent route parameters and stores it in properties owned by this class.
-     * The parameters stored are:
-     * 
-     * Child node parameters
-     * - fileDownloadable
-     * - fileBaseFolder
-     * - viewFilePath
-     * 
-     * Route paramaters
-     * - projectTitle
-     * - pageTitle
-     * - authTag
-     * - authFailRedirect
-     * - output
-     * - viewTemplateFile
-     * - viewBaseFolder
-     *
-     * @return void
-     */
-    private function setInitialParameterValues(): void
-    {
-        $childNodeParam = Route::getChildNodeParam();
-        $routeParam = Route::getRouteParam();
-
-        $this->setFileDownloadable($childNodeParam['fileDownloadable']);
-        $this->setFileBaseFolder($childNodeParam['fileBaseFolder']);
-        $this->setViewFilePath($childNodeParam['viewFilePath']);
-
-        $this->setProjectTitle($routeParam['projectTitle']);
-        $this->setPageTitle($routeParam['pageTitle']);
-        $this->setAuthTag($routeParam['authTag']);
-        $this->setAuthFailRedirect($routeParam['authFailRedirect']);
-        $this->setOutput($routeParam['output']);
-        $this->setViewTemplateFile($routeParam['viewTemplateFile']);
-        $this->setViewBaseFolder($routeParam['viewBaseFolder']);
     }
 
     /**
@@ -269,11 +147,9 @@ abstract class Controller
     {
         Debug::setBacklog();
 
-        if (method_exists($this, '__doBefore')) {
-            $this->doBeforeData = $this->__doBefore();
+        $this->doBeforeData = $this->__doBefore();
 
-            PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-        }
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
     /**
@@ -292,12 +168,13 @@ abstract class Controller
 
         if (!$this->stopControllerFlag) {
             $controllerMethod = Route::getChildNodeName();
-            $serverRequestMethod = Toolbox::lowerCase($_SERVER['REQUEST_METHOD']);
+            $serverRequestMethod = new TypeString($_SERVER['REQUEST_METHOD']);
+            $serverRequestMethod->toLowercase();
 
             $this->controllerData = $this->$controllerMethod();
 
-            if (Route::getChildNodeParam('requestMethod') and !$this->stopControllerFlag) {
-                $requestMethod = Route::getChildNodeParam('requestMethod')[$serverRequestMethod];
+            $requestMethod = Parameters::getRequestMethod();
+            if ($requestMethod and !$this->stopControllerFlag) {
                 $this->requestMethodData = $this->$requestMethod();
             }
 
@@ -320,11 +197,9 @@ abstract class Controller
         Debug::setBacklog();
 
         if (!$this->stopControllerFlag) {
-            if (method_exists($this, '__doBefore')) {
-                $this->doAfterData = $this->__doAfter();
+            $this->doAfterData = $this->__doAfter();
 
-                PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-            }
+            PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
         }
     }
 
@@ -336,11 +211,17 @@ abstract class Controller
      */
     private function mergeResults(): void
     {
+        $returningParameters = $this->getOutput() === 'text' ? [] : [
+            'projectTitle' => $this->getProjectTitle(),
+            'pageTitle' => $this->getPageTitle(),
+        ];
+
         $this->resultData = array_merge(
             $this->doBeforeData,
             $this->controllerData,
             $this->requestMethodData,
-            $this->doAfterData
+            $this->doAfterData,
+            $returningParameters
         );
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
@@ -395,9 +276,9 @@ abstract class Controller
      *
      * @return void
      */
-    final protected function setFileDownloadable(bool $fileDownloadable): void
+    final protected function setFileDownloadable(?bool $fileDownloadable): void
     {
-        $this->fileDownloadable = $fileDownloadable;
+        Parameters::setFileDownloadable($fileDownloadable);
     }
 
     /**
@@ -407,7 +288,7 @@ abstract class Controller
      */
     final public function getFileDownloadable(): bool
     {
-        return $this->fileDownloadable;
+        return Parameters::getFileDownloadable();
     }
 
     /**
@@ -420,7 +301,7 @@ abstract class Controller
      */
     final protected function setFileBaseFolder(?string $fileBaseFolder): void
     {
-        $this->fileBaseFolder = $fileBaseFolder;
+        Parameters::setFileBaseFolder($fileBaseFolder);
     }
 
     /**
@@ -430,7 +311,7 @@ abstract class Controller
      */
     final public function getFileBaseFolder(): ?string
     {
-        return $this->fileBaseFolder;
+        return Parameters::getFileBaseFolder();
     }
 
     /**
@@ -443,7 +324,7 @@ abstract class Controller
      */
     final protected function setViewFilePath(?string $viewFilePath): void
     {
-        $this->viewFilePath = $viewFilePath;
+        Parameters::setViewFilePath($viewFilePath);
     }
 
     /**
@@ -453,7 +334,7 @@ abstract class Controller
      */
     final public function getViewFilePath(): ?string
     {
-        return $this->viewFilePath;
+        return Parameters::getViewFilePath();
     }
 
     /**
@@ -467,7 +348,7 @@ abstract class Controller
      */
     final protected function setProjectTitle(?string $projectTitle): void
     {
-        $this->projectTitle = $projectTitle;
+        Parameters::setProjectTitle($projectTitle);
     }
 
     /**
@@ -477,7 +358,7 @@ abstract class Controller
      */
     final public function getProjectTitle(): ?string
     {
-        return $this->projectTitle;
+        return Parameters::getProjectTitle();
     }
 
     /**
@@ -490,7 +371,7 @@ abstract class Controller
      */
     final protected function setPageTitle(?string $pageTitle): void
     {
-        $this->pageTitle = $pageTitle;
+        Parameters::setPageTitle($pageTitle);
     }
 
     /**
@@ -500,7 +381,7 @@ abstract class Controller
      */
     final public function getPageTitle(): ?string
     {
-        return $this->pageTitle;
+        return Parameters::getPageTitle();
     }
 
     /**
@@ -513,7 +394,7 @@ abstract class Controller
      */
     final protected function setAuthTag(?string $authTag): void
     {
-        $this->authTag = $authTag;
+        Parameters::setAuthTag($authTag);
     }
 
     /**
@@ -523,7 +404,7 @@ abstract class Controller
      */
     final public function getAuthTag(): ?string
     {
-        return $this->authTag;
+        return Parameters::getAuthTag();
     }
 
     /**
@@ -536,7 +417,7 @@ abstract class Controller
      */
     final protected function setAuthFailRedirect(?string $authFailRedirect): void
     {
-        $this->authFailRedirect = $authFailRedirect;
+        Parameters::setAuthFailRedirect($authFailRedirect);
     }
 
     /**
@@ -546,7 +427,7 @@ abstract class Controller
      */
     final public function getAuthFailRedirect(): ?string
     {
-        return $this->authFailRedirect;
+        return Parameters::getAuthFailRedirect();
     }
 
     /**
@@ -559,7 +440,7 @@ abstract class Controller
      */
     final protected function setOutput(string $output): void
     {
-        $this->output = $output;
+        Parameters::setOutput($output);
     }
 
     /**
@@ -569,7 +450,7 @@ abstract class Controller
      */
     final public function getOutput(): string
     {
-        return $this->output;
+        return Parameters::getOutput();
     }
 
     /**
@@ -583,7 +464,7 @@ abstract class Controller
      */
     final protected function setViewTemplateFile(?string $viewTemplateFile): void
     {
-        $this->viewTemplateFile = $viewTemplateFile;
+        Parameters::setViewTemplateFile($viewTemplateFile);
     }
 
     /**
@@ -593,7 +474,7 @@ abstract class Controller
      */
     final public function getViewTemplateFile(): ?string
     {
-        return $this->viewTemplateFile;
+        return Parameters::getViewTemplateFile();
     }
 
     /**
@@ -606,7 +487,7 @@ abstract class Controller
      */
     final protected function setViewBaseFolder(?string $viewBaseFolder): void
     {
-        $this->viewBaseFolder = $viewBaseFolder;
+        Parameters::setViewBaseFolder($viewBaseFolder);
     }
 
     /**
@@ -616,7 +497,7 @@ abstract class Controller
      */
     final public function getViewBaseFolder(): ?string
     {
-        return $this->viewBaseFolder;
+        return Parameters::getViewBaseFolder();
     }
 
     /**

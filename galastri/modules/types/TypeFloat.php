@@ -3,8 +3,6 @@ declare(strict_types = 1);
 
 namespace galastri\modules\types;
 
-use galastri\modules\types\abstraction\TypeNumeric;
-
 /**
  * This class creates objects that will act as a float type.
  */
@@ -18,16 +16,16 @@ final class TypeFloat extends TypeNumeric implements \Language
     const VALUE_TYPE = 'double';
 
     /**
-     * Stores a float or null value.
+     * Stores the value after handling.
      *
      * @var null|float
      */
-    protected ?float $value = null;
+    protected ?float $storedValue = null;
 
     /**
-     * Stores the first value set to the object that isn't null.
+     * Stores the temporary value while handling.
      *
-     * @var null|float
+     * @var mixed
      */
-    protected ?float $initialValue = null;
+    protected $handlingValue = null;
 }

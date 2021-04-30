@@ -3,8 +3,10 @@
 namespace galastri\core;
 
 use galastri\core\Debug;
+use galastri\core\Parameters;
 use galastri\extensions\Exception;
-use galastri\modules\Toolbox;
+use galastri\modules\types\TypeString;
+use galastri\modules\types\TypeArray;
 use galastri\modules\PerformanceAnalysis;
 
 /**
@@ -91,10 +93,6 @@ final class Route implements \Language
         'controller' => null,
     ];
 
-    const PARENT_NODE_PARAM_VALID_TYPES = [
-        'controller' => ['NULL', 'string'],
-    ];
-
     /**
      * Stores the namespace in case of the parent node be a controller.
      *
@@ -130,7 +128,7 @@ final class Route implements \Language
      * @key null|string viewFilePath                Works only with View output. Defines a custom
      *                                              view file instead the default.
      *
-     * @key null|array requestMethod                Points to an internal method that will be called
+     * @key null|array|string requestMethod         Points to an internal method that will be called
      *                                              based on the request method. The key of the
      *                                              array needs to have the name of request method
      *                                              (POST, GET, PUT, etc..) and its value needs to
@@ -143,13 +141,6 @@ final class Route implements \Language
         'fileBaseFolder' => null,
         'viewFilePath' => null,
         'requestMethod' => null,
-    ];
-
-    const CHILD_NODE_PARAM_VALID_TYPES = [
-        'fileDownloadable' => ['boolean'],
-        'fileBaseFolder' => ['NULL', 'string'],
-        'viewFilePath' => ['NULL', 'string'],
-        'requestMethod' => ['NULL', 'array'],
     ];
 
     /**
@@ -171,40 +162,37 @@ final class Route implements \Language
     /**
      * Stores route parameters, inherited by parents nodes.
      *
+     * @key bool offline                            Defines that the node and its children is
+     *                                              offline. No scripts are executed when it is
+     *                                              defined as true. Useful when doing maintenance.
+     * 
      * @key null|string projectTitle                Defines a custom app title instead of the
      *                                              default defined in the \app\config\project.php
      *                                              file.
      *
-     * @key null|string authFailRedirect            Defines a URL, path or url alias to redirect the
-     *                                              users that requests paths that needs
-     *                                              authorization to access but doesn't have.
+     * @key null|string pageTitle                   Defines a static page title to the node and its
+     *                                              children. It can be changed in controller if the
+     *                                              page title needs to be dynamic. 
      *
      * @key null|string authTag                     Defines a tag string that the user session needs
      *                                              to have access to the node and its children.
      *                                              When null, defines that the node or child
      *                                              doesn't need that authorization.
+     * 
+     * @key null|string authFailRedirect            Defines a URL, path or url alias to redirect the
+     *                                              users that requests paths that needs
+     *                                              authorization to access but doesn't have.
      *
-     * @key null|int browserCache                   Defines a cache time to the node and its
-     *                                              children (in seconds). When null, the node won't
-     *                                              be cached.
+     * @key null|string forceRedirect               Force the request to be redirected to a URL,
+     *                                              path or URL alias when the node or its children
+     *                                              is accessed.
      *
      * @key null|string namespace                   Defines custom namespace for controllers to the
      *                                              node and its children, instead the default
      *                                              \app\controller.
      *
-     * @key null|string viewBaseFolder              Works only with View output. Defines a custom
-     *                                              folder where views are located.
-     *
      * @key null|string notFoundRedirect            Defines a custom URL, path or URL alias when a
      *                                              file or URL path is not found (error 404).
-     *
-     * @key bool offline                            Defines that the node and its children is
-     *                                              offline. No scripts are executed when it is
-     *                                              defined as true. Useful when doing maintenance.
-     *
-     * @key null|string pageTitle                   Defines a static page title to the node and its
-     *                                              children. It can be changed in controller if the
-     *                                              page title needs to be dynamic.
      *
      * @key string output                           Defines which output will be used in the node
      *                                              and its children. A output is a trait that will
@@ -212,7 +200,11 @@ final class Route implements \Language
      *                                              outputs are: - File: returns a file; - View:
      *                                              returns a HTML; - Json: returns data in json
      *                                              format; - Text: returns data in plain text.
-     *
+     * 
+     * @key null|int browserCache                   Defines a cache time to the node and its
+     *                                              children (in seconds). When null, the node won't
+     *                                              be cached.
+     * 
      * @key null|string viewTemplateFile            Works only with View output. Defines the
      *                                              template base file where the view will be
      *                                              printed. This template base file can have
@@ -221,49 +213,21 @@ final class Route implements \Language
      *                                              other parts that can be imported inside the base
      *                                              template.
      *
-     * @key null|string forceRedirect               Force the request to be redirected to a URL,
-     *                                              path or URL alias when the node or its children
-     *                                              is accessed.
+     * @key null|string viewBaseFolder              Works only with View output. Defines a custom
+     *                                              folder where views are located.
      *
-     * @key array defaultmessage                    Defines a custom set of defaultmessage instead
-     *                                              of the ones defined in \app\config\project.php
-     *                                              file.
+     * @key array offlineMessage                    Defines a custom offline message to the node and
+     *                                              its children.
+     *
+     * @key array authFailMessage                   Defines a custom authentication fail message to
+     *                                              the node and its children.
+     *
+     * @key array permissionFailMessage             Defines a custom permission access restriction
+     *                                              message to the node and its children.
      *
      * @var array
      */
-    private static array $routeParam = [
-        'offline' => GALASTRI_PROJECT['offline'],
-        'projectTitle' => GALASTRI_PROJECT['projectTitle'],
-        'pageTitle' => null,
-        'authTag' => null,
-        'authFailRedirect' => null,
-        'forceRedirect' => null,
-        'namespace' => null,
-        'notFoundRedirect' => GALASTRI_PROJECT['notFoundRedirect'],
-        'output' => null,
-        'browserCache' => null,
-        'viewTemplateFile' => GALASTRI_PROJECT['viewTemplateFile'],
-        'viewBaseFolder' => null,
-        'defaultmessage' => GALASTRI_PROJECT['defaultmessage'],
-    ];
-
-    const ROUTE_PARAM_VALID_TYPES = [
-        'offline' => ['boolean'],
-        'projectTitle' => ['NULL', 'string'],
-        'pageTitle' => ['NULL', 'string'],
-        'authTag' => ['NULL', 'string'],
-        'authFailRedirect' => ['NULL', 'string'],
-        'forceRedirect' => ['NULL', 'string'],
-        'namespace' => ['NULL', 'string'],
-        'notFoundRedirect' => ['NULL', 'string'],
-        'output' => ['string'],
-        'browserCache' => ['NULL', 'integer'],
-        'viewTemplateFile' => ['NULL', 'string'],
-        'viewBaseFolder' => ['NULL', 'string'],
-        'defaultmessage' => ['array'],
-    ];
-
-
+    private static array $routeParam = [];
 
     /**
      * This is a singleton class, so, the __construct() method is private to avoid user to
@@ -283,35 +247,45 @@ final class Route implements \Language
      */
     public static function resolve(): void
     {
-        try {
-            self::prepareUrlArray();
-            self::resolveRouteNodes(GALASTRI_ROUTES);
-            self::defineChildNode();
-            self::resolveChildNodeParam();
-            self::resolveChildNodeParamRequestMethod();
-            self::resolveUrlParam();
+        self::setup();
+        self::prepareUrlArray();
+        self::resolveRouteNodes($GLOBALS['GALASTRI_ROUTES']);
 
-            if (count(self::$controllerNamespace) > 1) {
-                array_shift(self::$controllerNamespace);
-            }
+        unset($GLOBALS['GALASTRI_ROUTES']);
 
-            // vardump(
-            //     /*0*/ self::$parentNodeName,
-            //     /*1*/ self::$parentNodeParam,
-            //     /*2*/ self::$controllerNamespace,
-            //     /*3*/ self::$childNodeName,
-            //     /*4*/ self::$childNodeParam,
-            //     /*5*/ self::$urlParam,
-            //     /*6*/ self::$dynamicNodeValues,
-            //     /*7*/ self::$routeParam
-            // );
-        } catch (Exception $e) {
-            PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
-            Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
-        } catch (\Error | \Throwable | \Exception | \TypeError $e) {
-            Debug::setBacklog($e->getTrace());
-            Debug::setError($e->getMessage(), $e->getCode())::print();
+        self::defineChildNode();
+        self::resolveChildNodeParam();
+        self::resolveChildNodeParamRequestMethod();
+        self::resolveUrlParam();
+
+        if (count(self::$controllerNamespace) > 1) {
+            array_shift(self::$controllerNamespace);
         }
+
+        self::validateAndStoreParameters();
+
+        unset($GLOBALS['GALASTRI_PROJECT']);
+    }
+
+    private static function setup(): void
+    {
+        self::$routeParam = [
+            'offline' => $GLOBALS['GALASTRI_PROJECT']['offline'],
+            'projectTitle' => $GLOBALS['GALASTRI_PROJECT']['projectTitle'] ?? null,
+            'pageTitle' => null,
+            'authTag' => null,
+            'authFailRedirect' => null,
+            'forceRedirect' => null,
+            'namespace' => null,
+            'notFoundRedirect' => $GLOBALS['GALASTRI_PROJECT']['notFoundRedirect'] ?? null,
+            'output' => null,
+            'browserCache' => null,
+            'viewTemplateFile' => $GLOBALS['GALASTRI_PROJECT']['viewTemplateFile'] ?? null,
+            'viewBaseFolder' => null,
+            'offlineMessage' => $GLOBALS['GALASTRI_PROJECT']['offlineMessage'] ?? null,
+            'authFailMessage' => $GLOBALS['GALASTRI_PROJECT']['authFailMessage'] ?? null,
+            'permissionFailMessage' => $GLOBALS['GALASTRI_PROJECT']['permissionFailMessage'] ?? null,
+        ];
     }
 
     /**
@@ -338,7 +312,8 @@ final class Route implements \Language
         /**
          * The URL root that will be controlled by the framework.
          */
-        $bootstrapPath = ltrim(GALASTRI_PROJECT['urlRoot'], '/');
+        Parameters::setUrlRoot($GLOBALS['GALASTRI_PROJECT']['urlRoot'] ?? null);
+        $bootstrapPath = ltrim(Parameters::getUrlRoot(), '/');
 
         $urlWorkingArray = explode('?', str_replace($bootstrapPath, '', $_SERVER['REQUEST_URI']));
         $urlWorkingArray = explode('/', $urlWorkingArray[0]);
@@ -403,15 +378,19 @@ final class Route implements \Language
         };
 
         foreach (self::$urlWorkingArray as $urlNode) {
+
             if (isset($routeNodes[$urlNode])) {
                 $found = $resolveNode($routeNodes, $urlNode);
                 break;
             }
 
             if (!$found) {
-                if ($dynamicNode = Toolbox::arrayKeySearch('/?', $routeNodes, MATCH_START)) {
-                    self::storeDynamicNode(key($dynamicNode), $urlNode);
-                    $found = $resolveNode($routeNodes, key($dynamicNode));
+                $dynamicNode = new TypeArray($routeNodes);
+                if ($dynamicNode->searchKey('/?', MATCH_START)->isNotEmpty()) {
+                    $dynamicKey = $dynamicNode->get(KEY);
+
+                    self::storeDynamicNode($dynamicKey, $urlNode);
+                    $found = $resolveNode($routeNodes, $dynamicKey);
                     break;
                 }
             }
@@ -438,37 +417,10 @@ final class Route implements \Language
      */
     private static function resolveParentNodeParam(array $nodeFound): void
     {
-
-
         foreach (self::$parentNodeParam as $param => &$value) {
-            if (array_key_exists($param, $nodeFound)) {
-                $value = self::hasValidType($nodeFound, $param, self::PARENT_NODE_PARAM_VALID_TYPES);
-            } else {
-                $value = null;
-            }
+            $value = $nodeFound[$param] ?? null;
         }
         unset($value);
-    }
-
-    /**
-     * hasValidType
-     *
-     * @param  mixed $nodeFound
-     * @param  mixed $param
-     * 
-     * @return mixed
-     */
-    private static function hasValidType(array $nodeFound, string $param, array $validTypes) // : mixed
-    {
-        Debug::setBacklog();
-
-        foreach ($validTypes[$param] as $allowedType) {
-            if (gettype($nodeFound[$param]) === $allowedType) {
-                return $nodeFound[$param];
-            }
-        }
-
-        throw new Exception(self::INVALID_PARAM_TYPE[1], self::INVALID_PARAM_TYPE[0], [$param, implode('|', $validTypes[$param]), gettype($nodeFound[$param])]);
     }
 
     /**
@@ -492,7 +444,7 @@ final class Route implements \Language
                     self::$resetNamespace = true;
                 }
 
-                $value = self::hasValidType($nodeFound, $param, self::ROUTE_PARAM_VALID_TYPES);
+                $value = $nodeFound[$param];
             }
         }
         unset($value);
@@ -509,18 +461,24 @@ final class Route implements \Language
      */
     private static function addControllerNamespacePath(string $parentNodeName): void
     {
-        $parentNodeName = Toolbox::trim($parentNodeName, '/', '?');
-        $parentNodeName = $parentNodeName ?: 'index';
-        $parentNodeName = Toolbox::convertCase($parentNodeName, PASCAL_CASE);
+        $parentNodeName = new TypeString($parentNodeName);
 
-        self::$parentNodeName = $parentNodeName;
+        $parentNodeName
+            ->trim('/', '?')
+            ->toPascalCase()
+            ->set(function ($self) {
+                return $self->get() ?: 'Index';
+            });
+
+
+        self::$parentNodeName = $parentNodeName->get();
 
         if (self::$resetNamespace) {
             self::$controllerNamespace = [];
             self::$resetNamespace = false;
         }
 
-        self::$controllerNamespace[] = '\\' . $parentNodeName;
+        self::$controllerNamespace[] = '\\' . $parentNodeName->get();
     }
 
     /**
@@ -572,20 +530,27 @@ final class Route implements \Language
     private static function resolveChildNodeParam(): void
     {
         $found = false;
-
+        
         foreach (self::$nodeWorkingArray as $param => $value) {
-            if ($param === '@' . self::$childNodeName) {
+            $param = (new TypeString(null))
+            ->onError([
+                self::INVALID_KEY_PARAMETER_TYPE[1],
+                self::INVALID_KEY_PARAMETER_TYPE[0]
+            ], gettype($param))
+            ->set($param);
+
+            if ($param->get() === '@' . self::$childNodeName) {
                 $found = true;
                 $childNodeParam = $value;
-                self::$childNodeName = Toolbox::convertCase(ltrim($param, '@'), CAMEL_CASE);
+                self::$childNodeName = $param->trimStart('@')->toCamelCase()->get();
                 break;
             }
         }
-
+        
         if ($found) {
             foreach (self::$childNodeParam as $param => $value) {
                 if (array_key_exists($param, $childNodeParam)) {
-                    self::$childNodeParam[$param] = self::hasValidType($childNodeParam, $param, self::CHILD_NODE_PARAM_VALID_TYPES);
+                    self::$childNodeParam[$param] = $childNodeParam[$param];
                 }
             }
 
@@ -618,26 +583,26 @@ final class Route implements \Language
     {
         Debug::setBacklog();
 
-        $serverRequestMethod = Toolbox::lowerCase($_SERVER['REQUEST_METHOD']);
+        $serverRequestMethod = new TypeString($_SERVER['REQUEST_METHOD']);
+        $serverRequestMethod->toLowerCase()->set();
 
         if (self::$childNodeParam['requestMethod'] !== null) {
             foreach (self::$childNodeParam['requestMethod'] as $key => $value) {
-                $key = Toolbox::lowerCase($key);
+                $key = new TypeString($key);
+                $key->toLowerCase()->set();
 
-                if ($key === $serverRequestMethod) {
-                    if (substr($value, 0, 1) !== '@') {
-                        throw new Exception(self::REQUEST_METHOD_STARTS_WITH_AT[1], self::REQUEST_METHOD_STARTS_WITH_AT[0], [$value]);
+                $value = new TypeString($value);
+
+                if ($key->get() === $serverRequestMethod->get()) {
+                    if ($value->substring(0, 1)->get() !== '@') {
+                        throw new Exception(self::REQUEST_METHOD_STARTS_WITH_AT[1], self::REQUEST_METHOD_STARTS_WITH_AT[0], [$value->get()]);
                     } else {
-                        $value = substr($value, 1, strlen($value));
-
-                        preg_match_all('/^[0-9]|[^a-zA-Z0-9_]*/', $value, $checkValue);
-
-                        if (implode($checkValue[0]) !== '') {
-                            throw new Exception(self::INVALID_REQUEST_METHOD_NAME[1], self::INVALID_REQUEST_METHOD_NAME[0], [$value]);
+                        $checkValue = $value->trimStart('@')->set()->regexMatch('/^[0-9]|[^a-zA-Z0-9_]*/')->get()->key(0)->join()->get();
+                        
+                        if ($checkValue->get() !== '') {
+                            throw new Exception(self::INVALID_REQUEST_METHOD_NAME[1], self::INVALID_REQUEST_METHOD_NAME[0], [$value->get()]);
                         } else {
-                            self::$childNodeParam['requestMethod'] = [
-                                $key => Toolbox::convertCase($value, CAMEL_CASE),
-                            ];
+                            self::$childNodeParam['requestMethod'] = $value->toCamelCase()->get();
                         }
                     }
                     break;
@@ -686,6 +651,32 @@ final class Route implements \Language
                 self::$urlParam[$keyLabel] = ltrim($value, '/');
             }
         }
+
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+    }
+    
+    private static function validateAndStoreParameters(): void
+    {
+        Parameters::setTimezone($GLOBALS['GALASTRI_PROJECT']['timezone'] ?? null);
+        Parameters::setController(self::$parentNodeParam['controller']);
+
+        Parameters::setOffline(self::$routeParam['offline']);
+        Parameters::setOfflineMessage(self::$routeParam['offlineMessage']);
+        Parameters::setForceRedirect(self::$routeParam['forceRedirect']);
+        Parameters::setOutput(self::$routeParam['output']);
+        Parameters::setNotFoundRedirect(self::$routeParam['notFoundRedirect']);
+        Parameters::setNamespace(self::$routeParam['namespace']);
+        Parameters::setProjectTitle(self::$routeParam['projectTitle']);
+        Parameters::setPageTitle(self::$routeParam['pageTitle']);
+        Parameters::setAuthTag(self::$routeParam['authTag']);
+        Parameters::setAuthFailRedirect(self::$routeParam['authFailRedirect']);
+        Parameters::setViewTemplateFile(self::$routeParam['viewTemplateFile']);
+        Parameters::setViewBaseFolder(self::$routeParam['viewBaseFolder']);
+        
+        Parameters::setRequestMethod(self::$childNodeParam['requestMethod']);
+        Parameters::setFileDownloadable(self::$childNodeParam['fileDownloadable']);
+        Parameters::setFileBaseFolder(self::$childNodeParam['fileBaseFolder']);
+        Parameters::setViewFilePath(self::$childNodeParam['viewFilePath']);
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }

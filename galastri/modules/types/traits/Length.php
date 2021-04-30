@@ -2,6 +2,8 @@
 
 namespace galastri\modules\types\traits;
 
+use galastri\modules\types\TypeInt;
+
 /**
  * This trait has the methods related to length of strings.
  *
@@ -15,10 +17,10 @@ trait Length
     /**
      * Returns the number of chars of the string.
      *
-     * @return int
+     * @return TypeInt
      */
-    public function getLength(): int
+    public function length(): TypeInt
     {
-        return strlen($this->value);
+        return new TypeInt(strlen($this->getValue()));
     }
 }

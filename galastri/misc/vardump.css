@@ -1,88 +1,128 @@
-#vardump {
+#galastriVardump {
     font-family: monospace;
-    color: #666;
+    color: #333;
 }
-#vardump section {
+
+#galastriVardump section {
     padding-left: 12px;
     border-left: 4px solid #ddd;
 }
 
-#vardump pre {
+#galastriVardump pre {
     color: #999;
 }
 
-#vardump .division {
+#galastriVardump objectTitle {
+    display: inline-flex;
     font-weight: bold;
-    color: #ff2bbd;
-    border-top: 1px solid #ccc;
-    display:block;
-    padding: 3px 0;
-    margin-top: 15px;
-    font-size:10px;
-}
-
-#vardump .solid {
-    display:inline-flex;
-    align-items:center;
-    height:15px;
-    margin: 2px 0;
-    padding:0 3px;
-}
-
-#vardump .string.solid {
-    background: #4eafff;
+    background: #88cc7a;
     color: #fff;
+    margin: 0 2px 0 1px;
+    padding: 1px 5px;
 }
 
-#vardump .string.text {
-    font-weight: bold;
-    color: #1298e8;
-}
-
-#vardump .numeric.solid {
-    background: #ff6c65;
-    color: #fff;
-}
-
-#vardump .numeric.text {
-    font-weight: bold;
-    color: #f14c45;
-}
-
-#vardump .bool.solid.true {
-    background: #00ad74;
-    color: #fff;
-}
-
-#vardump .bool.text.true {
-    font-weight: bold;
-    color: #00ad74;
-}
-
-#vardump .bool.solid.false {
-    background: #ff3287;
-    color: #fff;
-}
-
-#vardump .bool.text.false {
-    font-weight: bold;
-    color: #ff3287;
-}
-
-#vardump .array.solid {
-    background: #a684f7;
-    color: #fff;
-}
-
-#vardump .array-key {
+#galastriVardump objectKey {
+    display: inline-flex;
     border: 2px solid #ffe000;
     display: inline-flex;
+    color: #9c5300;
+    margin: 1px 0;
+    border-radius: 4px;
+}
+
+#galastriVardump arrayTitle {
+    display: inline-flex;
+    font-weight: bold;
+    background: #a684f7;
+    color: #fff;
+    margin: 0 2px 0 1px;
+    padding: 1px 5px;
+}
+
+#galastriVardump arrayKey {
+    display: inline-flex;
+    border: 2px solid #ffe000;
     color: #4f05ff;
     margin: 1px 0;
     border-radius: 4px;
 }
 
-#vardump .object.solid {
-    background: #88cc7a;
+#galastriVardump stringTitle {
+    display: inline-flex;
+    font-weight: bold;
+    background: #66baff;
     color: #fff;
+    margin: 1.5px;
+    padding: 0 3px;
+}
+
+#galastriVardump stringValue {
+    font-weight: bold;
+    color: #1298e8;
+}
+
+#galastriVardump numericTitle {
+    display: inline-flex;
+    font-weight: bold;
+    background: #ff756e;
+    color: #fff;
+    margin: 2px;
+    padding: 0 3px;
+}
+
+#galastriVardump numericValue {
+    font-weight: bold;
+    color: #f14c45;
+}
+
+#galastriVardump trueTitle {
+    display: inline-flex;
+    font-weight: bold;
+    background: #00ad74;
+    color: #fff;
+    margin: 2px;
+    padding: 0 3px;
+}
+
+#galastriVardump trueValue {
+    font-weight: bold;
+    color: #00ad74;
+}
+
+#galastriVardump falseTitle {
+    display: inline-flex;
+    font-weight: bold;
+    background: #ff3287;
+    color: #fff;
+    margin: 2px;
+    padding: 0 3px;
+}
+
+#galastriVardump falseValue {
+    font-weight: bold;
+    color: #ff3287;
+}
+
+#galastriVardump nullValue {
+    font-style: oblique;
+    color: #a75de4;
+    text-transform: lowercase;
+}
+
+#galastriVardump .division {
+    font-weight: bold;
+    color: #ff2bbd;
+    border-bottom: 1px solid #ccc;
+    display:block;
+    padding: 3px 0;
+    margin: 15px 0;
+    font-size:10px;
+}
+
+#galastriVardump .division::before {
+    content: 'VARDUMP ';
+}
+
+#galastriVardump .division::after {
+    content: ':';
 }

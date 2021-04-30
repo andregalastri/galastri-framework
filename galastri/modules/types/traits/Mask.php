@@ -22,17 +22,19 @@ trait Mask
      * @param  mixed $cleanEdges                    When true, removes chars that left at the sides
      *                                              of unused flags.
      * 
-     * @return void
+     * @return self
      */
-    public function convertToMask(string $mask, bool $cleanEdges = false)
+    public function mask(string $mask, bool $cleanEdges = false): self
     {
-        $number = preg_replace('/[^\p{N}\p{L}]/', '', $this->value);
+        $number = preg_replace('/[^\p{N}\p{L}]/', '', $this->getValue());
         $mask = preg_replace('/#|0/', '%s', $mask, strlen($number));
 
         $result = vsprintf($mask, str_split($number));
         $result = $cleanEdges ? preg_replace('/[^#0]#|#[^#0]/', '', $result) : $result;
         $result = preg_replace('/#/', '', $result);
 
-        return $result;
+        $this->execHandleValue($result);
+        
+        return $this;
     }
 }

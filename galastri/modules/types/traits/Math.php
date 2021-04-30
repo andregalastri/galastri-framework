@@ -16,7 +16,7 @@ trait Math
      */
     public function sum(float $number): self
     {
-        $this->execSetValue($this->value + $number);
+        $this->execHandleValue($this->getValue() + $number);
 
         return $this;
     }
@@ -30,7 +30,7 @@ trait Math
      */
     public function subtract(float $number): self
     {
-        $this->execSetValue($this->value - $number);
+        $this->execHandleValue($this->getValue() - $number);
 
         return $this;
     }
@@ -44,7 +44,7 @@ trait Math
      */
     public function minuend(float $number): self
     {
-        $this->execSetValue($number - $this->value);
+        $this->execHandleValue($number - $this->getValue());
 
         return $this;
     }
@@ -58,7 +58,7 @@ trait Math
      */
     public function multiply(float $number): self
     {
-        $this->execSetValue($this->value * $number);
+        $this->execHandleValue($this->getValue() * $number);
 
         return $this;
     }
@@ -72,7 +72,7 @@ trait Math
      */
     public function divide(float $number): self
     {
-        $this->execSetValue($this->value / $number);
+        $this->execHandleValue($this->getValue() / $number);
 
         return $this;
     }
@@ -86,7 +86,7 @@ trait Math
      */
     public function dividend(float $number): self
     {
-        $this->execSetValue($number / $this->value);
+        $this->execHandleValue($number / $this->getValue());
 
         return $this;
     }
@@ -100,7 +100,7 @@ trait Math
      */
     public function mod(float $number): self
     {
-        $this->execSetValue($this->value % $number);
+        $this->execHandleValue($this->getValue() % $number);
 
         return $this;
     }
@@ -115,7 +115,7 @@ trait Math
      */
     public function pow(float $exponent): self
     {
-        $this->execSetValue(pow($this->value, $exponent));
+        $this->execHandleValue(pow($this->getValue(), $exponent));
 
         return $this;
     }
@@ -130,7 +130,7 @@ trait Math
      */
     public function powBase(float $base): self
     {
-        $this->execSetValue(pow($exponent, $this->value));
+        $this->execHandleValue(pow($exponent, $this->getValue()));
 
         return $this;
     }
@@ -142,7 +142,11 @@ trait Math
      */
     public function increment(): self
     {
-        $this->value++;
+        if ($this->handlingValue !== null) {
+            $this->handlingValue++;
+        } else {
+            $this->storedValue++;
+        }
 
         return $this;
     }
@@ -154,7 +158,11 @@ trait Math
      */
     public function decrement(): self
     {
-        $this->value--;
+        if ($this->handlingValue !== null) {
+            $this->handlingValue--;
+        } else {
+            $this->storedValue--;
+        }
 
         return $this;
     }
@@ -179,13 +187,13 @@ trait Math
      */
     public function ceil(float $nearestMultiple = 1): self
     {
-        $result = ceil($this->value / $nearestMultiple) * $nearestMultiple;
+        $result = ceil($this->getValue() / $nearestMultiple) * $nearestMultiple;
 
         if ($result % 2 > 1 and static::VALUE_TYPE === 'integer') {
             $result = ceil($result);
         }
 
-        $this->execSetValue($result);
+        $this->execHandleValue($result);
 
         return $this;
     }
@@ -210,13 +218,13 @@ trait Math
      */
     public function floor(float $nearestMultiple = 1): self
     {
-        $result = floor($this->value / $nearestMultiple) * $nearestMultiple;
+        $result = floor($this->getValue() / $nearestMultiple) * $nearestMultiple;
 
         if ($result % 2 > 1 and static::VALUE_TYPE === 'integer') {
             $result = floor($result);
         }
 
-        $this->execSetValue($result);
+        $this->execHandleValue($result);
 
         return $this;
     }
@@ -242,13 +250,13 @@ trait Math
      */
     public function round(float $nearestMultiple = 1): self
     {
-        $result = round($this->value / $nearestMultiple) * $nearestMultiple;
+        $result = round($this->getValue() / $nearestMultiple) * $nearestMultiple;
 
         if ($result % 2 > 1 and static::VALUE_TYPE === 'integer') {
             $result = round($result);
         }
 
-        $this->execSetValue($result);
+        $this->execHandleValue($result);
 
         return $this;
     }
@@ -260,7 +268,7 @@ trait Math
      */
     public function abs(): self
     {
-        $this->execSetValue(abs($this->value));
+        $this->execHandleValue(abs($this->getValue()));
 
         return $this;
     }
@@ -282,7 +290,7 @@ trait Math
             );
         }
 
-        $this->execSetValue(pow($this->value, 1/$degree));
+        $this->execHandleValue(pow($this->getValue(), 1/$degree));
 
         return $this;
     }

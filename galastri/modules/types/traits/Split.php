@@ -2,6 +2,9 @@
 
 namespace galastri\modules\types\traits;
 
+use galastri\modules\types\TypeString;
+use galastri\modules\types\TypeArray;
+
 /**
  * This trait has the methods related to split the string in to parts.
  */
@@ -21,10 +24,17 @@ trait Split
      * 
      * @param  int $limit                           Maximum number of pieces returned.
      * 
-     * @return array
+     * @return TypeArray
      */
-    public function split(string $delimiter, int $limit = PHP_INT_MAX): array
+    public function split(string $delimiter, int $limit = PHP_INT_MAX): TypeArray
     {
-        return explode($delimiter, $this->value, $limit);
+        $value = $this->getValue();
+        $splittedObjects = [];
+
+        foreach (explode($delimiter, $value, $limit) as $value) {
+            $splittedObjects[] = new TypeString($value);
+        }
+
+        return new TypeArray($splittedObjects);
     }
 }

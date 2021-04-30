@@ -41,40 +41,33 @@ trait NumericFormat
      *
      * @return self
      */
-    public function numberFormatConfig(int $decimals, string $decimalSeparator = '.', string $thousandSeparator = ','): self
+    public function formatThousands(int $decimals, string $decimalSeparator = '.', string $thousandSeparator = ','): self
     {
         $this->decimals = $decimals;
         $this->decimalSeparator = $decimalSeparator;
         $this->thousandSeparator = $thousandSeparator;
 
+        $this->execHandleValue(number_format($this->getValue(), $this->decimals, $this->decimalSeparator, $this->thousandSeparator));
+
         return $this;
     }
-    
+
     /**
-     * This method format the number based on the configuration and return an formatted string. It
-     * can, also return the formatted number within a string, using the ## as flag to replace the
-     * number.
+     * Author: xelozz@gmail.com
+     * https://www.php.net/manual/pt_BR/function.memory-get-usage.php#96280
      *
-     * @param  string $textReplace                  A string that can be placed with the returning
-     *                                              number. When a ## is used, it is replaced by the
-     *                                              formatted number and any other char placed
-     *                                              together will be place as part of the returning
-     *                                              string.
-     *
-     *                                              Examples
-     *
-     *                                                  $myInt->setNumber(123)->getFormattedNumber()
-     *                                                  - Result: '123,00'
-     *
-     *                                                  $myInt->setNumber(123)->getFormattedNumber('Price: US$ ## (un.)')
-     *                                                  - Result: 'Price: US$ 123,00 (un.)'
+     * Converts a number of bytes in formatted string showing its value in kb, mb, etc.
      *
      * @return string
      */
-    public function getFormattedValue(string $textReplace = '##'): string
+    public function formatBytes(): self
     {
-        $numberFormat = number_format($this->value, $this->decimals, $this->decimalSeparator, $this->thousandSeparator);
-        
-        return preg_replace('/##/', $numberFormat, $textReplace, 1);
+        $bytes = $this->getValue();
+
+        $unit = ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
+
+        $this->execHandleValue(@round($bytes / pow(1024, ($i = floor(log($bytes, 1024)))), 2) . ' ' . $unit[$i]);
+
+        return $this;
     }
 }

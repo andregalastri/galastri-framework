@@ -13,14 +13,6 @@ trait Concat
      * @var string
      */
     private string $concatSpacer = '';
-
-    /**
-     * Defines if the $concatSpacer value will have its value reseted after the first concatenation
-     * (true) or not (false).
-     *
-     * @var bool
-     */
-    private bool $tmpConcatSpacer = false;
     
     /**
      * Concatenate the given parameters at the end of the current value.
@@ -34,7 +26,7 @@ trait Concat
      */
     public function concat(string ...$values): self
     {
-        $this->execConcatenation(0);
+        $this->execConcatenation($values, 0);
         
         return $this;
     }
@@ -49,12 +41,13 @@ trait Concat
      *
      * @return self
      */
-    public function concatFromStart(string ...$values): self
+    public function concatStart(string ...$values): self
     {
-        $this->execConcatenation(1);
+        $this->execConcatenation($values, 1);
 
         return $this;
     }
+    
 
     /**
      * Defines a string that will work as a spacer between the concatenated values.
@@ -65,22 +58,6 @@ trait Concat
      */
     public function concatSpacer(string $value): self
     {
-        $this->concatSpacer = $value;
-        
-        return $this;
-    }
-
-    /**
-     * Defines a string that will work as a spacer between the concatenated values but its value
-     * will be reseted after the first concatenation.
-     *
-     * @param string $value                         The string that will be used as spacer.
-     *
-     * @return self
-     */
-    public function concatTmpSpacer(string $value): self
-    {
-        $this->tmpConcatSpacer = true;
         $this->concatSpacer = $value;
         
         return $this;
@@ -101,21 +78,16 @@ trait Concat
      * 
      * @return void
      */
-    private function execConcatenation(int $direction): void
+    private function execConcatenation(array $values, int $direction): void
     {
         $spacer = $this->isEmpty() ? '' : $this->concatSpacer;
         
         if ($direction === 0) {
             $concat = $spacer . implode($this->concatSpacer, $values);
-            $this->execSetValue($this->value . $concat);
+            $this->execHandleValue($this->getValue() . $concat);
         } else {
             $concat = implode($this->concatSpacer, $values) . $spacer;
-            $this->execSetValue($concat . $this->value);
-        }
-
-        if ($this->tmpConcatSpacer) {
-            $this->tmpConcatSpacer = false;
-            $this->concatSpacer = '';
+            $this->execHandleValue($concat . $this->getValue());
         }
     }
 }

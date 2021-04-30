@@ -57,18 +57,16 @@ return [
 
     'offline' => false,
 
-    'notFoundRedirect' => '404',
+    'notFoundRedirect' => null,
 
     /**
      * Default defaultmessage for a differents cases.
      *
      * @key timezone string
      */
-    'defaultmessage' => [
-        'offline' => "This area is currently offline. Please, try again later.",
-        'authFail' => "You aren't authorized to access this area.",
-        'permissionFail' => "You don't have permission to execute this action.",
-    ],
+    # 'offlineMessage' => "This area is currently offline. Please, try again later.",
+    # 'authFailMessage' => "You aren't authorized to access this area.",
+    # 'permissionFailMessage' => "You don't have permission to execute this action.",
 
     /**
      * (Optional) Default timezone of the project. To use the server's timezone,

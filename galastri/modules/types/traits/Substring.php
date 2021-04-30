@@ -20,35 +20,14 @@ trait Substring
      * 
      * @return self
      */
-    public function setSubstring(int $start, ?int $length = null): self
+    public function substring(int $start, ?int $length = null): self
     {
         if ($length === null) {
-            $this->execSetValue(substr($this->value, $start));
+            $this->execHandleValue(substr($this->getValue(), $start));
         } else {
-            $this->execSetValue(substr($this->value, $start, $length));
+            $this->execHandleValue(substr($this->getValue(), $start, $length));
         }
 
         return $this;
-    }
-
-        
-    /**
-     * This method extract a substring of the current value and just return it, without changing it.
-     *
-     * @param  int $start                           Start char position to extraction.
-     * 
-     * @param  int|null $length                     Number os chars to be extracted based on the the
-     *                                              starting position. When null, it goes until the
-     *                                              end of the string.
-     * 
-     * @return null|string
-     */
-    public function getSubstring(int $start, ?int $length = null): ?string
-    {
-        if ($length === null) {
-            return substr($this->value, $start);
-        } else {
-            return substr($this->value, $start, $length);
-        }
     }
 }

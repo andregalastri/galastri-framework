@@ -3,10 +3,7 @@
 namespace app\controllers;
 
 use galastri\core\Controller;
-use galastri\modules\types\TypeString;
-use galastri\modules\types\TypeInt;
-use galastri\modules\types\TypeFloat;
-use galastri\modules\types\TypeBool;
+use galastri\extensions\Exception;
 
 /**
  * This is a route controller. Its defined by the parent node and its name needs to be in pascal
@@ -42,7 +39,11 @@ class Index extends Controller
      */
     protected function __doBefore(): array
     {
-        return [];
+        try {
+            return [];
+        } catch (Exception $e) {
+            return [];
+        }
     }
 
     /**
@@ -53,44 +54,11 @@ class Index extends Controller
      */
     protected function main(): array
     {
-        // $myString = new TypeString();
-        // $myString->setValue('2')->allowedValueList(1, 2)->validate();
-        // $myBool->setValue(2);
-        // echo $myString->getValue();
-        // $external = new TypeFloat(5.233);
-
-        // echo $myInt->setValue(-4)
-        // ->abs()
-        // ->getValue();
-
-        // $myString = new TypeString('123ABC');
-
-        // echo $myString->convertToMask('###.###.###', true);
-
-        // $myInt->setValue(4);
-        // echo $myInt->getValue();
-        // $myString
-        //         ->denyEmpty()
-        //             ->onError('Campo obrigatorio')
-        //          ->maxLength(5)
-        //              ->onError('nao pode mais que 5')
-        //              ->validate()
-        //              ;
-
-        //     $myString->setValue('12312231213213');
-        // echo '<br>';
-        return [];
-    }
-
-    /**
-     * Main method that is required in all route controllers. This method refers to the index of the
-     * route.
-     *
-     * @return array
-     */
-    protected function notFound(): array
-    {
-        return [];
+        try {
+            return [];
+        } catch (Exception $e) {
+            return [];
+        }
     }
 
     /**
@@ -100,6 +68,10 @@ class Index extends Controller
      */
     protected function __doAfter(): array
     {
-        return [];
+        try {
+            return [];
+        } catch (Exception $e) {
+            return [];
+        }
     }
 }

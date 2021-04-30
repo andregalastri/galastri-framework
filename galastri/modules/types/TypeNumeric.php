@@ -4,8 +4,8 @@ declare(strict_types = 1);
 namespace galastri\modules\types;
 
 use galastri\core\Debug;
+use galastri\extensions\Exception;
 use galastri\extensions\typeValidation\NumericValidation;
-use galastri\extensions\typeValidation\EmptyValidation;
 
 /**
  * This class abstracts numeric types to be inherited by numeric types.
@@ -15,11 +15,6 @@ abstract class TypeNumeric implements \Language
     /**
      * Importing traits to the class.
      */
-    use traits\Common;
-    use traits\Length;
-    use traits\Math;
-    use traits\Mask;
-    use traits\NumericFormat;
 
     /**
      * The TypeNumeric class need to override the getValue method, which is part of the
@@ -28,11 +23,11 @@ abstract class TypeNumeric implements \Language
      * inheranced classes do. The way to do this is to rename internally the getValue() method to
      * another name and set it as private, so it isn't accessible from outside calls.
      */
-    use Common { getValue as private _getValue; }
-    use Length;
-    use Math;
-    use Mask;
-    use NumericFormat;
+    use traits\Common { set as private _set; }
+    use traits\Length;
+    use traits\Math;
+    use traits\Mask;
+    use traits\NumericFormat;
 
     /**
      * Stores an instance of the NumericValidation class, to be used in the validation methods that
@@ -44,36 +39,21 @@ abstract class TypeNumeric implements \Language
     protected NumericValidation $numericValidation;
 
     /**
-     * Stores an instance of the EmptyValidation class, to be used in the validation methods that
-     * uses empty validation. This is uses composition because it gives better control to the
-     * visibility of validation methods and properties.
-     *
-     * @var \galastri\extensions\typeValidation\EmptyValidation
-     */
-    protected EmptyValidation $emptyValidation;
-
-    /**
-     * Sets up the value and if it will save or not a history of the value changes. It also create
-     * the object composition of the validation classes.
+     * Sets up the type It also create the object composition of the validation classes.
      *
      * @param null|int|float $value                 The value that will be stored. It is optional to
      *                                              set it in the construct.
      *
-     * @param bool $saveHistory                     Defines if the changes of the value will be
-     *                                              saved in a history, allowing to revert the value
-     *                                              to previous values. Default is false.
-     *
      * @return void
      */
-    public function __construct(/*?int|float*/ $value = null, bool $saveHistory = false)
+    public function __construct(/*?int|float*/ $value = null)
     {
         Debug::setBacklog();
 
-        $this->saveHistory = $saveHistory;
         $this->numericValidation = new NumericValidation();
-        $this->emptyValidation = new EmptyValidation();
 
-        $this->execSetValue($value);
+        $this->execHandleValue($value);
+        $this->execStoreValue(false);
     }
 
     /**
@@ -86,11 +66,15 @@ abstract class TypeNumeric implements \Language
      *
      * @return int|float
      */
-    public function getValue()// : int|float
+    public function set()// : int|float
     {
-        $this->convertToRightNumericType($this->value);
+        if ($this->handlingValue !== null) {
+            $this->convertToRightNumericType($this->handlingValue);
+        } else {
+            $this->convertToRightNumericType($this->storedValue);
+        }
 
-        return $this->value;
+        return $this->_set();
     }
 
     /**
@@ -103,13 +87,17 @@ abstract class TypeNumeric implements \Language
      *
      * @return self
      */
-    public function setRandomValue(int $min = 0, ?int $max = null): self
+    public function random(int $min = 0, ?int $max = null): self
     {
         if ($max === null) {
             $max = mt_getrandmax();
         }
+        
+        $randomNumber = mt_rand($min, $max);
 
-        $this->execSetValue(mt_rand($min, $max));
+        $this->convertToRightNumericType($randomNumber);
+
+        $this->execHandleValue($randomNumber);
         return $this;
     }
 
@@ -181,9 +169,9 @@ abstract class TypeNumeric implements \Language
     }
 
     /**
-     * Sets a restrict list for the allowed values.
+     * Restricts the possible values to a restrict list of allowed values.
      *
-     * The method calls the allowedValueList() method from the numeric validation class. This class
+     * The method calls the restrictList() method from the string validation class. This class
      * imports the trait galastri\extensions\typeValidation\traits\AllowedValueList. More
      * information in the file of the trait.
      *
@@ -191,10 +179,29 @@ abstract class TypeNumeric implements \Language
      * 
      * @return self
      */
-    public function allowedValueList(/*mixed*/ ...$allowedValues): self
+    public function restrictList(/*mixed*/ ...$allowedValues): self
     {
         $this->numericValidation
-            ->allowedValueList($allowedValues);
+            ->restrictList($allowedValues);
+
+        return $this;
+    }
+
+    /**
+     * Sets a list of denied values.
+     *
+     * The method calls the denyValues() method from the string validation class. This class
+     * imports the trait galastri\extensions\typeValidation\traits\AllowedValueList. More
+     * information in the file of the trait.
+     *
+     * @param  mixed $deniedValues                  List of the denied values.
+     * 
+     * @return self
+     */
+    public function denyValues(/*mixed*/ ...$deniedValues): self
+    {
+        $this->numericValidation
+            ->denyValues($deniedValues);
 
         return $this;
     }
@@ -209,7 +216,7 @@ abstract class TypeNumeric implements \Language
      */
     public function denyNull(): self
     {
-        $this->emptyValidation
+        $this->numericValidation
             ->denyNull();
 
         return $this;
@@ -225,7 +232,7 @@ abstract class TypeNumeric implements \Language
      */
     public function denyEmpty(): self
     {
-        $this->emptyValidation
+        $this->numericValidation
             ->denyEmpty();
 
         return $this;
@@ -238,19 +245,24 @@ abstract class TypeNumeric implements \Language
      *
      * Optionally, an error code can be set.
      *
-     * @param  string $message                      The message when an validation returns error.
+     * @param  array|string $messageCode            The message when an validation returns error.
+     *                                              The message can have printf flags to be replaced
+     *                                              by the $printfData parameter. When it is a
+     *                                              array, then the first key is the message and the
+     *                                              second is a custom code that will replace the
+     *                                              custom G0023 code that refers to invalid data.
      *
-     * @param  string $code                         A custom code to the error.
+     * @param  float|int|string ...$printfData      When there are printf flags in the message, they
+     *                                              will be replaced by the values set in this
+     *                                              ellipsis array.
      *
      * @return self
      */
-    public function onError(string $message, string $code = 'G0023'): self
+    public function onError(/*array|string*/ $messageCode, /*float|int|string*/ ...$printfData): self
     {
-        $this->errorMessage[0] = $code;
-        $this->errorMessage[1] = $message;
+        $message = $this->execBuildErrorMessage($messageCode, $printfData);
 
-        $this->numericValidation->onError($message, $code);
-        $this->emptyValidation->onError($message, $code);
+        $this->numericValidation->onError($message[1], $message[0]);
 
         return $this;
     }
@@ -262,15 +274,12 @@ abstract class TypeNumeric implements \Language
      * in the construct of the TypeString class and only after that set up the validation
      * configuration.
      *
-     * @param  mixed $value                         The value that will be tested.
-     *
-     * @return self
+     * @return float|int|null
      */
-    public function validate(?string $value = null): self
+    public function validate()// : ?float|?int
     {
-        $this->numericValidation->setValue($value ?? $this->value)->validate();
-        $this->emptyValidation->setValue($value ?? $this->value)->validate();
+        $this->numericValidation->setValue($this->getValue())->validate();
 
-        return $this;
+        return $this->getValue();
     }
 }

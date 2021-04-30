@@ -24,37 +24,64 @@ function varDump(...$values): void
 
     $varDump = _getVarDump(VARDUMP_HTML_TYPE, $values);
 
-    // Remove all breaklines and spaces between ["name"]=>"value"
-    // $varDump = preg_replace('/'.PHP_EOL.'/', '<br>', $varDump);
-    $varDump = preg_replace('/(\[".+)\n[\s]*/', '$1', $varDump);
-    $varDump = preg_replace('/(\[[0-9].+)\n[\s]*/', '$1', $varDump);
+    $varDump = preg_replace(
+        '/\]=>\n[\s]+/',
+        '] => ',
+    $varDump);
 
-    // Format the head of the var_dump
-    $varDump = preg_replace('/(string\(.*\)) (".*")/', '<span class="string text">$2</span> <span class="string solid"><b>$1</b></span>', $varDump);
-    $varDump = preg_replace('/(array\(.*\))/', '<span class="array solid"><b>$1</b></span>', $varDump);
-    $varDump = preg_replace('/(object\(.*\)#.* \([0-9]\))/', '<span class="object solid"><b>$1</b></span>', $varDump);
-    $varDump = preg_replace('/(float)\((.*)\)/', '<span class="numeric text">$2</span> <span class="numeric solid"><b>$1</b></span>', $varDump);
-    $varDump = preg_replace('/(bool)\((true)\)/', '<span class="bool text true">$2</span> <span class="bool solid true"><b>$1</b></span>', $varDump);
-    $varDump = preg_replace('/(bool)\((false)\)/', '<span class="bool text false">$2</span> <span class="bool solid false"><b>$1</b></span>', $varDump);
-    $varDump = preg_replace('/(int)\((.*)\)/', '<span class="numeric text">$2</span> <span class="numeric solid"><b>$1</b></span>', $varDump);
+    $varDump = preg_replace(
+        '/(\[)(".*?")(?:\:(?:"(.*?)"))?:(private|protected|public)(\])/',/**/
+        '<objectKey title="$3">$1$2:<small>$4</small>$5</objectKey>',
+    $varDump);
+    
+    $varDump = preg_replace(
+        '/(\[)((?:".*?")|(?:.*?))(\])(\s=>\s(string|NULL|bool|object|array|float|int))/',
+        '<arrayKey>$1$2$3</arrayKey>$4',
+    $varDump);
+    
+    $varDump = preg_replace(
+        '/(object\(.*?\)#.*?\s\(.*?\))/',
+        '<objectTitle>$1</objectTitle>',
+    $varDump);
 
-    // Division between values
-    $varDump = preg_replace('/(Result\s[0-9]\.)/', '<span class="division">$1</span>', $varDump);
+    $varDump = preg_replace(
+        '/(array\(.*?\))/',
+        '<arrayTitle>$1</arrayTitle>',
+    $varDump);
 
-    // // Array/Object key
-    $varDump = preg_replace('/(\[[0-9]\])(=>)/', '<span class="array-key">$1</span> $2 ', $varDump);
-    $varDump = preg_replace('/(\[".*"\])(=>)/', '<span class="array-key">$1</span> $2 ', $varDump);
+    $varDump = preg_replace(
+        '/(string\(.*?\))\s(".*?")/',
+        '<stringValue>$2</stringValue> <stringTitle>$1</stringTitle>',
+    $varDump);
 
-    // // Array Brackets
-    $varDump = preg_replace('/[\s]({)/', '<span class="brackets open">$1</span>', $varDump);
-    $varDump = preg_replace('/([\s].*)(})/', '$1<span class="brackets">$2</span>', $varDump);
+    $varDump = preg_replace(
+        '/(int)(?:\((.*?)\))/',
+        '<numericValue>$2</numericValue> <numericTitle>$1</numericTitle>',
+    $varDump);
 
-    // // Remove linebreak after =>
-    $varDump = preg_replace('/(=>\n[\s]*)/', ' => ', $varDump);
+    $varDump = preg_replace(
+        '/(float)(?:\((.*?)\))/',
+        '<numericValue>$2</numericValue> <numericTitle>$1</numericTitle>',
+    $varDump);
+
+    $varDump = preg_replace(
+        '/(bool)(\(true\))/',
+        '<trueValue>$2</trueValue> <trueTitle>$1</trueTitle>',
+    $varDump);
+
+    $varDump = preg_replace(
+        '/(bool)(\(false\))/',
+        '<falseValue>$2</falseValue> <falseTitle>$1</falseTitle>',
+    $varDump);
+
+    $varDump = preg_replace(
+        '/(NULL)/',
+        '<nullValue>$1</nullValue>',
+    $varDump);
 
     echo "
     <style>" . file_get_contents(GALASTRI_PROJECT_DIR . '/galastri/misc/vardump.css') . "</style>
-    <div id='vardump'>
+    <div id='galastriVardump'>
         <big><b>GALASTRI VARDUMP</b></big>
         <section>
             <b>ORIGIN: </b>$debug[file]<br>
@@ -69,7 +96,8 @@ function _getVarDump(int $type, ...$values): string
 {
     ob_start();
     foreach ($values[0] as $key => $value) {
-        echo $type !== VARDUMP_JSON_TYPE ? "Result $key." : '';
+        $key++;
+        echo $type !== VARDUMP_JSON_TYPE ? "<span class=\"division\">$key</span>" : '';
         var_dump($value);
     };
     $content = ob_get_contents();

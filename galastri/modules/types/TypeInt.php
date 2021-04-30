@@ -3,8 +3,6 @@ declare(strict_types = 1);
 
 namespace galastri\modules\types;
 
-use galastri\modules\types\abstraction\TypeNumeric;
-
 /**
  * This class creates objects that will act as an integer type.
  */
@@ -18,16 +16,16 @@ final class TypeInt extends TypeNumeric implements \Language
     const VALUE_TYPE = 'integer';
 
     /**
-     * Stores a integer or null value.
+     * Stores the value after handling.
      *
      * @var null|int
      */
-    protected ?int $value = null;
+    protected ?int $storedValue = null;
 
     /**
-     * Stores the first value set to the object that isn't null.
+     * Stores the temporary value while handling.
      *
-     * @var null|int
+     * @var mixed
      */
-    protected ?int $initialValue = null;
+    protected $handlingValue = null;
 }

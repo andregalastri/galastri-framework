@@ -4,8 +4,8 @@ declare(strict_types = 1);
 namespace galastri\modules\types;
 
 use galastri\core\Debug;
+use galastri\extensions\Exception;
 use galastri\extensions\typeValidation\StringValidation;
-use galastri\extensions\typeValidation\EmptyValidation;
 
 /**
  * This class creates objects that will act as a string type.
@@ -24,6 +24,8 @@ final class TypeString implements \Language
     use traits\Trim;
     use traits\Split;
     use traits\Replace;
+    use traits\FilePath;
+    use traits\StringMatch;
 
     /**
      * This constant define the type of the data the $value property (defined in galastri\modules\
@@ -33,19 +35,19 @@ final class TypeString implements \Language
     const VALUE_TYPE = 'string';
 
     /**
-     * Stores a string or null value.
+     * Stores the value after handling.
      *
      * @var null|string
      */
-    private ?string $value = null;
-
-    /**
-     * Stores the first value set to the object that isn't null.
-     *
-     * @var null|string
-     */
-    private ?string $initialValue = null;
+    protected ?string $storedValue = null;
     
+    /**
+     * Stores the temporary value while handling.
+     *
+     * @var mixed
+     */
+    protected $handlingValue = null;
+
     /**
      * Stores an instance of the StringValidation class, to be used in the validation methods that
      * uses string validation. This is uses composition because it gives better control to the
@@ -56,36 +58,21 @@ final class TypeString implements \Language
     private StringValidation $stringValidation;
 
     /**
-     * Stores an instance of the EmptyValidation class, to be used in the validation methods that
-     * uses empty validation. This is uses composition because it gives better control to the
-     * visibility of validation methods and properties.
-     *
-     * @var galastri\extensions\typeValidation\EmptyValidation
-     */
-    private EmptyValidation $emptyValidation;
-
-    /**
-     * Sets up the value and if it will save or not a history of the value changes. It also create
-     * the object composition of the validation classes.
+     * Sets up the type It also create the object composition of the validation classes.
      *
      * @param null|string $value                    The value that will be stored. It is optional to
      *                                              set it in the construct.
      *
-     * @param bool $saveHistory                     Defines if the changes of the value will be
-     *                                              saved in a history, allowing to revert the value
-     *                                              to previous values. Default is false.
-     *
      * @return void
      */
-    public function __construct(/*?string*/ $value = null, bool $saveHistory = false)
+    public function __construct(/*?string*/ $value = null)
     {
         Debug::setBacklog();
 
-        $this->saveHistory = $saveHistory;
         $this->stringValidation = new StringValidation();
-        $this->emptyValidation = new EmptyValidation();
 
-        $this->execSetValue($value);
+        $this->execHandleValue($value);
+        $this->execStoreValue(false);
     }
 
     /**
@@ -96,51 +83,32 @@ final class TypeString implements \Language
      * 
      * @return self
      */
-    public function setRandomValue(int $length = 15): self
+    public function random(int $length = 15): self
     {
         if (function_exists("random_bytes")) {
-            $bytes = random_bytes(ceil($length / 2));
+            $bytes = random_bytes((int)ceil($length / 2));
         } elseif (function_exists("openssl_random_pseudo_bytes")) {
-            $bytes = openssl_random_pseudo_bytes(ceil($length / 2));
+            $bytes = openssl_random_pseudo_bytes((int)ceil($length / 2));
         } else {
             throw new Exception(self::SECURE_RANDOM_GENERATOR_NOT_FOUND[0], self::SECURE_RANDOM_GENERATOR_NOT_FOUND[1]);
         }
 
-        $this->execSetValue(bin2hex($bytes));
+        $this->execHandleValue(bin2hex($bytes));
         return $this;
+    }
+
+    public function setNull(): void
+    {
+        $this->stringValidation->setValue(null)->validate();
+        
+        $this->handlingValue = null;
+        $this->storedValue = null;
     }
 
     /**
      * Validation methods via composition. The names of the methods follow the validation classes
      * methods.
      */
-
-    /**
-     * Allow only lower case strings. Calls the lowerCase() method from the string validation class.
-     * More information in galastri\extensions\typeValidation\StringValidation class file.
-     *
-     * @return self
-     */
-    public function lowerCase(): self
-    {
-        $this->stringValidation
-            ->lowerCase();
-        return $this;
-    }
-    
-    /**
-     * Allow only upper case strings. Calls the upperCase() method from the string validation class.
-     * More information in galastri\extensions\typeValidation\StringValidation class file.
-     *
-     * @return self
-     */
-    public function upperCase(): self
-    {
-        $this->stringValidation
-            ->upperCase();
-
-        return $this;
-    }
     
     /**
      * Set required charsets that is needed to be present in the string and defines the minimum
@@ -167,25 +135,6 @@ final class TypeString implements \Language
     {
         $this->stringValidation
             ->requiredChars($minQty, $charSets);
-
-        return $this;
-    }
-    
-    /**
-     * Set the allowed chars in the string. When set, blocks every char that isn't defined in the
-     * $charset parameter.
-     *
-     * The method calls the allowCharset() method from the string validation class. More information
-     * in galastri\extensions\typeValidation\StringValidation class file.
-
-     * @param  string ...$charSet                   Charsets that are allowed to be in the string.
-     *
-     * @return self
-     */
-    public function allowCharset(string ...$charSet): self
-    {
-        $this->stringValidation
-            ->allowCharset($charSet);
 
         return $this;
     }
@@ -225,27 +174,7 @@ final class TypeString implements \Language
 
         return $this;
     }
-    
-       
-    /**
-     * Sets a restrict list for the allowed values.
-     *
-     * The method calls the allowedValueList() method from the string validation class. This class
-     * imports the trait galastri\extensions\typeValidation\traits\AllowedValueList. More
-     * information in the file of the trait.
-     *
-     * @param  mixed $allowedValues                 List of the allowed values.
-     * 
-     * @return self
-     */
-    public function allowedValueList(/*mixed*/ ...$allowedValues): self
-    {
-        $this->stringValidation
-            ->allowedValueList($allowedValues);
 
-        return $this;
-    }
-    
     /**
      * Sets a minimum and maximum length to the string.
      *
@@ -265,6 +194,90 @@ final class TypeString implements \Language
 
         return $this;
     }
+
+    /**
+     * Set the allowed chars in the string. When set, blocks every char that isn't defined in the
+     * $charset parameter.
+     *
+     * The method calls the allowCharset() method from the string validation class. More information
+     * in galastri\extensions\typeValidation\StringValidation class file.
+
+     * @param  string ...$charSet                   Charsets that are allowed to be in the string.
+     *
+     * @return self
+     */
+    public function allowCharset(string ...$charSet): self
+    {
+        $this->stringValidation
+            ->allowCharset($charSet);
+
+        return $this;
+    }
+    
+    /**
+     * Restricts the possible values to a restrict list of allowed values.
+     *
+     * The method calls the restrictList() method from the string validation class. This class
+     * imports the trait galastri\extensions\typeValidation\traits\AllowedValueList. More
+     * information in the file of the trait.
+     *
+     * @param  mixed $allowedValues                 List of the allowed values.
+     *
+     * @return self
+     */
+    public function restrictList(/*mixed*/ ...$allowedValues): self
+    {
+        $this->stringValidation
+            ->restrictList($allowedValues);
+
+        return $this;
+    }
+
+    /**
+     * Allow only lower case strings. Calls the lowerCase() method from the string validation class.
+     * More information in galastri\extensions\typeValidation\StringValidation class file.
+     *
+     * @return self
+     */
+    public function denyUpperCase(): self
+    {
+        $this->stringValidation
+            ->denyUpperCase();
+        return $this;
+    }
+    
+    /**
+     * Allow only upper case strings. Calls the upperCase() method from the string validation class.
+     * More information in galastri\extensions\typeValidation\StringValidation class file.
+     *
+     * @return self
+     */
+    public function denyLowerCase(): self
+    {
+        $this->stringValidation
+            ->denyLowerCase();
+
+        return $this;
+    }
+    
+    /**
+     * Sets a list of denied values.
+     *
+     * The method calls the denyValues() method from the string validation class. This class
+     * imports the trait galastri\extensions\typeValidation\traits\AllowedValueList. More
+     * information in the file of the trait.
+     *
+     * @param  mixed $deniedValues                  List of the denied values.
+     * 
+     * @return self
+     */
+    public function denyValues(/*mixed*/ ...$deniedValues): self
+    {
+        $this->stringValidation
+            ->denyValues($deniedValues);
+
+        return $this;
+    }
     
     /**
      * Defines that the value of the string cannot be null.
@@ -276,7 +289,7 @@ final class TypeString implements \Language
      */
     public function denyNull(): self
     {
-        $this->emptyValidation
+        $this->stringValidation
             ->denyNull();
 
         return $this;
@@ -292,7 +305,7 @@ final class TypeString implements \Language
      */
     public function denyEmpty(): self
     {
-        $this->emptyValidation
+        $this->stringValidation
             ->denyEmpty();
 
         return $this;
@@ -305,23 +318,28 @@ final class TypeString implements \Language
      *
      * Optionally, an error code can be set.
      *
-     * @param  string $message                      The message when an validation returns error.
+     * @param  array|string $messageCode            The message when an validation returns error.
+     *                                              The message can have printf flags to be replaced
+     *                                              by the $printfData parameter. When it is a
+     *                                              array, then the first key is the message and the
+     *                                              second is a custom code that will replace the
+     *                                              custom G0023 code that refers to invalid data.
      *
-     * @param  string $code                         A custom code to the error.
+     * @param  float|int|string ...$printfData      When there are printf flags in the message, they
+     *                                              will be replaced by the values set in this
+     *                                              ellipsis array.
      *
      * @return self
      */
-    public function onError(string $message, string $code = 'validationFail'): self
+    public function onError(/*array|string*/ $messageCode, /*float|int|string*/ ...$printfData): self
     {
-        $this->errorMessage[0] = $code;
-        $this->errorMessage[1] = $message;
+        $message = $this->execBuildErrorMessage($messageCode, $printfData);
 
-        $this->stringValidation->onError($message, $code);
-        $this->emptyValidation->onError($message, $code);
+        $this->stringValidation->onError($message[1], $message[0]);
 
         return $this;
     }
-    
+
     /**
      * This method executes the validation to the given value. The validation is always when the
      * value is changed, testing the value before store it. However, sometimes is necessary to check
@@ -329,15 +347,12 @@ final class TypeString implements \Language
      * in the construct of the TypeString class and only after that set up the validation
      * configuration.
      *
-     * @param  mixed $value                         The value that will be tested.
-     *
-     * @return self
+     * @return string
      */
-    public function validate(?string $value = null): self
+    public function validate(): ?string
     {
-        $this->stringValidation->setValue($value ?? $this->value)->validate();
-        $this->emptyValidation->setValue($value ?? $this->value)->validate();
+        $this->stringValidation->setValue($this->getValue())->validate();
 
-        return $this;
+        return $this->getValue();
     }
 }
