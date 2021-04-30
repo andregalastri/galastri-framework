@@ -9,7 +9,7 @@ trait ConvertCase
 {
     /**
      * Converts all chars of the current value to upper case.
-     * 
+     *
      * Example:
      * My String   ->   MY STRING
      *
@@ -26,7 +26,7 @@ trait ConvertCase
      *
      * Example:
      * My String   ->   my string
-     * 
+     *
      * @return self
      */
     public function toLowerCase()
@@ -40,14 +40,14 @@ trait ConvertCase
      *
      * Example:
      * My String   ->   myString
-     * 
+     *
      * @return self
      */
     public function toCamelCase()
     {
         $string = $this->execFilterProgrammingCase($this->getValue(), 'CAMEL_CASE');
         $this->execHandleValue($string);
-        
+
         return $this;
     }
 
@@ -56,7 +56,7 @@ trait ConvertCase
      *
      * Example:
      * My String   ->   MyString
-     * 
+     *
      * @return self
      */
     public function toPascalCase()
@@ -66,13 +66,13 @@ trait ConvertCase
         $this->execHandleValue($string);
         return $this;
     }
-    
+
     /**
      * Converts the current value to constant case.
      *
      * Example:
      * My String   ->   MY_STRING
-     * 
+     *
      * @return self
      */
     public function toConstantCase()
@@ -82,13 +82,13 @@ trait ConvertCase
         $this->execHandleValue($string);
         return $this;
     }
-    
+
     /**
      * Converts the current value to snake case.
      *
      * Example:
      * My String   ->   my_string
-     * 
+     *
      * @return self
      */
     public function toSnakeCase()
@@ -98,35 +98,35 @@ trait ConvertCase
         $this->execHandleValue($string);
         return $this;
     }
-    
+
     /**
      * Converts the current value to param case.
      *
      * Example:
      * My String   ->   my-string
-     * 
+     *
      * @return self
      */
     public function toParamCase()
     {
         $string = $this->execFilterProgrammingCase($this->getValue(), 'PARAM_CASE');
-        
+
         $this->execHandleValue($string);
         return $this;
     }
-    
+
     /**
      * Converts the current value to dot case.
      *
      * Example:
      * My String   ->   my.string
-     * 
+     *
      * @return self
      */
     public function toDotCase()
     {
         $string = $this->execFilterProgrammingCase($this->getValue(), 'DOT_CASE');
-        
+
         $this->execHandleValue($string);
         return $this;
     }
@@ -154,7 +154,7 @@ trait ConvertCase
          * Internal closure function that checks if there are two or more upper case chars together.
          * When this occurs, the first char is kept in upper case, but the others will be converted
          * to lower case.
-         * 
+         *
          * It is stored as a closure because it is used multiple times.
          */
         $funcConvertUpperGroups = function ($string) {
@@ -180,7 +180,7 @@ trait ConvertCase
         /**
          * The first action is to get any alphanumeric char whose position it right after a
          * non-alphanumeric char and convert it to upper case.
-         * 
+         *
          * Example: tHIs! .sTring  ->  tHIs! .STring
          */
         $string = preg_replace_callback('/([^a-zA-Z0-9][a-zA-Z0-9]+?)/', function($match){
@@ -190,7 +190,7 @@ trait ConvertCase
         /**
          * The internal closure function is called. Its execution will convert all upper case chars
          * into title case:
-         * 
+         *
          * Example: tHIs! .STring  ->  tHis! .String
          */
         $string = $funcConvertUpperGroups($string);
@@ -227,7 +227,7 @@ trait ConvertCase
             /**
              * When PASCAL_CASE, it gets the first char of the string, converts to upper case and
              * return the result.
-             * 
+             *
              * Example: tHisString  ->  ThisString
              */
             case 'PASCAL_CASE':
@@ -253,7 +253,7 @@ trait ConvertCase
              */
             case 'SNAKE_CASE':
                 return $funcConvertTrailCases($string, '_', MB_CASE_LOWER);
-    
+
             /**
              * When PARAM_CASE, it gets every upper case in the filtered string and adds a dash - in
              * front of it. Next, it trims the dash from the left and converts all the chars into
@@ -263,7 +263,7 @@ trait ConvertCase
              */
             case 'PARAM_CASE':
                 return $funcConvertTrailCases($string, '-', MB_CASE_LOWER);
-    
+
             /**
              * When DOT_CASE, it gets every upper case in the filtered string and adds a dot . in
              * front of it. Next, it trims the dot from the left and converts all the chars into

@@ -13,7 +13,7 @@ trait Split
     /**
      * This method splits the current value in to pieces and return an array with the parts. The
      * split is based on a delimiter in the string.
-     * 
+     *
      * Example
      * - String    : 'my/string'
      * - Delimiter : '/'
@@ -21,9 +21,9 @@ trait Split
      *
      * @param  string $delimiter                    A delimiter that will define where the split
      *                                              will occur.
-     * 
+     *
      * @param  int $limit                           Maximum number of pieces returned.
-     * 
+     *
      * @return TypeArray
      */
     public function split(string $delimiter, int $limit = PHP_INT_MAX): TypeArray

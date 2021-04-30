@@ -10,7 +10,7 @@ use \galastri\core\Debug;
  * controller, encode and return the result.
  */
 trait Json
-{    
+{
     /**
      * Main method. It gets the returning array from the route controller, encode and return the
      * result.
@@ -23,5 +23,10 @@ trait Json
 
         header('Content-Type: application/json');
         echo json_encode(self::$routeController->getResultData(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+
+    private static function jsonRequiresController(): bool
+    {
+        return true;
     }
 }

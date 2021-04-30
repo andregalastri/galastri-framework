@@ -9,6 +9,7 @@ use galastri\extensions\Exception;
 use galastri\extensions\output\View;
 use galastri\extensions\output\Json;
 use galastri\extensions\output\Text;
+use galastri\extensions\output\File;
 use galastri\modules\Redirect;
 use galastri\modules\PerformanceAnalysis;
 
@@ -22,7 +23,8 @@ final class Galastri implements \Language
     use View;
     use Json;
     use Text;
-    
+    use File;
+
     const DEFAULT_NODE_NAMESPACE = 'app\controllers';
     const VIEW_BASE_FOLDER = '/app/views';
     const CORE_CONTROLLER = '\galastri\Core\Controller';
@@ -67,9 +69,6 @@ final class Galastri implements \Language
             self::checkRouteNodesExists();
             self::checkOutput();
             self::checkController();
-            self::checkControllerExtendsCore();
-            self::checkControllerMethod();
-            self::callController();
             self::callOutput();
         } catch (Exception $e) {
             Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
@@ -134,7 +133,7 @@ final class Galastri implements \Language
         ) {
             self::$checkedRouteNodesExists = false;
         }
-        
+
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
@@ -190,6 +189,7 @@ final class Galastri implements \Language
         Debug::setBacklog();
 
         $controllerNamespace = Route::getControllerNamespace();
+        $controllerIsRequired = self::{Parameters::getOutput().'RequiresController'}();
 
         if ($nodeController = Parameters::getController()) {
             $routeController = $nodeController;
@@ -211,6 +211,8 @@ final class Galastri implements \Language
 
         self::$checkedController = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+
+        self::checkControllerExtendsCore();
     }
 
 
@@ -230,12 +232,14 @@ final class Galastri implements \Language
 
         self::$checkedControllerExtendsCore = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+
+        self::checkControllerMethod();
     }
 
     /**
      * Checks if the child node exists as a method inside the route controller. If it isn't, an
      * exception is thrown.
-     * 
+     *
      * It also checks if there is a request method defined in the route parameter requestMethod and,
      * if it is, checks if it exists in the route controller.
      *
@@ -260,6 +264,8 @@ final class Galastri implements \Language
 
         self::$checkedControllerMethod = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+
+        self::callController();
     }
 
     /**
@@ -310,7 +316,7 @@ final class Galastri implements \Language
     private static function callOutput(): void
     {
         Debug::setBacklog();
-        
+
         $output = self::$routeController->getOutput();
 
         self::$output();

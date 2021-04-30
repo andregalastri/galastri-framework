@@ -38,7 +38,7 @@ trait FilePath
         $finalPath = implode(DIRECTORY_SEPARATOR, $absolutes);
 
         $this->execHandleValue(strncasecmp(PHP_OS, 'WIN', 3) == 0 ? $finalPath : DIRECTORY_SEPARATOR . $finalPath);
-        
+
         return $this;
     }
 
@@ -46,7 +46,7 @@ trait FilePath
      * fileExists
      *
      * @param null|string $path
-     * 
+     *
      * @return bool
      */
     public function fileExists(): bool
@@ -62,7 +62,7 @@ trait FilePath
      * fileNotExists
      *
      * @param null|string $path
-     * 
+     *
      * @return bool
      */
     public function fileNotExists(): bool

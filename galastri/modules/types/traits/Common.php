@@ -34,7 +34,7 @@ trait Common
      */
     private int $debugTrack;
 
-    
+
     /**
      * Set a value to the object. The value will be checked, to make shure it matches the expected
      * type of data or null. If not, throws an exception.
@@ -104,7 +104,7 @@ trait Common
     public function dump($exit = DONT_STOP): self
     {
         vardump($this);
-        
+
         if ($exit === STOP) {
             exit;
         }
@@ -115,7 +115,7 @@ trait Common
     public function valdump($exit = DONT_STOP): self
     {
         vardump($this->getValue());
-        
+
         if ($exit === STOP) {
             exit;
         }
@@ -156,7 +156,7 @@ trait Common
     /**
      * Internal executions.
      */
-    
+
     /**
      * This method stores the value into the $value property. It first checks its type; if it is
      * null or equal to the expected value type, then it is valid. If not, an exception is thrown.
@@ -206,7 +206,7 @@ trait Common
             );
         }
     }
-    
+
     /**
      * execBuildErrorMessage
      *
@@ -275,7 +275,7 @@ trait Common
             if (static::VALUE_TYPE === 'integer') {
                 $value = (int)explode('.', $value)[0];
             }
-            
+
             settype($value, static::VALUE_TYPE);
         }
         unset($value);

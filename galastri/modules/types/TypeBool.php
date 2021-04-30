@@ -37,7 +37,7 @@ final class TypeBool implements \Language
      * @var mixed
      */
     protected $handlingValue = null;
-    
+
     /**
      * Stores an instance of the EmptyValidation class, to be used in the validation methods that
      * uses empty validation. This is uses composition because it gives better control to the
@@ -64,7 +64,7 @@ final class TypeBool implements \Language
         $this->execHandleValue($value);
         $this->execStoreValue(false);
     }
-    
+
     /**
      * Invert the current value. If it is false, it turns into true, and vice-versa.
      *
@@ -127,7 +127,7 @@ final class TypeBool implements \Language
 
         return $this;
     }
-    
+
     /**
      * Defines that the value of the string cannot be empty.
      *
@@ -143,7 +143,7 @@ final class TypeBool implements \Language
 
         return $this;
     }
-    
+
     /**
      * Sets an returning error message when the validation fails. This method needs to be placed in
      * front of the validation method. If the validation fails, then the returning message set will
@@ -172,7 +172,7 @@ final class TypeBool implements \Language
 
         return $this;
     }
-    
+
     /**
      * This method executes the validation to the given value. The validation is always when the
      * value is changed, testing the value before store it. However, sometimes is necessary to check

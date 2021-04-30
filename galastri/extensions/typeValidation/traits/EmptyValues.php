@@ -24,13 +24,13 @@ trait EmptyValues
             }
         };
     }
-    
+
     /**
      * This method adds a chain link with a function that checks if the data is empty. If it is,
      * then an exception is thrown.
-     * 
+     *
      * PHP empty() function considers empty the follow:
-     * 
+     *
      *   - An empty string             : ""
      *   - 0 as a string               : "0"
      *   - 0 as an integer             : 0

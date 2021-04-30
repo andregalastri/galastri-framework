@@ -10,7 +10,7 @@ use \galastri\core\Debug;
  * each of its keys.
  */
 trait Text
-{    
+{
     /**
      * Main method. It gets the returning array from the route controller, format and print each of
      * its keys.
@@ -24,7 +24,7 @@ trait Text
         header('Content-Type: text/plain');
         self::textConvertArray(self::$routeController->getResultData());
     }
-    
+
     /**
      * textConvertArray
      *
@@ -48,5 +48,10 @@ trait Text
             }
         }
         $tab = substr($tab, 4);
+    }
+
+    private static function textRequiresController(): bool
+    {
+        return true;
     }
 }

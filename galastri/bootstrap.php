@@ -68,7 +68,7 @@ try {
     ini_set('display_errors', Parameters::getDisplayErrors());
 
     /**
-     * 
+     *
      */
     class_alias('\galastri\\lang\\'.Parameters::getLanguage(), 'Language');
 

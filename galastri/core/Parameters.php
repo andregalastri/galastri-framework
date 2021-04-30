@@ -124,7 +124,7 @@ final class Parameters implements \galastri\lang\English
     {
         return self::$offline;
     }
-    
+
     public static function setOfflineMessage($value): void
     {
         self::isString($value, self::INVALID_OFFLINE_MESSAGE_TYPE);
@@ -304,11 +304,6 @@ final class Parameters implements \galastri\lang\English
     {
         return self::$requestMethod;
     }
-
-
-
-
-
 
     private static function isString($value, $whenInvalid)
     {

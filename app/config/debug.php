@@ -32,7 +32,7 @@ return [
      * - IMPORTANT: NEVER enable this in production. Every request will generate a log. If you have
      *   many accesses, a large log data will be created and will consume too much resources of the
      *   server (memory, write/read of file, etc.). Use this ONLY in test server.
-     * 
+     *
      * - If this crashes the executions of the requests, it is recommended to execute the
      *   PerformanceAnalysis class in specific parts of the code.
      *

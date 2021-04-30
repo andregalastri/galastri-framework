@@ -27,7 +27,7 @@ trait StringValues
             self::validateCase('/[^\p{Ll}]/u');
         };
     }
-    
+
     /**
      * This method adds a chain link with a function that checks if the data has only upper case
      * chars. If there are other chars instead of upper case, an exception is thrown.
@@ -44,8 +44,8 @@ trait StringValues
             self::validateCase('/[^\p{Lu}]/u');
         };
     }
-    
-    
+
+
     /**
      * This method adds a chain link with a function that checks if the data has more length than
      * the number informed. If there is, an exception is thrown.
@@ -68,7 +68,7 @@ trait StringValues
             }
         };
     }
-    
+
     /**
      * This method adds a chain link with a function that checks if the data has less length than
      * the number informed. If there is, an exception is thrown.
@@ -91,7 +91,7 @@ trait StringValues
             }
         };
     }
-    
+
     /**
      * This method is a shortcut to set a minimum and maximum length to the string.
      *
@@ -106,7 +106,7 @@ trait StringValues
         $this->minLength($minLength);
         $this->maxLength($maxLength);
     }
-    
+
     /**
      * This method adds a chain link with a function that checks if the data has only the allowed
      * groups of chars defined.
@@ -139,7 +139,7 @@ trait StringValues
             unset($charGroup);
 
             preg_match_all('/[^' . implode($charSets) . ']/u', $this->value, $unmatches);
-    
+
             if (!empty($unmatches[0])) {
                 $this->defaultMessageSet(
                     self::VALIDATION_STRING_INVALID_CHARS[1],
@@ -150,7 +150,7 @@ trait StringValues
             }
         };
     }
-    
+
     /**
      * This method adds a chain link with a function that checks if the data has some chars that it
      * is required to have. In any case, it is necessary to define how many of that charset is
@@ -178,9 +178,9 @@ trait StringValues
 
             foreach ($charSets as $charGroup) {
                 $regex = self::CHAR_FLAGS[$charGroup] ?? preg_quote($charGroup);
-    
+
                 preg_match_all('/[' . $regex . ']/u', $this->value, $matches);
-    
+
                 if (count($matches[0]) < $minQty) {
                     $this->defaultMessageSet(
                         self::VALIDATION_STRING_REQUIRED_CHARS[1],
@@ -194,7 +194,7 @@ trait StringValues
             }
         };
     }
-    
+
     /**
      * This is an internal method, used by the lowerCase() and upperCase() methods.
      *

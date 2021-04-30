@@ -13,13 +13,13 @@ use galastri\modules\types\TypeString;
  * template or view file.
  */
 final class ViewHelper implements \Language
-{    
+{
     /**
      * Stores the returning route controller data.
      *
      * @var array
      */
-    private array $routeControllerData;   
+    private array $routeControllerData;
 
     /**
      * Stores the view file path, checked by the View output.
@@ -28,15 +28,15 @@ final class ViewHelper implements \Language
      */
     private TypeString $viewFilePath;
 
-        
+
     /**
      * Sets up the properties.
      *
      * @param  array $routeControllerData           An array with the data returned by the route
      *                                              controller.
-     * 
+     *
      * @param  null|string $viewFilePath            The view file path of the route.
-     * 
+     *
      * @return void
      */
     public function __construct(array $routeControllerData, TypeString $viewFilePath)
@@ -44,7 +44,7 @@ final class ViewHelper implements \Language
         $this->routeControllerData = $routeControllerData;
         $this->viewFilePath = $viewFilePath;
     }
-    
+
     /**
      * This method gets the data returned by the route controller. It can return all the data or
      * specific keys. If the key doesn't exist, an exception is thrown.
@@ -67,11 +67,11 @@ final class ViewHelper implements \Language
      *
      *                                              To get the value of the 'subdata1', just pass
      *                                              the key levels, from the main to its children:
-     * 
+     *
      *                                              echo $galastri->data('data2', 'subdata1');
-     * 
+     *
      *                                              Result will be: 'subvalue1'.
-     * 
+     *
      * @return mixed
      */
     public function data(/*int|string*/ ...$keys)// : mixed
@@ -94,7 +94,7 @@ final class ViewHelper implements \Language
 
         return $routeControllerData;
     }
-    
+
     /**
      * Import an PHP file to the template of view file keeping the $galastri object usable inside
      * that file. When the value is 'view' it will automatically import the view set in the View
@@ -103,7 +103,7 @@ final class ViewHelper implements \Language
      * @param  null|string $path                    Path of the file that will be imported. If the
      *                                              value is 'view', it will get the view file set
      *                                              in the View output.
-     * 
+     *
      * @return bool
      */
     public function import(?string $path): ?bool

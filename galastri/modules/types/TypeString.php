@@ -40,7 +40,7 @@ final class TypeString implements \Language
      * @var null|string
      */
     protected ?string $storedValue = null;
-    
+
     /**
      * Stores the temporary value while handling.
      *
@@ -78,9 +78,9 @@ final class TypeString implements \Language
     /**
      * Generate a random string with hexadecimal chars, which the length can bet set with the length
      * parameter and store as the value.
-     * 
+     *
      * @param  int $length                          Length of the random generated string.
-     * 
+     *
      * @return self
      */
     public function random(int $length = 15): self
@@ -100,7 +100,7 @@ final class TypeString implements \Language
     public function setNull(): void
     {
         $this->stringValidation->setValue(null)->validate();
-        
+
         $this->handlingValue = null;
         $this->storedValue = null;
     }
@@ -109,7 +109,7 @@ final class TypeString implements \Language
      * Validation methods via composition. The names of the methods follow the validation classes
      * methods.
      */
-    
+
     /**
      * Set required charsets that is needed to be present in the string and defines the minimum
      * quantity of one of the chars is needed. This method can be called multiple times setting up
@@ -138,7 +138,7 @@ final class TypeString implements \Language
 
         return $this;
     }
-    
+
     /**
      * Sets the minimum length to the string.
      *
@@ -156,7 +156,7 @@ final class TypeString implements \Language
 
         return $this;
     }
-    
+
     /**
      * Sets the maximum length to the string.
      *
@@ -213,7 +213,7 @@ final class TypeString implements \Language
 
         return $this;
     }
-    
+
     /**
      * Restricts the possible values to a restrict list of allowed values.
      *
@@ -245,7 +245,7 @@ final class TypeString implements \Language
             ->denyUpperCase();
         return $this;
     }
-    
+
     /**
      * Allow only upper case strings. Calls the upperCase() method from the string validation class.
      * More information in galastri\extensions\typeValidation\StringValidation class file.
@@ -259,7 +259,7 @@ final class TypeString implements \Language
 
         return $this;
     }
-    
+
     /**
      * Sets a list of denied values.
      *
@@ -268,7 +268,7 @@ final class TypeString implements \Language
      * information in the file of the trait.
      *
      * @param  mixed $deniedValues                  List of the denied values.
-     * 
+     *
      * @return self
      */
     public function denyValues(/*mixed*/ ...$deniedValues): self
@@ -278,7 +278,7 @@ final class TypeString implements \Language
 
         return $this;
     }
-    
+
     /**
      * Defines that the value of the string cannot be null.
      *
@@ -294,7 +294,7 @@ final class TypeString implements \Language
 
         return $this;
     }
-    
+
     /**
      * Defines that the value of the string cannot be empty.
      *
@@ -310,7 +310,7 @@ final class TypeString implements \Language
 
         return $this;
     }
-    
+
     /**
      * Sets an returning error message when the validation fails. This method needs to be placed in
      * front of the validation method. If the validation fails, then the returning message set will

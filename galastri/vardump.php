@@ -33,12 +33,12 @@ function varDump(...$values): void
         '/(\[)(".*?")(?:\:(?:"(.*?)"))?:(private|protected|public)(\])/',/**/
         '<objectKey title="$3">$1$2:<small>$4</small>$5</objectKey>',
     $varDump);
-    
+
     $varDump = preg_replace(
         '/(\[)((?:".*?")|(?:.*?))(\])(\s=>\s(string|NULL|bool|object|array|float|int))/',
         '<arrayKey>$1$2$3</arrayKey>$4',
     $varDump);
-    
+
     $varDump = preg_replace(
         '/(object\(.*?\)#.*?\s\(.*?\))/',
         '<objectTitle>$1</objectTitle>',

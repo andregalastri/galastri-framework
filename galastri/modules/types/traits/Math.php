@@ -20,7 +20,7 @@ trait Math
 
         return $this;
     }
-    
+
     /**
      * Subtracts the current value by the given number.
      *
@@ -34,7 +34,7 @@ trait Math
 
         return $this;
     }
-    
+
     /**
      * Subtracts the given number by the current value.
      *
@@ -48,7 +48,7 @@ trait Math
 
         return $this;
     }
-        
+
     /**
      * Multiplies the current value by the given number.
      *
@@ -62,7 +62,7 @@ trait Math
 
         return $this;
     }
-    
+
     /**
      * Divides the current value by the given number.
      *
@@ -76,7 +76,7 @@ trait Math
 
         return $this;
     }
-    
+
     /**
      * Divides the given number by the current value.
      *
@@ -90,7 +90,7 @@ trait Math
 
         return $this;
     }
-        
+
     /**
      * Set the remainder of the division between the current value by the given number as the value.
      *
@@ -104,7 +104,7 @@ trait Math
 
         return $this;
     }
-        
+
     /**
      * Raises the current value to power of the given exponent.
      *
@@ -119,7 +119,7 @@ trait Math
 
         return $this;
     }
-        
+
     /**
      * Raises the given base to power with the current value as exponent.
      *
@@ -134,7 +134,7 @@ trait Math
 
         return $this;
     }
-    
+
     /**
      * Increments the current value by 1.
      *
@@ -150,7 +150,7 @@ trait Math
 
         return $this;
     }
-        
+
     /**
      * Decrement the current value by 1.
      *
@@ -320,7 +320,7 @@ trait Math
 
         return $this;
     }
-    
+
     /**
      * Internal method to convert the result of the calculations to the types of the current object,
      * to resolve incompatibility issues.

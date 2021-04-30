@@ -9,7 +9,6 @@ use galastri\modules\types\TypeArray;
  */
 trait StringMatch
 {
-        
     public function regexMatch(string $regex, ?array &$crudeMatch = null): self
     {
         preg_match_all($regex, $this->getValue(), $crudeMatch);

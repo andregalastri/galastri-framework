@@ -112,7 +112,7 @@ abstract class Controller
      *
      * All the results of these calls are merged into one array, stored in the $resultData
      * property.
-     * 
+     *
      * NOTE: The __construct() method cannot be called by the route controller nor reexecuted by it.
      * That is why the property $isContructed is tested. When false, the construction will do what
      * is needed and then sets it to true. This way, it won't reexecute its code if it is called by
@@ -135,12 +135,12 @@ abstract class Controller
     /**
      * This method checks if the method __doBefore() exists in the route controller. If it is true,
      * then the method is called.
-     * 
+     *
      * The purpouse of this is to have a method that is always executed before the route method, to
      * set some data or object that will be used before any request.
-     * 
+     *
      * The __doBefore() must return an array. If not, it will throw an exception.
-     * 
+     *
      * @return void
      */
     private function callDoBefore(): void
@@ -154,10 +154,10 @@ abstract class Controller
 
     /**
      * This method calls the route method define as child note in the \galastri\core\Route.
-     * 
+     *
      * It also tests if there is a request method defined in the route parameter requestMethod. If
      * so, then it is called too right after the route method.
-     * 
+     *
      * The route method and the request method must return an array.
      *
      * @return void
@@ -185,10 +185,10 @@ abstract class Controller
     /**
      * This method checks if the method __doAfter() exists in the route controller. If it is true,
      * then the method is called.
-     * 
+     *
      * The purpouse of this is to have a method that is always executed after the route method, to
      * set some data or object that will be used after any request.
-     * 
+     *
      * The __doAfter() must return an array. If not, it will throw an exception.
      * @return void
      */
@@ -206,7 +206,7 @@ abstract class Controller
     /**
      * This method merges all the returning arrays of the controller into one array and stores it in
      * the $resultData property.
-     * 
+     *
      * @return void
      */
     private function mergeResults(): void
@@ -296,7 +296,7 @@ abstract class Controller
      *
      * @param  null|string $fileBaseFolder          The new value that will overwrite the previous
      *                                              value.
-     * 
+     *
      * @return void
      */
     final protected function setFileBaseFolder(?string $fileBaseFolder): void
@@ -319,7 +319,7 @@ abstract class Controller
      *
      * @param  null|string $viewFilePath            The new value that will overwrite the previous
      *                                              value.
-     * 
+     *
      * @return void
      */
     final protected function setViewFilePath(?string $viewFilePath): void
@@ -343,7 +343,7 @@ abstract class Controller
      *
      * @param  null|string $projectTitle            The new value that will overwrite the previous
      *                                              value.
-     * 
+     *
      * @return void
      */
     final protected function setProjectTitle(?string $projectTitle): void
@@ -366,7 +366,7 @@ abstract class Controller
      *
      * @param  null|string $pageTitle               The new value that will overwrite the previous
      *                                              value.
-     * 
+     *
      * @return void
      */
     final protected function setPageTitle(?string $pageTitle): void
@@ -389,7 +389,7 @@ abstract class Controller
      *
      * @param  null|string $authTag                 The new value that will overwrite the previous
      *                                              value.
-     * 
+     *
      * @return void
      */
     final protected function setAuthTag(?string $authTag): void
@@ -412,7 +412,7 @@ abstract class Controller
      *
      * @param  null|string $authFailRedirect        The new value that will overwrite the previous
      *                                              value.
-     * 
+     *
      * @return void
      */
     final protected function setAuthFailRedirect(?string $authFailRedirect): void
@@ -435,7 +435,7 @@ abstract class Controller
      *
      * @param  string $output                       The new value that will overwrite the previous
      *                                              value.
-     * 
+     *
      * @return void
      */
     final protected function setOutput(string $output): void
@@ -459,7 +459,7 @@ abstract class Controller
      *
      * @param  null|string $viewTemplateFile        The new value that will overwrite the previous
      *                                              value.
-     * 
+     *
      * @return void
      */
     final protected function setViewTemplateFile(?string $viewTemplateFile): void
@@ -504,7 +504,7 @@ abstract class Controller
      * Returns the dynamic node value stored in the tag.
      *
      * @param  string $tag                          Tag name defined in the route configuration.
-     * 
+     *
      * @return string
      */
     final public function getDynamicNodeValue(string $tag): string

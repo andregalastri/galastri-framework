@@ -6,7 +6,7 @@ namespace galastri\modules\types\traits;
  * This trait has the methods related to masking.
  */
 trait Mask
-{    
+{
     /**
      * This method apply the given mask to a value and return the result. It removes every
      * non-alphanumeric chars from the string and replace any # or 0 from the mask into the each
@@ -21,7 +21,7 @@ trait Mask
      *
      * @param  mixed $cleanEdges                    When true, removes chars that left at the sides
      *                                              of unused flags.
-     * 
+     *
      * @return self
      */
     public function mask(string $mask, bool $cleanEdges = false): self
@@ -34,7 +34,7 @@ trait Mask
         $result = preg_replace('/#/', '', $result);
 
         $this->execHandleValue($result);
-        
+
         return $this;
     }
 }

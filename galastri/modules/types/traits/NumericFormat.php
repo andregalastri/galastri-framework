@@ -27,7 +27,7 @@ trait NumericFormat
      * @var string
      */
     private string $thousandSeparator = ',';
-        
+
     /**
      * This method configures the default behavior of the object when the getNumberFormat() method
      * is called. Once configured, it will always use the same configuration. This method do not

@@ -14,7 +14,7 @@ final class EmptyValidation implements \Language
      * Importing traits to the class.
      */
     use traits\Common;
-    
+
     /**
      * This method adds a chain link with a function that checks if the data is strictly equal to
      * null. If it is, then an exception is thrown.
@@ -29,13 +29,13 @@ final class EmptyValidation implements \Language
             }
         };
     }
-    
+
     /**
      * This method adds a chain link with a function that checks if the data is empty. If it is,
      * then an exception is thrown.
-     * 
+     *
      * PHP empty() function considers empty the follow:
-     * 
+     *
      *   - An empty string             : ""
      *   - 0 as a string               : "0"
      *   - 0 as an integer             : 0

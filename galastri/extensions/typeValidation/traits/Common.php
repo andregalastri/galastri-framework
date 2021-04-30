@@ -34,7 +34,7 @@ trait Common
      */
     private ?array $errorMessage = null;
 
-    
+
     /**
      * This method stores the given value in the $value property.
      *
@@ -54,7 +54,7 @@ trait Common
         $this->value = $value;
         return $this;
     }
-    
+
     /**
      * This method starts the chain execution. It first checks if the chain isn't empty. If not,
      * this means that there are functions stored in the array, so, each function is executed in a
@@ -73,7 +73,7 @@ trait Common
             }
         }
     }
-    
+
     /**
      * Adds a chain link that sets the error message that will be returned if the next validation
      * execution returns that the data is invalid. It can also add a optional custom error code.
@@ -97,7 +97,7 @@ trait Common
             }
         };
     }
-    
+
     /**
      * This method throw an exception with the error message and code.
      *

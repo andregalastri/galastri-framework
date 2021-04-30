@@ -36,7 +36,7 @@ use galastri\modules\types\TypeInt;
  *     Memory Usage (Peak)..... 455.55 kb
  *     Execution Time ......... 0.1 ms
  *     Cumulative Time ........ 0.1 ms
- * 
+ *
  *   2. /galastri/core/Route.php
  *     Requested URI .......... /page1
  *     Request Method ......... POST
@@ -206,7 +206,7 @@ final class PerformanceAnalysis
      * Starts the microtimer to define when the execution started.
      *
      * @param  string $label                        Label that identifies the analysis.
-     * 
+     *
      * @return void
      */
     private static function microtimeStart(string $label): void
@@ -220,7 +220,7 @@ final class PerformanceAnalysis
      * Stops the microtimer to define when the execution stoped.
      *
      * @param  string $label                        Label that identifies the analysis.
-     * 
+     *
      * @return void
      */
     private static function microtimeStop(string $label): void
@@ -234,7 +234,7 @@ final class PerformanceAnalysis
      * Reset all the data of an analysis.
      *
      * @param  string $label                        Label that identifies the analysis.
-     * 
+     *
      * @return void
      */
     private static function reset(string $label): void

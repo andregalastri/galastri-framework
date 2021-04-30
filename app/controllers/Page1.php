@@ -9,7 +9,7 @@ class Page1 extends Controller
     protected function main()
     {
         try {
-            return [ ];
+            return [];
         } catch (Exception $e) {
             return [];
         }

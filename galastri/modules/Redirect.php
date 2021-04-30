@@ -68,7 +68,6 @@ final class Redirect implements \Language
             ])
             ->set(GALASTRI_URL_TAGS[$location] ?? $location);
 
-    
         $location = self::sanitize($locationString->get());
 
         preg_match(REDIRECT_IDENFITY_PROTOCOLS_REGEX, $location, $match);

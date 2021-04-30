@@ -86,7 +86,7 @@ final class Route implements \Language
      *
      * @key null|string controller                  Defines custom controller to the node and its
      *                                              children, instead the default \app\controller.
-     * 
+     *
      * @var array
      */
     private static array $parentNodeParam = [
@@ -148,7 +148,7 @@ final class Route implements \Language
      *
      * @var array                                   Parameters tags and its values.
      */
-    private static array $urlParam = [];
+    private static array $urlParams = [];
 
     /**
      * Stores the tag names of dynamic nodes and its values in the URL. Dynamic nodes are like url
@@ -165,20 +165,20 @@ final class Route implements \Language
      * @key bool offline                            Defines that the node and its children is
      *                                              offline. No scripts are executed when it is
      *                                              defined as true. Useful when doing maintenance.
-     * 
+     *
      * @key null|string projectTitle                Defines a custom app title instead of the
      *                                              default defined in the \app\config\project.php
      *                                              file.
      *
      * @key null|string pageTitle                   Defines a static page title to the node and its
      *                                              children. It can be changed in controller if the
-     *                                              page title needs to be dynamic. 
+     *                                              page title needs to be dynamic.
      *
      * @key null|string authTag                     Defines a tag string that the user session needs
      *                                              to have access to the node and its children.
      *                                              When null, defines that the node or child
      *                                              doesn't need that authorization.
-     * 
+     *
      * @key null|string authFailRedirect            Defines a URL, path or url alias to redirect the
      *                                              users that requests paths that needs
      *                                              authorization to access but doesn't have.
@@ -200,11 +200,11 @@ final class Route implements \Language
      *                                              outputs are: - File: returns a file; - View:
      *                                              returns a HTML; - Json: returns data in json
      *                                              format; - Text: returns data in plain text.
-     * 
+     *
      * @key null|int browserCache                   Defines a cache time to the node and its
      *                                              children (in seconds). When null, the node won't
      *                                              be cached.
-     * 
+     *
      * @key null|string viewTemplateFile            Works only with View output. Defines the
      *                                              template base file where the view will be
      *                                              printed. This template base file can have
@@ -530,7 +530,7 @@ final class Route implements \Language
     private static function resolveChildNodeParam(): void
     {
         $found = false;
-        
+
         foreach (self::$nodeWorkingArray as $param => $value) {
             $param = (new TypeString(null))
             ->onError([
@@ -546,7 +546,7 @@ final class Route implements \Language
                 break;
             }
         }
-        
+
         if ($found) {
             foreach (self::$childNodeParam as $param => $value) {
                 if (array_key_exists($param, $childNodeParam)) {
@@ -598,7 +598,7 @@ final class Route implements \Language
                         throw new Exception(self::REQUEST_METHOD_STARTS_WITH_AT[1], self::REQUEST_METHOD_STARTS_WITH_AT[0], [$value->get()]);
                     } else {
                         $checkValue = $value->trimStart('@')->set()->regexMatch('/^[0-9]|[^a-zA-Z0-9_]*/')->get()->key(0)->join()->get();
-                        
+
                         if ($checkValue->get() !== '') {
                             throw new Exception(self::INVALID_REQUEST_METHOD_NAME[1], self::INVALID_REQUEST_METHOD_NAME[0], [$value->get()]);
                         } else {
@@ -616,7 +616,7 @@ final class Route implements \Language
     }
 
     /**
-     * Gets all the remaining URL nodes and stores in the $urlParam properties since there is a
+     * Gets all the remaining URL nodes and stores in the $urlParams property since there is a
      * 'parameters' parameter configured in the routing configuration.
      *
      * There are two ways to configure parameters in the routing configuration file:
@@ -627,7 +627,7 @@ final class Route implements \Language
      *
      *      'parameters' => ['tag1', 'tag2'],
      *
-     * The tag name will be stored as a key label on the $urlParam property, while its value in the
+     * The tag name will be stored as a key label on the $urlParams property, while its value in the
      * url will be stored as value of this key.
      *
      * @return void
@@ -648,13 +648,13 @@ final class Route implements \Language
 
             foreach (self::$remainingUrlNodes as $key => $value) {
                 $keyLabel = $urlParam[$key];
-                self::$urlParam[$keyLabel] = ltrim($value, '/');
+                self::$urlParams[$keyLabel] = ltrim($value, '/');
             }
         }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
-    
+
     private static function validateAndStoreParameters(): void
     {
         Parameters::setTimezone($GLOBALS['GALASTRI_PROJECT']['timezone'] ?? null);
@@ -672,7 +672,7 @@ final class Route implements \Language
         Parameters::setAuthFailRedirect(self::$routeParam['authFailRedirect']);
         Parameters::setViewTemplateFile(self::$routeParam['viewTemplateFile']);
         Parameters::setViewBaseFolder(self::$routeParam['viewBaseFolder']);
-        
+
         Parameters::setRequestMethod(self::$childNodeParam['requestMethod']);
         Parameters::setFileDownloadable(self::$childNodeParam['fileDownloadable']);
         Parameters::setFileBaseFolder(self::$childNodeParam['fileBaseFolder']);
@@ -682,13 +682,13 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $urlParam property.
+     * Return the $urlParams property.
      *
      * @return array
      */
-    public static function getUrlParam(): array
+    public static function getUrlParams(): array
     {
-        return self::$urlParam;
+        return self::$urlParams;
     }
 
     /**
@@ -705,7 +705,7 @@ final class Route implements \Language
      * Return the $nodeWorkingArray property.
      *
      * @param  null|string $key                     Specify which key will be returned.
-     * 
+     *
      * @return mixed
      */
     public static function getParentNodeParam(?string $key = null) // : mixed
@@ -737,7 +737,7 @@ final class Route implements \Language
      * Return the $childNodeParam property.
      *
      * @param  null|string $key                     Specify which key will be returned.
-     * 
+     *
      * @return mixed
      */
     public static function getChildNodeParam(?string $key = null) // : mixed

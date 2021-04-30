@@ -92,7 +92,7 @@ abstract class TypeNumeric implements \Language
         if ($max === null) {
             $max = mt_getrandmax();
         }
-        
+
         $randomNumber = mt_rand($min, $max);
 
         $this->convertToRightNumericType($randomNumber);
@@ -176,7 +176,7 @@ abstract class TypeNumeric implements \Language
      * information in the file of the trait.
      *
      * @param  mixed $allowedValues                 List of the allowed values.
-     * 
+     *
      * @return self
      */
     public function restrictList(/*mixed*/ ...$allowedValues): self
@@ -195,7 +195,7 @@ abstract class TypeNumeric implements \Language
      * information in the file of the trait.
      *
      * @param  mixed $deniedValues                  List of the denied values.
-     * 
+     *
      * @return self
      */
     public function denyValues(/*mixed*/ ...$deniedValues): self
@@ -205,7 +205,7 @@ abstract class TypeNumeric implements \Language
 
         return $this;
     }
-    
+
     /**
      * Defines that the value of the string cannot be null.
      *
@@ -221,7 +221,7 @@ abstract class TypeNumeric implements \Language
 
         return $this;
     }
-    
+
     /**
      * Defines that the value of the string cannot be empty.
      *
@@ -237,7 +237,7 @@ abstract class TypeNumeric implements \Language
 
         return $this;
     }
-    
+
     /**
      * Sets an returning error message when the validation fails. This method needs to be placed in
      * front of the validation method. If the validation fails, then the returning message set will
@@ -266,7 +266,7 @@ abstract class TypeNumeric implements \Language
 
         return $this;
     }
-    
+
     /**
      * This method executes the validation to the given value. The validation is always when the
      * value is changed, testing the value before store it. However, sometimes is necessary to check

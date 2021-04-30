@@ -33,11 +33,11 @@ final class TypeArray implements \Language
         Debug::setBacklog();
 
         $this->arrayValidation = new ArrayValidation();
-        
+
         $this->execHandleValue($value);
         $this->execStoreValue(false);
     }
-    
+
     public function key(...$keys)//: mixed
     {
         if (empty($keys)) {
@@ -51,7 +51,7 @@ final class TypeArray implements \Language
         } else {
             $storedValue = &$this->handlingValue;
         }
-        
+
         $result = null;
 
         foreach ($keys as $key) {
@@ -105,9 +105,9 @@ final class TypeArray implements \Language
         foreach ($this->getValue() as $key => $data) {
             $this->key($key)->set();
         }
-        
+
         $this->_set($value);
-        
+
         return $this;
     }
 
@@ -195,7 +195,7 @@ final class TypeArray implements \Language
 
         $arrayKeys = array_keys($array);
         $found = [];
-        
+
         $regex = (function ($a, $b) {
             switch ($b) {
                 case MATCH_EXACT:
@@ -250,7 +250,7 @@ final class TypeArray implements \Language
         }
 
         $this->execHandleValue($found);
-        
+
         return $this;
     }
 

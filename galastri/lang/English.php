@@ -12,7 +12,7 @@ interface English
      * Constants used in \galastri\core\Debug.
      */
     const GENERIC_MESSAGE = "An error occurred. Please, contact the administrator.";
-    
+
     /**
      * Constants used in \galastri\core\Galastri.
      */
@@ -59,7 +59,7 @@ interface English
     const REQUEST_METHOD_STARTS_WITH_AT = [
         'G0009', "Request method '%s' need to start with @ as the first character"
     ];
-        
+
     const INVALID_REQUEST_METHOD_NAME = [
         'G0010', "Request method '%s' has an invalid name."
     ];
@@ -237,31 +237,31 @@ interface English
     const INVALID_PAGE_TITLE_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'pageTitle' need to be 'string' or 'null'."
     ];
-    
+
     const INVALID_AUTH_TAGE_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'authTag' need to be 'string' or 'null'."
     ];
-    
+
     const INVALID_AUTH_FAIL_REDIRECT_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'authFailRedirect' need to be 'string' or 'null'."
     ];
-    
+
     const INVALID_VIEW_TEMPLATE_FILE_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'viewTemplateFile' need to be 'string' or 'null'."
     ];
-    
+
     const INVALID_VIEW_BASE_FOLDER_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'viewBaseFolder' need to be 'string' or 'null'."
     ];
-    
+
     const INVALID_FILE_DOWNLOADABLE_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'fileDownloadable' need to be 'bool' or 'null'."
     ];
-    
+
     const INVALID_FILE_BASE_FOLDER_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'fileBaseFolder' need to be 'string' or 'null'."
     ];
-    
+
     const INVALID_VIEW_FILE_PATH_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'viewFilePath' need to be 'string' or 'null'."
     ];
@@ -301,7 +301,7 @@ interface English
     const INVALID_LANGUAGE_TYPE = [
         'G0026', "Wrong value type. Type of debug parameter 'language' need to be 'string'."
     ];
- 
+
     const UNDEFINED_LANGUAGE = [
         'G0026', "Undefined debug parameter 'language' to this route. Set it in the route configuration file."
     ];
@@ -309,7 +309,7 @@ interface English
     const INVALID_LOCATION_DATA_TYPE = [
         'G0027', "Wrong value type. Location URL or URL Tag value need to be 'string' and cannot be empty."
     ];
-    
+
     /**
      * Constants used in \galastri\modules\types\traits\Math
      */
