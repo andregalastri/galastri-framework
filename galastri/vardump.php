@@ -35,7 +35,7 @@ function varDump(...$values): void
     $varDump);
 
     $varDump = preg_replace(
-        '/(\[)((?:".*?")|(?:.*?))(\])(\s=>\s(string|NULL|bool|object|array|float|int))/',
+        '/(\[)((?:".*?")|(?:.*?))(\])(\s=>\s&?(string|NULL|bool|object|array|float|int))/',
         '<arrayKey>$1$2$3</arrayKey>$4',
     $varDump);
 
