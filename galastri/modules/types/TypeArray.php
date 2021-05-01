@@ -175,11 +175,11 @@ final class TypeArray implements \Language
         return !empty($this->searchValue($search, $matchType)->get());
     }
 
-    public function shift()
+    public function shift(&$shiftedKey = null)
     {
-        $this->execHandleValue(array_shift($this->storedValue));
+        $shiftedKey = $this->handlingValue === null ? array_shift($this->storedValue) : array_shift($this->handlingValue);
 
-        return $this->get();
+        return $this;
     }
 
     public function pop()
@@ -323,6 +323,34 @@ final class TypeArray implements \Language
         foreach ($this->getValue() as $key => $data) {
             if ($this->key($key) instanceof TypeString) {
                 $this->key($key)->$concatType(...$values);
+            }
+        }
+
+        $this->execHandleValue($this->getValue());
+
+        return $this;
+    }
+
+    public function trim(string ...$charSet): self
+    {
+        return $this->execArrayModeConcats('trim', ...$charSet);
+    }
+
+    public function trimStart(string ...$charSet): self
+    {
+        return $this->execArrayModeConcats('trimStart', ...$charSet);
+    }
+
+    public function trimEnd(string ...$charSet): self
+    {
+        return $this->execArrayModeTrims('trimEnd', ...$charSet);
+    }
+
+    private function execArrayModeTrims($trimType, ...$charSet)
+    {
+        foreach ($this->getValue() as $key => $data) {
+            if ($this->key($key) instanceof TypeString) {
+                $this->key($key)->$trimType(...$charSet);
             }
         }
 
