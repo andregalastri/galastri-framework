@@ -34,8 +34,8 @@ final class Galastri implements \Language
 
     private static bool $checkedOffline = false;
     private static bool $checkedForceRedirect = false;
-    private static bool $checkedRouteNodesExists = true;
-    private static bool $checkedOutput = false;
+    private static bool $checkedRouteExists = true;
+    private static bool $checkedOutputIsSet = false;
     private static bool $checkedController = false;
     private static bool $checkedControllerExtendsCore = false;
     private static bool $checkedControllerMethod = false;
@@ -66,8 +66,8 @@ final class Galastri implements \Language
 
             self::checkOffline();
             self::checkForceRedirect();
-            self::checkRouteNodesExists();
-            self::checkOutput();
+            self::checkRouteExists();
+            self::checkOutputIsSet();
             self::checkController();
             self::callOutput();
         } catch (Exception $e) {
@@ -122,7 +122,7 @@ final class Galastri implements \Language
      *
      * @return void
      */
-    private static function checkRouteNodesExists(): void
+    private static function checkRouteExists(): void
     {
         Debug::setBacklog()::bypassGenericMessage();
 
@@ -131,7 +131,18 @@ final class Galastri implements \Language
             Route::getChildNodeName() === null or
             Route::getChildNodeName() === null
         ) {
-            self::$checkedRouteNodesExists = false;
+            self::$checkedRouteExists = false;
+        } else {
+            $urlParameters = [];
+            foreach(Parameters::getUrlParameters() as $tagName => $tagValue) {
+                if (strpos($tagName, '?') === false and $tagValue === null) {
+                    self::$checkedRouteExists = false;
+                    break;
+                } else {
+                    $urlParameters[ltrim($tagName, '?')] = $tagValue;
+                }
+            }
+            Parameters::setUrlParameters($urlParameters);
         }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
@@ -144,24 +155,24 @@ final class Galastri implements \Language
      *
      * @return void
      */
-    private static function checkOutput(): void
+    private static function checkOutputIsSet(): void
     {
         Debug::setBacklog();
 
-        if (!self::$checkedRouteNodesExists) {
+        if (self::$checkedRouteExists) {
+            if (Parameters::getOutput() === null) {
+                throw new Exception(self::UNDEFINED_OUTPUT[1], self::UNDEFINED_OUTPUT[0]);
+            }
+        } else {
             if (Parameters::getNotFoundRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text') {
                 throw new Exception(self::ERROR_404[1], self::ERROR_404[0]);
             } else {
                 PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
                 Redirect::to(Parameters::getNotFoundRedirect());
             }
-        } else {
-            if (Parameters::getOutput() === null) {
-                throw new Exception(self::UNDEFINED_OUTPUT[1], self::UNDEFINED_OUTPUT[0]);
-            }
         }
 
-        self::$checkedOutput = true;
+        self::$checkedOutputIsSet = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
@@ -240,7 +251,7 @@ final class Galastri implements \Language
      * Checks if the child node exists as a method inside the route controller. If it isn't, an
      * exception is thrown.
      *
-     * It also checks if there is a request method defined in the route parameter requestMethod and,
+     * It also checks if there is a request method defined in the route parameter request and,
      * if it is, checks if it exists in the route controller.
      *
      * @return void
@@ -250,15 +261,15 @@ final class Galastri implements \Language
         Debug::setBacklog();
 
         $method = Route::getChildNodeName();
-        $requestMethod = Parameters::getRequestMethod();
+        $request = Parameters::getRequest();
 
         if (method_exists(self::$routeControllerName, $method) === false) {
             throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $method]);
         }
 
-        if (!empty($requestMethod)) {
-            if (!method_exists(self::$routeControllerName, $requestMethod)){
-                throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $requestMethod]);
+        if (!empty($request)) {
+            if (!method_exists(self::$routeControllerName, $request)){
+                throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $request]);
             }
         }
 
@@ -285,11 +296,11 @@ final class Galastri implements \Language
             if (!self::$checkedForceRedirect) {
                 return 'checkedForceRedirect';
             }
-            if (!self::$checkedRouteNodesExists) {
-                return 'checkedRouteNodesExists';
+            if (!self::$checkedRouteExists) {
+                return 'checkedRouteExists';
             }
-            if (!self::$checkedOutput) {
-                return 'checkedOutput';
+            if (!self::$checkedOutputIsSet) {
+                return 'checkedOutputIsSet';
             }
             if (!self::$checkedController) {
                 return 'checkedController';

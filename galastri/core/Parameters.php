@@ -28,8 +28,8 @@ final class Parameters implements \galastri\lang\English
     private static ?bool $fileDownloadable = null;
     private static ?string $fileBaseFolder = null;
     private static ?string $viewFilePath = null;
-
-    private static ?string $requestMethod = null;
+    private static ?string $request = null;
+    private static ?array $urlParameters = null;
 
     private static bool $displayErrors;
     private static bool $showBacklogData;
@@ -43,7 +43,7 @@ final class Parameters implements \galastri\lang\English
     public static function setUrlRoot($value): void
     {
         self::isStringNotNull($value, self::INVALID_URL_ROOT_TYPE, self::UNDEFINED_URL_ROOT);
-        self::$urlRoot = $value;
+        self::$urlRoot = ltrim($value, '/');
     }
 
     public static function getUrlRoot(): string
@@ -295,14 +295,29 @@ final class Parameters implements \galastri\lang\English
         return self::$viewFilePath;
     }
 
-    public static function setRequestMethod($value): void
+    public static function setRequest($value): void
     {
-        self::$requestMethod = $value;
+        self::$request = $value;
     }
 
-    public static function getRequestMethod(): ?string
+    public static function getRequest(): ?string
     {
-        return self::$requestMethod;
+        return self::$request;
+    }
+
+    public static function setUrlParameters($value): void
+    {
+        self::$urlParameters = $value;
+    }
+
+    public static function getUrlParameters(): ?array
+    {
+        return self::$urlParameters;
+    }
+
+    public static function getUrlParameter($tag): ?string
+    {
+        return self::$urlParameters[$tag] ?? null;
     }
 
     private static function isString($value, $whenInvalid)

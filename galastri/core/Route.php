@@ -2,11 +2,9 @@
 
 namespace galastri\core;
 
-use galastri\core\Debug;
 use galastri\core\Parameters;
 use galastri\extensions\Exception;
 use galastri\modules\types\TypeString;
-use galastri\modules\types\TypeArray;
 use galastri\modules\PerformanceAnalysis;
 
 /**
@@ -49,12 +47,19 @@ use galastri\modules\PerformanceAnalysis;
 final class Route implements \Language
 {
     /**
+     * Stores route parameters, inherited by parents nodes.
+     *
+     * @var array
+     */
+    private static array $routeParameters;
+
+    /**
      * Stores the URL nodes in array format which will be worked to extract the parent's parameters,
      * define the node that will be called, its child and local parameters.
      *
      * @var array
      */
-    private static array $urlWorkingArray;
+    private static array $urlArray;
 
     /**
      * Stores the parent node's parameters, including child nodes and child nodes that are parents
@@ -62,16 +67,16 @@ final class Route implements \Language
      *
      * @var array
      */
-    private static array $nodeWorkingArray = [];
+    private static array $childArray;
 
     /**
-     * After all process to define the parent node, there are more nodes after that. This remaining
-     * nodes will be worked to define the child node's name its parameters and if there are
-     * additional url parameters.
+     * Stores the tag names of dynamic nodes and its values in the URL. Dynamic nodes are like url
+     * parameters, but in reverse position: url parameters are after the child nodes, while the
+     * dynamic nodes goes before. Dynamic nodes also calls for dynamic controllers when required.
      *
      * @var array
      */
-    private static array $remainingUrlNodes = [];
+    private static array $dynamicNodes = [];
 
     /**
      * Stores the parent node name in the given URL. When null means that no parent node was found
@@ -79,7 +84,7 @@ final class Route implements \Language
      *
      * @var null|string
      */
-    private static ?string $parentNodeName = null;
+    private static ?string $parentNodeName;
 
     /**
      * Stores parent nodes specific parameters.
@@ -89,7 +94,7 @@ final class Route implements \Language
      *
      * @var array
      */
-    private static array $parentNodeParam = [
+    private static array $parentParameters = [
         'controller' => null,
     ];
 
@@ -98,7 +103,7 @@ final class Route implements \Language
      *
      * @var array
      */
-    private static array $controllerNamespace = [];
+    private static array $controllerNamespace;
 
     /**
      * When the route parameter 'namespace' is found in the parent's node, it is set to true
@@ -128,36 +133,60 @@ final class Route implements \Language
      * @key null|string viewFilePath                Works only with View output. Defines a custom
      *                                              view file instead the default.
      *
-     * @key null|array|string requestMethod         Points to an internal method that will be called
+     * @key array|null|string request               Points to an internal method that will be called
      *                                              based on the request method. The key of the
      *                                              array needs to have the name of request method
      *                                              (POST, GET, PUT, etc..) and its value needs to
      *                                              be the method to be called, always starting with
      *                                              @, for better identification.
+     *
+     * @key null|string parameters                  Stores the url nodes that comes after the child
+     *                                              node.
+     *
      * @var array
      */
-    private static array $childNodeParam = [
+    private static array $childParameters = [
         'fileDownloadable' => false,
         'fileBaseFolder' => null,
         'viewFilePath' => null,
-        'requestMethod' => null,
+        'request' => null,
+        'parameters' => null,
     ];
 
     /**
-     * Stores the extra parameters of the URL that is defined in the route configuration.
+     * This is a singleton class, so, the __construct() method is private to avoid user to
+     * instanciate it.
      *
-     * @var array                                   Parameters tags and its values.
+     * @return void
      */
-    private static array $urlParams = [];
+    private function __construct()
+    {
+    }
 
     /**
-     * Stores the tag names of dynamic nodes and its values in the URL. Dynamic nodes are like url
-     * parameters, but in reverse position: url parameters are after the child nodes, while the
-     * dynamic nodes goes before. Dynamic nodes also calls for dynamic controllers when required.
+     * Execute a chain of methods that resolves the URL string, searching for nodes in
+     * \app\config\routes.php that matches the requested URL and storing its parameters.
      *
-     * @var array
+     * @return void
      */
-    private static array $dynamicNodeValues = [];
+    public static function resolve(): void
+    {
+        self::setup();
+        self::prepareUrlArray();
+        self::resolveRoutes($GLOBALS['GALASTRI_ROUTES']);
+
+        unset($GLOBALS['GALASTRI_ROUTES']);
+
+        self::resolveChildNode();
+
+        if (count(self::$controllerNamespace) > 1) {
+            array_shift(self::$controllerNamespace);
+        }
+
+        self::validateAndStoreParameters();
+
+        unset($GLOBALS['GALASTRI_PROJECT']);
+    }
 
     /**
      * Stores route parameters, inherited by parents nodes.
@@ -225,51 +254,43 @@ final class Route implements \Language
      * @key array permissionFailMessage             Defines a custom permission access restriction
      *                                              message to the node and its children.
      *
-     * @var array
-     */
-    private static array $routeParam = [];
-
-    /**
-     * This is a singleton class, so, the __construct() method is private to avoid user to
-     * instanciate it.
-     *
      * @return void
      */
-    private function __construct()
+    private static function validateAndStoreParameters(): void
     {
+        Parameters::setTimezone($GLOBALS['GALASTRI_PROJECT']['timezone'] ?? null);
+        Parameters::setController(self::$parentParameters['controller']);
+
+        Parameters::setOffline(self::$routeParameters['offline']);
+        Parameters::setOfflineMessage(self::$routeParameters['offlineMessage']);
+        Parameters::setForceRedirect(self::$routeParameters['forceRedirect']);
+        Parameters::setOutput(self::$routeParameters['output']);
+        Parameters::setNotFoundRedirect(self::$routeParameters['notFoundRedirect']);
+        Parameters::setNamespace(self::$routeParameters['namespace']);
+        Parameters::setProjectTitle(self::$routeParameters['projectTitle']);
+        Parameters::setPageTitle(self::$routeParameters['pageTitle']);
+        Parameters::setAuthTag(self::$routeParameters['authTag']);
+        Parameters::setAuthFailRedirect(self::$routeParameters['authFailRedirect']);
+        Parameters::setViewTemplateFile(self::$routeParameters['viewTemplateFile']);
+        Parameters::setViewBaseFolder(self::$routeParameters['viewBaseFolder']);
+
+        Parameters::setFileDownloadable(self::$childParameters['fileDownloadable']);
+        Parameters::setFileBaseFolder(self::$childParameters['fileBaseFolder']);
+        Parameters::setViewFilePath(self::$childParameters['viewFilePath']);
+        Parameters::setRequest(self::$childParameters['request']);
+        Parameters::setUrlParameters(self::$childParameters['parameters']);
+
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
     /**
-     * Execute a chain of methods that resolves the URL string, searching for nodes in
-     * \app\config\routes.php that matches the requested URL and storing its parameters.
+     * setup
      *
      * @return void
      */
-    public static function resolve(): void
-    {
-        self::setup();
-        self::prepareUrlArray();
-        self::resolveRouteNodes($GLOBALS['GALASTRI_ROUTES']);
-
-        unset($GLOBALS['GALASTRI_ROUTES']);
-
-        self::defineChildNode();
-        self::resolveChildNodeParam();
-        self::resolveChildNodeParamRequestMethod();
-        self::resolveUrlParam();
-
-        if (count(self::$controllerNamespace) > 1) {
-            array_shift(self::$controllerNamespace);
-        }
-
-        self::validateAndStoreParameters();
-
-        unset($GLOBALS['GALASTRI_PROJECT']);
-    }
-
     private static function setup(): void
     {
-        self::$routeParam = [
+        self::$routeParameters = [
             'offline' => $GLOBALS['GALASTRI_PROJECT']['offline'],
             'projectTitle' => $GLOBALS['GALASTRI_PROJECT']['projectTitle'] ?? null,
             'pageTitle' => null,
@@ -303,7 +324,7 @@ final class Route implements \Language
      * - Every key value will receive a '/' char in the beginning of their value like this:
      *   array('/foo', '/bar')
      *
-     * The result array is stored inside $urlWorkingArray property.
+     * The result array is stored inside $urlArray property.
      *
      * @return void
      */
@@ -313,35 +334,34 @@ final class Route implements \Language
          * The URL root that will be controlled by the framework.
          */
         Parameters::setUrlRoot($GLOBALS['GALASTRI_PROJECT']['urlRoot'] ?? null);
-        $bootstrapPath = ltrim(Parameters::getUrlRoot(), '/');
 
-        $urlWorkingArray = explode('?', str_replace($bootstrapPath, '', $_SERVER['REQUEST_URI']));
-        $urlWorkingArray = explode('/', $urlWorkingArray[0]);
+        $urlArray = explode('?', str_replace(Parameters::getUrlRoot(), '', $_SERVER['REQUEST_URI']));
+        $urlArray = explode('/', $urlArray[0]);
 
-        if (empty($urlWorkingArray[1])) {
-            array_shift($urlWorkingArray);
+        if (empty($urlArray[1])) {
+            array_shift($urlArray);
         }
 
-        foreach ($urlWorkingArray as &$value) {
-            $value = '/' . $value;
+        foreach ($urlArray as &$urlNode) {
+            $urlNode = '/' . $urlNode;
         }
-        unset($value);
+        unset($urlNode);
 
-        self::$urlWorkingArray = $urlWorkingArray;
+        self::$urlArray = $urlArray;
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
     /**
      * This method gets te configuration file \app\config\routes.php and search for a key that
-     * matches with the URL nodes stored in the $urlWorkingArray.
+     * matches with the URL nodes stored in the $urlArray.
      *
      * It starts with a foreach, looking if de first URL node exists in the configuration file. If
-     * it exists, then it execute a closure function in the variable $resolveNode.
+     * it exists, then it execute a closure function in the variable $resolveParentNode.
      *
      * This function:
-     * 1. Removes the current key off the $urlWorkingArray
-     * 2. Stores the node parameters in $nodeWorkingArray property
+     * 1. Removes the current key off the $urlArray
+     * 2. Stores the node parameters in $childArray property
      * 3. Add the key label in the $controllerNamespace property
      * 4. Calls the method again to repeat the process.
      *
@@ -349,48 +369,43 @@ final class Route implements \Language
      * dynamic node there. Dynamic nodes always starts with '/?' and its label doesn't have to
      * matche the URL node.
      *
-     * If there is a dynamic node, then its label and value is stored in the $dynamicNodeValues
-     * property and then it execute a closure function in the variable $resolveNode explained
-     * above.
+     * If there is a dynamic node, then its label and value is stored in the $dynamicNodes property
+     * and then it execute a closure function in the variable $resolveParentNode explained above.
      *
      * If there ir no node nor dynamic node, then this means that the URL node doesn't exist, so the
      * $parentNodeName is set as null.
      *
-     * After all the tests, all the remaining URL nodes is stored in the $remainingUrlNodes
-     * property.
-     *
-     * @param  array $routeNodes                    Multidimensional array with the configuration of
+     * @param  array $routeArray                    Multidimensional array with the configuration of
      *                                              the project routing.
      * @return void
      */
-    private static function resolveRouteNodes(array $routeNodes): void
+    private static function resolveRoutes(array $routeArray): void
     {
         $found = false;
 
-        $resolveNode = function (array $routeNodes, string $key) {
-            array_shift(self::$urlWorkingArray);
-            self::$nodeWorkingArray = $routeNodes[$key];
-            self::resolveParentNodeParam($routeNodes[$key]);
-            self::resolveRouteParam($routeNodes[$key]);
-            self::addControllerNamespacePath($key);
-            self::resolveRouteNodes($routeNodes[$key]);
-            return true;
-        };
-
-        foreach (self::$urlWorkingArray as $urlNode) {
-
-            if (isset($routeNodes[$urlNode])) {
-                $found = $resolveNode($routeNodes, $urlNode);
+        // vardump();
+        foreach (self::$urlArray as $urlNode) {
+            if (isset($routeArray[$urlNode])) {
+                $found = true;
+                self::resolveParentNode($routeArray, $urlNode);
                 break;
             }
 
             if (!$found) {
-                $dynamicNode = new TypeArray($routeNodes);
-                if ($dynamicNode->searchKey('/?', MATCH_START)->isNotEmpty()) {
-                    $dynamicKey = $dynamicNode->get(KEY);
+                $dynamicTag = null;
 
-                    self::storeDynamicNode($dynamicKey, $urlNode);
-                    $found = $resolveNode($routeNodes, $dynamicKey);
+                foreach (array_keys($routeArray) as $routeNode) {
+                    if (strpos($routeNode, '/?') === 0) {
+                        $dynamicTag = $routeNode;
+                        break;
+                    }
+                }
+
+                if ($dynamicTag) {
+                    $found = true;
+
+                    self::storeDynamicNode($dynamicTag, $urlNode);
+                    self::resolveParentNode($routeArray, $dynamicTag);
                     break;
                 }
             }
@@ -400,8 +415,43 @@ final class Route implements \Language
             }
         }
 
-        self::$remainingUrlNodes = self::$urlWorkingArray;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+    }
+
+    /**
+     * resolveParentNode
+     *
+     * @param  mixed $routeArray
+     * @param  mixed $urlNode
+     * @return void
+     */
+    private static function resolveParentNode(array $routeArray, string $urlNode)
+    {
+        array_shift(self::$urlArray);
+
+        self::$childArray = $routeArray[$urlNode];
+        self::resolveParentParameters($routeArray[$urlNode]);
+        self::resolveRouteParameters($routeArray[$urlNode]);
+        self::storeNamespace($urlNode);
+
+        self::resolveRoutes($routeArray[$urlNode]);
+    }
+
+    /**
+     * Stores the dynamic label tag found in routing configuration file and its value in the URL
+     * node.
+     *
+     * @param  string $dynamicTag                   The key label of the dynamic node.
+     *
+     * @param  string $urlNode                      The value of the node in the URL.
+     *
+     * @return void
+     */
+    private static function storeDynamicNode(string $dynamicTag, string $urlNode): void
+    {
+        $dynamicTag = ltrim($dynamicTag, '/?');
+
+        self::$dynamicNodes[$dynamicTag] = ltrim($urlNode, '/');
     }
 
     /**
@@ -415,12 +465,11 @@ final class Route implements \Language
      *
      * @return void
      */
-    private static function resolveParentNodeParam(array $nodeFound): void
+    private static function resolveParentParameters(array $nodeFound): void
     {
-        foreach (self::$parentNodeParam as $param => &$value) {
-            $value = $nodeFound[$param] ?? null;
+        foreach (self::$parentParameters as $parameter => $value) {
+            self::$parentParameters[$parameter] = $nodeFound[$parameter] ?? null;
         }
-        unset($value);
     }
 
     /**
@@ -436,85 +485,41 @@ final class Route implements \Language
      *
      * @return void
      */
-    private static function resolveRouteParam(array $nodeFound): void
+    private static function resolveRouteParameters(array $nodeFound): void
     {
-        foreach (self::$routeParam as $param => &$value) {
-            if (array_key_exists($param, $nodeFound)) {
-                if ($param === 'namespace') {
+        foreach (self::$routeParameters as $parameter => $value) {
+            if (array_key_exists($parameter, $nodeFound)) {
+                if ($parameter === 'namespace') {
                     self::$resetNamespace = true;
                 }
 
-                $value = $nodeFound[$param];
+                self::$routeParameters[$parameter] = $nodeFound[$parameter];
             }
         }
-        unset($value);
     }
 
     /**
      * Stores the parent node name to create a namespace path. It will be used when calling a
      * controller with the name of the node which its path is the same as the URL path.
      *
-     * @param  string $parentNodeName               The parent node name that will be part of the
+     * @param  string $urlNode                      The parent node name that will be part of the
      *                                              namespace
      *
      * @return void
      */
-    private static function addControllerNamespacePath(string $parentNodeName): void
+    private static function storeNamespace(string $urlNode): void
     {
-        $parentNodeName = new TypeString($parentNodeName);
-
-        $parentNodeName
-            ->trim('/', '?')
-            ->toPascalCase()
-            ->set(function ($self) {
-                return $self->get() ?: 'Index';
-            });
+        $urlNode = (new TypeString($urlNode))->trim('/', '?')->toPascalCase()->set(fn ($self) => $self->get() ?: 'Index')->get();
 
 
-        self::$parentNodeName = $parentNodeName->get();
+        self::$parentNodeName = $urlNode;
 
         if (self::$resetNamespace) {
             self::$controllerNamespace = [];
             self::$resetNamespace = false;
         }
 
-        self::$controllerNamespace[] = '\\' . $parentNodeName->get();
-    }
-
-    /**
-     * Stores the dynamic label tag found in routing configuration file and its value in the URL
-     * node.
-     *
-     * @param  string $dynamicNodeTag               The key label of the dynamic node.
-     *
-     * @param  string $urlNode                      The value of the node in the URL.
-     *
-     * @return void
-     */
-    private static function storeDynamicNode(string $dynamicNodeTag, string $urlNode): void
-    {
-        self::$dynamicNodeValues[substr($dynamicNodeTag, 2)] = ltrim($urlNode, '/');
-    }
-
-
-    /**
-     * Defines the name of the child node, based on the remaining URL nodes. If there are no
-     * remaining URL nodes, then the child node name will be 'main'. If there are remaining URL
-     * nodes, then the first node will be the name of the child node and that will be dropped from
-     * the $remainingUrlNodes property.
-     *
-     * @return void
-     */
-    private static function defineChildNode(): void
-    {
-        if (empty(self::$remainingUrlNodes)) {
-            self::$childNodeName = 'main';
-        } else {
-            self::$childNodeName = ltrim(self::$remainingUrlNodes[0], '/');
-            array_shift(self::$remainingUrlNodes);
-        }
-
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+        self::$controllerNamespace[] = '\\'.$urlNode;
     }
 
     /**
@@ -527,168 +532,96 @@ final class Route implements \Language
      *
      * @return void
      */
-    private static function resolveChildNodeParam(): void
+    private static function resolveChildNode(): void
     {
-        $found = false;
-
-        foreach (self::$nodeWorkingArray as $param => $value) {
-            $param = (new TypeString(null))
-            ->onError([
-                self::INVALID_KEY_PARAMETER_TYPE[1],
-                self::INVALID_KEY_PARAMETER_TYPE[0]
-            ], gettype($param))
-            ->set($param);
-
-            if ($param->get() === '@' . self::$childNodeName) {
-                $found = true;
-                $childNodeParam = $value;
-                self::$childNodeName = $param->trimStart('@')->toCamelCase()->get();
-                break;
-            }
+        foreach (self::$urlArray as $key => $urlNode) {
+            self::$urlArray[$key] = ltrim($urlNode, '/');
         }
 
-        if ($found) {
-            foreach (self::$childNodeParam as $param => $value) {
-                if (array_key_exists($param, $childNodeParam)) {
-                    self::$childNodeParam[$param] = $childNodeParam[$param];
+        foreach ([self::$urlArray[0] ?? null, 'main'] as $urlNode) {
+            if ($urlNode === null) {
+                continue;
+            }
+
+            foreach (self::$childArray as $childParameterKey => $childParameterValue) {
+                if (gettype($childParameterKey) !== 'string') {
+                    throw new Exception(self::INVALID_KEY_PARAMETER_TYPE[1], self::INVALID_KEY_PARAMETER_TYPE[0]);
                 }
-            }
 
-            self::resolveRouteParam($childNodeParam);
-        } else {
-            self::$childNodeName = null;
-        }
-
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-    }
-
-    /**
-     * This method resolve the requestMethod parameter in child node. This parameter is an array
-     * that points a method to be executed based on the method used in the request (like POST, GET,
-     * etc.).
-     *
-     * The method gets the request method received by the server and checks if the requestMethod
-     * stored in the $childNodeParam property.
-     *
-     * If it exists it compares the actual request method to the methods defined in the key of the
-     * parameter. If it is equal, then the value is validated as a valid method name and, as
-     * everything ok, it is stored. An invalid method name will throw an exception.
-     *
-     * If not, it will search until the end. If it doesn't exist, then the parameter requestMethod
-     * is set as null.
-     *
-     * @return void
-     */
-    private static function resolveChildNodeParamRequestMethod(): void
-    {
-        Debug::setBacklog();
-
-        $serverRequestMethod = new TypeString($_SERVER['REQUEST_METHOD']);
-        $serverRequestMethod->toLowerCase()->set();
-
-        if (self::$childNodeParam['requestMethod'] !== null) {
-            foreach (self::$childNodeParam['requestMethod'] as $key => $value) {
-                $key = new TypeString($key);
-                $key->toLowerCase()->set();
-
-                $value = new TypeString($value);
-
-                if ($key->get() === $serverRequestMethod->get()) {
-                    if ($value->substring(0, 1)->get() !== '@') {
-                        throw new Exception(self::REQUEST_METHOD_STARTS_WITH_AT[1], self::REQUEST_METHOD_STARTS_WITH_AT[0], [$value->get()]);
-                    } else {
-                        $checkValue = $value->trimStart('@')->set()->regexMatch('/^[0-9]|[^a-zA-Z0-9_]*/')->get()->key(0)->join()->get();
-
-                        if ($checkValue->get() !== '') {
-                            throw new Exception(self::INVALID_REQUEST_METHOD_NAME[1], self::INVALID_REQUEST_METHOD_NAME[0], [$value->get()]);
-                        } else {
-                            self::$childNodeParam['requestMethod'] = $value->toCamelCase()->get();
-                        }
+                if ($childParameterKey === '@'.$urlNode) {
+                    self::$childNodeName = (new TypeString($urlNode))->toCamelCase()->get();
+                    if ((self::$urlArray[0] ?? null) === $urlNode) {
+                        array_shift(self::$urlArray);
                     }
-                    break;
-                } else {
-                    self::$childNodeParam['requestMethod'] = null;
+
+                    break 2;
                 }
             }
         }
 
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+        self::resolveChildParameters($childParameterValue);
+        self::resolveUrlParameters();
+        self::resolveRequestMethod();
     }
 
-    /**
-     * Gets all the remaining URL nodes and stores in the $urlParams property since there is a
-     * 'parameters' parameter configured in the routing configuration.
-     *
-     * There are two ways to configure parameters in the routing configuration file:
-     *
-     *      'parameters' => '/tag1/tag2',
-     *
-     *      Or
-     *
-     *      'parameters' => ['tag1', 'tag2'],
-     *
-     * The tag name will be stored as a key label on the $urlParams property, while its value in the
-     * url will be stored as value of this key.
-     *
-     * @return void
-     */
-    private static function resolveUrlParam(): void
+    private static function resolveChildParameters(array $nodeFound): void
     {
-        $childNodeParam = self::$childNodeParam;
-
-        if (isset($childNodeParam['parameters'])) {
-            $urlParam = $childNodeParam['parameters'];
-
-            if (gettype($urlParam) === 'string') {
-                $urlParam = explode('/', $urlParam);
-                if (empty($urlParam[0])) {
-                    array_shift($urlParam);
-                }
+        foreach (self::$childParameters as $parameter => $value) {
+            if (array_key_exists($parameter, $nodeFound)) {
+                self::$childParameters[$parameter] = $nodeFound[$parameter];
             }
+        }
+    }
 
-            foreach (self::$remainingUrlNodes as $key => $value) {
-                $keyLabel = $urlParam[$key];
-                self::$urlParams[$keyLabel] = ltrim($value, '/');
+    private static function resolveUrlParameters(): void
+    {
+        $urlParameters = self::$childParameters['parameters'];
+
+        self::$childParameters['parameters'] = [];
+
+        $urlParameters = explode('/', $urlParameters ?? '');
+
+        if (empty($urlParameters[0])) {
+            array_shift($urlParameters);
+        }
+
+        foreach ($urlParameters as $key => $tagName) {
+            self::$childParameters['parameters'][$tagName] = self::$urlArray[$key] ?? null;
+
+            if (isset(self::$urlArray[$key])) {
+                unset(self::$urlArray[$key]);
             }
         }
 
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+        self::$urlArray = array_values(self::$urlArray);
     }
 
-    private static function validateAndStoreParameters(): void
+    private static function resolveRequestMethod(): void
     {
-        Parameters::setTimezone($GLOBALS['GALASTRI_PROJECT']['timezone'] ?? null);
-        Parameters::setController(self::$parentNodeParam['controller']);
+        $requestMethod = self::$childParameters['request'];
 
-        Parameters::setOffline(self::$routeParam['offline']);
-        Parameters::setOfflineMessage(self::$routeParam['offlineMessage']);
-        Parameters::setForceRedirect(self::$routeParam['forceRedirect']);
-        Parameters::setOutput(self::$routeParam['output']);
-        Parameters::setNotFoundRedirect(self::$routeParam['notFoundRedirect']);
-        Parameters::setNamespace(self::$routeParam['namespace']);
-        Parameters::setProjectTitle(self::$routeParam['projectTitle']);
-        Parameters::setPageTitle(self::$routeParam['pageTitle']);
-        Parameters::setAuthTag(self::$routeParam['authTag']);
-        Parameters::setAuthFailRedirect(self::$routeParam['authFailRedirect']);
-        Parameters::setViewTemplateFile(self::$routeParam['viewTemplateFile']);
-        Parameters::setViewBaseFolder(self::$routeParam['viewBaseFolder']);
+        if (isset($requestMethod)) {
+            self::$childParameters['request'] = [];
 
-        Parameters::setRequestMethod(self::$childNodeParam['requestMethod']);
-        Parameters::setFileDownloadable(self::$childNodeParam['fileDownloadable']);
-        Parameters::setFileBaseFolder(self::$childNodeParam['fileBaseFolder']);
-        Parameters::setViewFilePath(self::$childNodeParam['viewFilePath']);
+            foreach ($requestMethod as $methodType => $methodToBeCalled) {
+                $methodType = mb_strtolower($methodType);
+                self::$childParameters['request'][$methodType] = $methodToBeCalled;
+            }
 
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+            $serverRequest = mb_strtolower($_SERVER['REQUEST_METHOD']);
+
+            self::$childParameters['request'] = self::$childParameters['request'][$serverRequest] ?? null;
+        }
     }
 
     /**
-     * Return the $urlParams property.
+     * Return the $urlArray property.
      *
      * @return array
      */
-    public static function getUrlParams(): array
+    public static function getUrlArray(): array
     {
-        return self::$urlParams;
+        return self::$urlArray;
     }
 
     /**
@@ -699,18 +632,6 @@ final class Route implements \Language
     public static function getParentNodeName(): ?string
     {
         return self::$parentNodeName;
-    }
-
-    /**
-     * Return the $nodeWorkingArray property.
-     *
-     * @param  null|string $key                     Specify which key will be returned.
-     *
-     * @return mixed
-     */
-    public static function getParentNodeParam(?string $key = null) // : mixed
-    {
-        return $key === null ? self::$parentNodeParam : self::$parentNodeParam[$key];
     }
 
     /**
@@ -734,36 +655,22 @@ final class Route implements \Language
     }
 
     /**
-     * Return the $childNodeParam property.
+     * Return the $dynamicNodes property.
      *
-     * @param  null|string $key                     Specify which key will be returned.
-     *
-     * @return mixed
+     * @return array
      */
-    public static function getChildNodeParam(?string $key = null) // : mixed
+    public static function getDynamicNodes(): array
     {
-        return $key === null ? self::$childNodeParam : self::$childNodeParam[$key];
+        return self::$dynamicNodes;
     }
 
     /**
-     * Return the $dynamicNodeValues property.
+     * Return specific dynamic node from $dynamicNodes property.
      *
-     * @return array|string
+     * @return string
      */
-    public static function getDynamicNodeValue(?string $key = null) // : array|string
+    public static function getDynamicNode(string $key): ?string
     {
-        return $key === null ? self::$dynamicNodeValues : self::$dynamicNodeValues[$key];
-    }
-
-    /**
-     * Return the $routeParam property.
-     *
-     * @param  null|string $key                     Specify which key will be returned.
-     *
-     * @return mixed
-     */
-    public static function getRouteParam(?string $key = null) // : mixed
-    {
-        return $key === null ? self::$routeParam : self::$routeParam[$key];
+        return self::$dynamicNodes[$key] ?? null;
     }
 }

@@ -173,7 +173,7 @@ abstract class Controller
 
             $this->controllerData = $this->$controllerMethod();
 
-            $requestMethod = Parameters::getRequestMethod();
+            $requestMethod = Parameters::getRequest();
             if ($requestMethod and !$this->stopControllerFlag) {
                 $this->requestMethodData = $this->$requestMethod();
             }
@@ -507,8 +507,44 @@ abstract class Controller
      *
      * @return string
      */
-    final public function getDynamicNodeValue(string $tag): string
+    final public function getUrlParameters(): array
     {
-        return Route::getDynamicNodeValue($tag);
+        return Parameters::getUrlParameters();
+    }
+
+    /**
+     * Returns the dynamic node value stored in the tag.
+     *
+     * @param  string $tag                          Tag name defined in the route configuration.
+     *
+     * @return string
+     */
+    final public function getUrlParameter(string $tag): ?string
+    {
+        return Parameters::getUrlParameter($tag) ?? null;
+    }
+
+    /**
+     * Returns the dynamic node value stored in the tag.
+     *
+     * @param  string $tag                          Tag name defined in the route configuration.
+     *
+     * @return string
+     */
+    final public function getDynamicNodes(): array
+    {
+        return Route::getDynamicNodes();
+    }
+
+    /**
+     * Returns the dynamic node value stored in the tag.
+     *
+     * @param  string $tag                          Tag name defined in the route configuration.
+     *
+     * @return string
+     */
+    final public function getDynamicNode(string $tag): ?string
+    {
+        return Route::getDynamicNode($tag) ?? null;
     }
 }
