@@ -196,7 +196,7 @@ final class PerformanceAnalysis
             $filename = 'path_' . ltrim($filename . '.log', '-');
 
             $file = new TypeString(self::LOG_DIRECTORY_PATH . $filename);
-            $file->createFile()->insertContent($flushedData, 'w+');
+            $file->createFile()->fileInsertContents($flushedData, 'w+');
 
             self::reset($label);
         }

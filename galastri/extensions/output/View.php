@@ -64,7 +64,7 @@ trait View
      */
     private static function viewCheckTemplateFile(): void
     {
-        if (empty($viewTemplateFile = self::$routeController->getViewTemplateFile())) {
+        if (empty($viewTemplateFile = self::$routeController->getTemplateFile())) {
             throw new Exception(self::UNDEFINED_TEMPLATE_FILE[1], self::UNDEFINED_TEMPLATE_FILE[0]);
         }
 
@@ -90,11 +90,11 @@ trait View
      */
     private static function viewDefineViewPath(): void
     {
-        if (empty($viewBaseFolder = self::$routeController->getViewBaseFolder())) {
+        if (empty($viewBaseFolder = self::$routeController->getBaseFolder())) {
             $viewBaseFolder = self::VIEW_BASE_FOLDER;
         }
 
-        if (empty($viewFilePath = self::$routeController->getViewFilePath())) {
+        if (empty($viewFilePath = self::$routeController->getViewPath())) {
             $controllerNamespace = implode(array_map(function ($a) {
                 return str_replace(['\Index', '\\'], ['/', '/'], $a);
             }, Route::getControllerNamespace()));
@@ -123,6 +123,7 @@ trait View
         if (self::$viewTemplateFile->fileNotExists()) {
             throw new Exception(self::TEMPLATE_FILE_NOT_FOUND[1], self::TEMPLATE_FILE_NOT_FOUND[0], [self::$viewTemplateFile->get()]);
         }
+
 
         if (self::$viewFilePath->fileNotExists()) {
             if (empty(self::$routeController->getViewFilePath())) {

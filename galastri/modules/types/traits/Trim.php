@@ -16,7 +16,7 @@ trait Trim
      *
      * @return self
      */
-    public function trim(string ...$charSet): self
+    public function trim(?string ...$charSet): self
     {
         $this->execHandleValue($this->execTrim($this->getValue(), $charSet));
         return $this;
@@ -30,7 +30,7 @@ trait Trim
      *
      * @return self
      */
-    public function trimStart(string ...$charSet): self
+    public function trimStart(?string ...$charSet): self
     {
         $this->execHandleValue($this->execTrimStart($this->getValue(), $charSet));
         return $this;
@@ -44,7 +44,7 @@ trait Trim
      *
      * @return self
      */
-    public function trimEnd(string ...$charSet): self
+    public function trimEnd(?string ...$charSet): self
     {
         $this->execHandleValue($this->execTrimEnd($this->getValue(), $charSet));
         return $this;
@@ -92,7 +92,7 @@ trait Trim
      *
      * @return string
      */
-    private function execTrim(string $string, array $charSet): string
+    private function execTrim(?string $string, array $charSet): string
     {
         $charSet = $this->prepareTrimCharSet($charSet);
         return ltrim(rtrim($string, $charSet), $charSet);
@@ -110,7 +110,7 @@ trait Trim
      *
      * @return string
      */
-    private function execTrimStart(string $string, array $charSet): string
+    private function execTrimStart(?string $string, array $charSet): string
     {
         $charSet = $this->prepareTrimCharSet($charSet);
         return ltrim($string, $charSet);
@@ -129,7 +129,7 @@ trait Trim
      *
      * @return string
      */
-    private function execTrimEnd(string $string, array $charSet): string
+    private function execTrimEnd(?string $string, array $charSet): string
     {
         $charSet = $this->prepareTrimCharSet($charSet);
         return rtrim($string, $charSet);

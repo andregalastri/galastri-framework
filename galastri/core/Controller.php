@@ -69,6 +69,8 @@ abstract class Controller
      */
     private bool $stopControllerFlag = false;
 
+    private ?array $fileContents = null;
+
     /**
      * Any route controller needs to have a main() method. This abstract method here makes it a
      * requirement that all child class need to declare.
@@ -315,26 +317,26 @@ abstract class Controller
     }
 
     /**
-     * Overwrites the actual value of viewFilePath parameter set in the route configuration.
+     * Overwrites the actual value of viewPath parameter set in the route configuration.
      *
-     * @param  null|string $viewFilePath            The new value that will overwrite the previous
+     * @param  null|string $viewPath            The new value that will overwrite the previous
      *                                              value.
      *
      * @return void
      */
-    final protected function setViewFilePath(?string $viewFilePath): void
+    final protected function setViewPath(?string $viewPath): void
     {
-        Parameters::setViewFilePath($viewFilePath);
+        Parameters::setViewPath($viewPath);
     }
 
     /**
-     * Returns the viewFilePath parameter value.
+     * Returns the viewPath parameter value.
      *
      * @return null|string
      */
-    final public function getViewFilePath(): ?string
+    final public function getViewPath(): ?string
     {
-        return Parameters::getViewFilePath();
+        return Parameters::getViewPath();
     }
 
     /**
@@ -448,56 +450,53 @@ abstract class Controller
      *
      * @return string
      */
-    final public function getOutput(): string
+    final public function getOutput(): ?string
     {
         return Parameters::getOutput();
     }
 
     /**
-     * Overwrites the actual value of viewFilePath parameter set in the project configuration or in
-     * the route configuration.
+     * setTemplateFile
      *
-     * @param  null|string $viewTemplateFile        The new value that will overwrite the previous
+     * @param  mixed $templateFile
+     * @return void
+     */
+    final protected function setTemplateFile(?string $templateFile): void
+    {
+        Parameters::setTemplateFile($templateFile);
+    }
+
+    /**
+     * getTemplateFile
+     *
+     * @return string
+     */
+    final public function getTemplateFile(): ?string
+    {
+        return Parameters::getTemplateFile();
+    }
+
+    /**
+     * Overwrites the actual value of baseFolder parameter set in the route configuration.
+     *
+     * @param  null|string $baseFolder          The new value that will overwrite the previous
      *                                              value.
      *
      * @return void
      */
-    final protected function setViewTemplateFile(?string $viewTemplateFile): void
+    final protected function setBaseFolder(?string $baseFolder): void
     {
-        Parameters::setViewTemplateFile($viewTemplateFile);
+        Parameters::setBaseFolder($baseFolder);
     }
 
     /**
-     * Returns the viewFilePath parameter value.
+     * Returns the baseFolder parameter value.
      *
      * @return null|string
      */
-    final public function getViewTemplateFile(): ?string
+    final public function getBaseFolder(): ?string
     {
-        return Parameters::getViewTemplateFile();
-    }
-
-    /**
-     * Overwrites the actual value of viewBaseFolder parameter set in the route configuration.
-     *
-     * @param  null|string $viewBaseFolder          The new value that will overwrite the previous
-     *                                              value.
-     *
-     * @return void
-     */
-    final protected function setViewBaseFolder(?string $viewBaseFolder): void
-    {
-        Parameters::setViewBaseFolder($viewBaseFolder);
-    }
-
-    /**
-     * Returns the viewBaseFolder parameter value.
-     *
-     * @return null|string
-     */
-    final public function getViewBaseFolder(): ?string
-    {
-        return Parameters::getViewBaseFolder();
+        return Parameters::getBaseFolder();
     }
 
     /**
@@ -546,5 +545,27 @@ abstract class Controller
     final public function getDynamicNode(string $tag): ?string
     {
         return Route::getDynamicNode($tag) ?? null;
+    }
+
+    /**
+     * setFileContents
+     *
+     * @param  mixed $fileContents
+     * @param  mixed $contantType
+     * @return void
+     */
+    final protected function setFileContents(string $fileContents, string $contantType, string $fileName): void
+    {
+        $this->fileContents = [$fileContents, $contantType, $fileName];
+    }
+
+    /**
+     * getFileContents
+     *
+     * @return array
+     */
+    final public function getFileContents(): ?array
+    {
+        return $this->fileContents;
     }
 }

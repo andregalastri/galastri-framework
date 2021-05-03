@@ -16,19 +16,26 @@ use \galastri\extensions\Exception;
  */
 trait File
 {
-    // /**
-    //  * Stores the path of the template file.
-    //  *
-    //  * @var string
-    //  */
-    // private static TypeString $viewTemplateFile;
+    /**
+     * Stores the path of the template file.
+     *
+     * @var string
+     */
+    private static ?array $fileData = null;
+
+    /**
+     * Stores the path of the template file.
+     *
+     * @var string
+     */
+    private static string $baseFolder;
 
     // /**
     //  * Stores the path of the view file or null if the view file doesn't exists.
     //  *
     //  * @var null|string
     //  */
-    // private static TypeString $viewFilePath;
+    private static TypeString $filePath;
 
     // /**
     //  * Main method that call the verification chain that checks if the template and view files exist
@@ -41,116 +48,157 @@ trait File
     {
         Debug::setBacklog();
 
-        // self::fileCheckTemplateFile();
-        // self::fileDefineViewPath();
-        // self::fileCheckFileExists();
+        self::fileSetFileData();
 
-        // self::fileRequireTemplate(
-        //     new ViewHelper(
-        //         self::$routeController->getResultData(),
-        //         self::$viewFilePath
-        //     ),
-        //     self::$viewTemplateFile
-        // );
+        if(Parameters::getDownloadable()){
+            self::fileDownload();
+        } else {
+            self::filePrintContent();
+        }
     }
 
-    // /**
-    //  * Checks if the template file path was set. If not, it will throw an exception. The template
-    //  * file is required for View output.
-    //  *
-    //  * If the template file is set, then it is stored.
-    //  *
-    //  * @return void
-    //  */
-    // private static function fileCheckTemplateFile(): void
-    // {
-    //     if (empty($viewTemplateFile = self::$routeController->getViewTemplateFile())) {
-    //         throw new Exception(self::UNDEFINED_TEMPLATE_FILE[1], self::UNDEFINED_TEMPLATE_FILE[0]);
-    //     }
+    /**
+     * fileSetDataFromController
+     *
+     * @return void
+     */
+    private static function fileSetFileData(): void
+    {
+        self::$fileData = self::$routeController ? self::$routeController->getFileContents() : null;
 
-    //     self::$viewTemplateFile = new TypeString($viewTemplateFile);
-    // }
+        if (self::$fileData === null) {
+            self::fileCheckBaseFolder();
+        }
+    }
 
-    // /**
-    //  * Checks if the view file path was set. The path is based on two parts:
-    //  *
-    //  * - viewBaseFolder: the base folder where the view files are stored.
-    //  * - viewFilePath: is the view file location inside the base folder.
-    //  *
-    //  * This method checks if the base folder is set in the configurations or by the controller. If
-    //  * it is, it is stored in the $viewBaseFolder variable. If it is not, the base folder will be
-    //  * the default '/app/views'.
-    //  *
-    //  * However, the route parameter 'viewFilePath' can be used in the route configuration. If this
-    //  * is set, everything is ignored and only the parameter value is set as view file path. If it
-    //  * isn't set, then it gets the namespace as base of the filepath and the child node name as file
-    //  * name.
-    //  *
-    //  * @return void
-    //  */
-    // private static function fileDefineViewPath(): void
-    // {
-    //     if (empty($viewBaseFolder = self::$routeController->getViewBaseFolder())) {
-    //         $viewBaseFolder = self::VIEW_BASE_FOLDER;
-    //     }
+    private static function fileDownload(): void
+    {
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="'.self::$fileData[2].'"');
+        header('Expires: 0');
+        header('Content-Length: '.mb_strlen(self::$fileData[0], '8bit'));
+        flush();
+        ob_start();
+        @print(self::$fileData[0]);
+        ob_end_flush;
+        flush();
+    }
 
-    //     if (empty($viewFilePath = self::$routeController->getViewFilePath())) {
-    //         $controllerNamespace = implode(array_map(function ($a) {
-    //             return str_replace(['\Index', '\\'], ['/', '/'], $a);
-    //         }, Route::getControllerNamespace()));
+    private static function filePrintContent(): void
+    {
+        if (null !== $browserCache = Parameters::getBrowserCache()) {
+            $etag = md5(substr(self::$fileData[0], 0, 1000).self::$fileData[2]);
 
-    //         $childNodeName = Route::getChildNodeName();
+            header('Last-Modified: '.gmdate('r', time()));
+            if (isset($browserCache[1])) {
+                header('Cache-Control: '.$browserCache[1]);
+            }
+            header('Expires: Tue, 01 Jul 1980 1:00:00 GMT');
+            header('Etag: '.$etag);
 
-    //         $viewFilePath = $controllerNamespace.'/'.$childNodeName.'.php';
-    //     } else {
-    //         $viewBaseFolder = '';
-    //     }
+            $cached = false;
+            if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])){
+                if(time() <= strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE'])+$browserCache[0]){
+                    $cached = true;
+                }
+            }
+            if(isset($_SERVER['HTTP_IF_NONE_MATCH'])){
+                if(str_replace('"', '', stripslashes($_SERVER['HTTP_IF_NONE_MATCH'])) != $etag){
+                    $cached = false;
+                }
+            }
+            if($cached){
+                header('HTTP/1.1 304 Not Modified');
+                exit();
+            }
+        }
 
+        header('Content-type: '.self::$fileData[1]);
+        @print(self::$fileData[0]);
+    }
 
-    //     self::$viewFilePath = new TypeString($viewBaseFolder.$viewFilePath);
+    /**
+     * fileSetDataFromController
+     *
+     * @return void
+     */
+    private static function fileCheckBaseFolder(): void
+    {
+        if (empty($baseFolder = Parameters::getBaseFolder())) {
+            throw new Exception(self::UNDEFINED_BASE_FOLDER[1], self::UNDEFINED_BASE_FOLDER[0]);
+        }
 
-    // }
+        self::$baseFolder = $baseFolder;
+        self::fileCheckFilePath();
+    }
 
-    // /**
-    //  * This method checks if the template and view file exists. The template file is required, so if
-    //  * it doesn't exist an exception is thrown. If the view doesn't exist, the method check if it
-    //  * was manually set. If true, then an exception is thrown, if false, the view file path will be
-    //  * just null.
-    //  *
-    //  * @return void
-    //  */
-    // private static function fileCheckFileExists(): void
-    // {
-    //     if (self::$viewTemplateFile->fileNotExists()) {
-    //         throw new Exception(self::TEMPLATE_FILE_NOT_FOUND[1], self::TEMPLATE_FILE_NOT_FOUND[0], [self::$viewTemplateFile->get()]);
-    //     }
+    /**
+     * fileSetDataFromController
+     *
+     * @return void
+     */
+    private static function fileCheckFilePath(): void
+    {
+        if (empty(Route::getUrlArray())) {
+            if (Parameters::getDisplayErrors()) {
+                throw new Exception(self::UNDEFINED_FILE_PATH[1], self::UNDEFINED_FILE_PATH[0]);
+            }
 
-    //     if (self::$viewFilePath->fileNotExists()) {
-    //         if (empty(self::$routeController->getViewFilePath())) {
-    //             self::$viewFilePath->setNull();
-    //         } else {
-    //             throw new Exception(self::VIEW_FILE_NOT_FOUND[1], self::VIEW_FILE_NOT_FOUND[0], [self::$viewFilePath->get()]);
-    //         }
-    //     }
-    // }
+            self::return404();
+        }
 
-    // /**
-    //  * This is the last part of the View output. It just import the template path. An important
-    //  * thing is the $galastri parameter. It is an object that will be used in the template file to
-    //  * get the data returned by the route controller.
-    //  *
-    //  * @param  ViewHelper $galastri                 Object of ViewHelper class, with many methods to
-    //  *                                              get and manipulate the data returned by the
-    //  *                                              route controller.
-    //  *
-    //  * @param  TypeString $templatePath             The path of the template file.
-    //  *
-    //  * @return void
-    //  */
-    // private static function fileRequireTemplate(ViewHelper $galastri, TypeString $templatePath): void
-    // {
-    //     require($templatePath->realPath()->get());
-    // }
+        self::fileCheckFileExtension();
+    }
+
+    /**
+     * fileSetDataFromController
+     *
+     * @return void
+     */
+    private static function fileCheckFileExtension(): void
+    {
+        $urlArray = Route::getUrlArray();
+
+        $fileKeyValue = $urlArray[array_key_last($urlArray)];
+        $allowedExtensions = Parameters::getAllowedExtensions();
+
+        $fileArray = explode('.', $fileKeyValue);
+
+        $fileName = $fileArray[0];
+        $fileExtension = mb_strtolower($fileArray[1]);
+
+        $filePath = '/'.implode('/', Route::getUrlArray());
+
+        if ($allowedExtensions !== null) {
+            $allowedExtensions = array_flip($allowedExtensions);
+
+            if (!isset($allowedExtensions[$fileExtension])) {
+                self::return404();
+            }
+        }
+
+        if (!isset(GALASTRI_CONTENT_TYPE[$fileExtension])) {
+            if (Parameters::getDisplayErrors()) {
+                throw new Exception(self::UNDEFINED_EXTENSION_CONTENT_TYPE[1], self::UNDEFINED_EXTENSION_CONTENT_TYPE[0], [$fileExtension]);
+            }
+
+            self::return404();
+        }
+
+        self::$filePath = new TypeString (self::$baseFolder.$filePath);
+
+        self::fileCheckFileExists($fileName, $fileExtension);
+    }
+
+    private static function fileCheckFileExists($fileName, $fileExtension): void
+    {
+        if (self::$filePath->fileNotExists()) {
+            self::return404();
+        }
+
+        self::$fileData = [self::$filePath->fileGetContents(), GALASTRI_CONTENT_TYPE[$fileExtension], $fileName.'.'.$fileExtension];
+    }
 
     private static function fileRequiresController(): bool
     {

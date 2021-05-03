@@ -16,12 +16,24 @@ interface English
     /**
      * Constants used in \galastri\core\Galastri.
      */
+    const INVALID_OFFLINE_MESSAGE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'offlineMessage' need to be 'string'."
+    ];
+
     const DEFAULT_OFFLINE_MESSAGE = [
         'G0000', "This area is currently offline. Please, try again later."
     ];
 
+    const INVALID_AUTH_FAIL_MESSAGE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'authFailMessage' need to be 'string'."
+    ];
+
     const DEFAULT_AUTH_FAIL_MESSAGE = [
         'G0025', "You aren't authorized to access this area."
+    ];
+
+    const INVALID_PERMISSION_FAIL_MESSAGE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'permissionFailMessage' need to be 'string'."
     ];
 
     const DEFAULT_PERMISSION_FAIL_MESSAGE = [
@@ -30,7 +42,7 @@ interface English
 
 
     const ERROR_404 = [
-        'G0003', "Error 404: The requested route was not found."
+        'G0003', "Error 404: The requested route or file was not found."
     ];
 
     const CONTROLLER_NOT_FOUND = [
@@ -43,10 +55,6 @@ interface English
 
     const CONTROLLER_METHOD_NOT_FOUND = [
         'G0006', "Controller '%s' doesn't have the requested method '@%s'."
-    ];
-
-    const VALIDATION_ERROR = [
-        'G0007', "The validation '%s' was returned as invalid. The execution cannot proceed."
     ];
 
     /**
@@ -71,10 +79,22 @@ interface English
         'G0011', "Key '%s' doesn't exist in the data returned by controller."
     ];
 
+    const VIEW_UNDEFINED_DATA_KEY = [
+        'G0011', "Undefined data key to print."
+    ];
+
+    const VIEW_INVALID_PRINT_DATA = [
+        'G0011', "Data cannot be of type 'array' of 'object'. Use 'data' method for these types of values."
+    ];
+
     /**
      * Constants used in \galastri\modules\types\traits\FilePath.
      */
     const EMPTY_FILE_PATH = [
+        'G0012', "The path parameter is empty in method '%s'"
+    ];
+
+    const EMPTY_DIRECTORY_PATH = [
         'G0012', "The path parameter is empty in method '%s'"
     ];
 
@@ -92,8 +112,20 @@ interface English
         'G0015', "No template file set to this route. Set a default template in project or route configuration."
     ];
 
+    const UNDEFINED_BASE_FOLDER = [
+        'G0015', "No base folder set to this file output. Set a 'fileBaseFolder' parameter that points to the directory where the files are stored."
+    ];
+
     const TEMPLATE_FILE_NOT_FOUND = [
         'G0016', "Template file '%s' not found."
+    ];
+
+    const UNDEFINED_EXTENSION_CONTENT_TYPE = [
+        'G0016', "Undefined '%s' extension. Define it in the file extension configuration, setting the extension and its content type."
+    ];
+
+    const UNDEFINED_FILE_PATH = [
+        'G0016', "Undefined file path."
     ];
 
     const VIEW_FILE_NOT_FOUND = [
@@ -202,10 +234,6 @@ interface English
         'G0026', "Undefined route parameter 'offline'. Set it in the project or route configuration files."
     ];
 
-    const INVALID_OFFLINE_MESSAGE_TYPE = [
-        'G0026', "Wrong value type. Type of route parameter 'offlineMessage' need to be 'string'."
-    ];
-
     const INVALID_FORCE_REDIRECT_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'forceRedirect' need to be 'string' or 'null'."
     ];
@@ -220,6 +248,18 @@ interface English
 
     const INVALID_NOT_FOUND_REDIRECT_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'notFoundRedirect' need to be 'string' or 'null'."
+    ];
+
+    const INVALID_BROWSER_CACHE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'browserCache' need to be 'array' or 'null'."
+    ];
+
+    const INVALID_BROWSER_CACHE_TIME_TYPE = [
+        'G0026', "Wrong value type. The first key of route parameter 'browserCache' represents the cache time and need to be 'integer'."
+    ];
+
+    const INVALID_BROWSER_CACHE_HEADER_TYPE = [
+        'G0026', "Wrong value type. The second key of route parameter 'browserCache' represents the Cache-Control headers and need to be 'string'."
     ];
 
     const INVALID_CONTROLLER_TYPE = [
@@ -238,7 +278,7 @@ interface English
         'G0026', "Wrong value type. Type of route parameter 'pageTitle' need to be 'string' or 'null'."
     ];
 
-    const INVALID_AUTH_TAGE_TYPE = [
+    const INVALID_AUTH_TAG_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'authTag' need to be 'string' or 'null'."
     ];
 
@@ -246,24 +286,28 @@ interface English
         'G0026', "Wrong value type. Type of route parameter 'authFailRedirect' need to be 'string' or 'null'."
     ];
 
-    const INVALID_VIEW_TEMPLATE_FILE_TYPE = [
-        'G0026', "Wrong value type. Type of route parameter 'viewTemplateFile' need to be 'string' or 'null'."
+    const INVALID_TEMPLATE_FILE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'templateFile' need to be 'string' or 'null'."
     ];
 
-    const INVALID_VIEW_BASE_FOLDER_TYPE = [
-        'G0026', "Wrong value type. Type of route parameter 'viewBaseFolder' need to be 'string' or 'null'."
+    const INVALID_BASE_FOLDER_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'baseFolder' need to be 'string' or 'null'."
     ];
 
-    const INVALID_FILE_DOWNLOADABLE_TYPE = [
-        'G0026', "Wrong value type. Type of route parameter 'fileDownloadable' need to be 'bool' or 'null'."
+    const INVALID_DOWNLOADABLE_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'downloadable' need to be 'bool' or 'null'."
     ];
 
-    const INVALID_FILE_BASE_FOLDER_TYPE = [
-        'G0026', "Wrong value type. Type of route parameter 'fileBaseFolder' need to be 'string' or 'null'."
+    const INVALID_ALLOWED_EXTENSIONS_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'allowedExtensions' need to be 'array' or 'null'."
     ];
 
-    const INVALID_VIEW_FILE_PATH_TYPE = [
-        'G0026', "Wrong value type. Type of route parameter 'viewFilePath' need to be 'string' or 'null'."
+    const INVALID_ALLOWED_EXTENSION_VALUE_TYPE = [
+        'G0026', "Wrong value type. The values of route parameter 'allowedExtensions' need to be 'string'."
+    ];
+
+    const INVALID_VIEW_PATH_TYPE = [
+        'G0026', "Wrong value type. Type of route parameter 'viewPath' need to be 'string' or 'null'."
     ];
 
     const INVALID_URL_ROOT_TYPE = [

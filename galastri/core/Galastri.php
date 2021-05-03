@@ -30,15 +30,9 @@ final class Galastri implements \Language
     const CORE_CONTROLLER = '\galastri\Core\Controller';
 
     private static string $routeControllerName;
-    private static Controller $routeController;
+    private static ?Controller $routeController = null;
 
-    private static bool $checkedOffline = false;
-    private static bool $checkedForceRedirect = false;
-    private static bool $checkedRouteExists = true;
-    private static bool $checkedOutputIsSet = false;
-    private static bool $checkedController = false;
-    private static bool $checkedControllerExtendsCore = false;
-    private static bool $checkedControllerMethod = false;
+    private static bool $controllerIsRequired = true;
 
     /**
      * This is a singleton class, so, the __construct() method is private to avoid user to
@@ -67,9 +61,7 @@ final class Galastri implements \Language
             self::checkOffline();
             self::checkForceRedirect();
             self::checkRouteExists();
-            self::checkOutputIsSet();
             self::checkController();
-            self::callOutput();
         } catch (Exception $e) {
             Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
         } finally {
@@ -91,8 +83,6 @@ final class Galastri implements \Language
             throw new Exception(Parameters::getOfflineMessage(), self::DEFAULT_OFFLINE_MESSAGE[0]);
         }
 
-        self::$checkedOffline = true;
-
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
@@ -110,7 +100,6 @@ final class Galastri implements \Language
             Redirect::bypassUrlRoot()::to($forceRedirect);
         }
 
-        self::$checkedForceRedirect = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
@@ -131,48 +120,17 @@ final class Galastri implements \Language
             Route::getChildNodeName() === null or
             Route::getChildNodeName() === null
         ) {
-            self::$checkedRouteExists = false;
+            self::return404();
         } else {
             $urlParameters = [];
             foreach(Parameters::getUrlParameters() as $tagName => $tagValue) {
                 if (strpos($tagName, '?') === false and $tagValue === null) {
-                    self::$checkedRouteExists = false;
-                    break;
-                } else {
-                    $urlParameters[ltrim($tagName, '?')] = $tagValue;
+                    self::return404();
                 }
             }
             Parameters::setUrlParameters($urlParameters);
         }
 
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-    }
-
-
-    /**
-     * Checks if the resolved route has the route parameter 'output' set properly. If not, an
-     * exception is thrown.
-     *
-     * @return void
-     */
-    private static function checkOutputIsSet(): void
-    {
-        Debug::setBacklog();
-
-        if (self::$checkedRouteExists) {
-            if (Parameters::getOutput() === null) {
-                throw new Exception(self::UNDEFINED_OUTPUT[1], self::UNDEFINED_OUTPUT[0]);
-            }
-        } else {
-            if (Parameters::getNotFoundRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text') {
-                throw new Exception(self::ERROR_404[1], self::ERROR_404[0]);
-            } else {
-                PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-                Redirect::to(Parameters::getNotFoundRedirect());
-            }
-        }
-
-        self::$checkedOutputIsSet = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
@@ -200,7 +158,7 @@ final class Galastri implements \Language
         Debug::setBacklog();
 
         $controllerNamespace = Route::getControllerNamespace();
-        $controllerIsRequired = self::{Parameters::getOutput().'RequiresController'}();
+
 
         if ($nodeController = Parameters::getController()) {
             $routeController = $nodeController;
@@ -209,23 +167,26 @@ final class Galastri implements \Language
             $routeController = $baseNodeNamespace . implode($controllerNamespace);
         }
 
-        if (class_exists($routeController) === false) {
-            $workingController = explode('\\', $routeController);
+        if (class_exists($routeController) !== false) {
+            self::$routeControllerName = $routeController;
 
-            $notFoundClass = str_replace('\\', '', array_pop($workingController));
-            $notFoundNamespace = implode('/', $workingController);
+            PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
 
-            throw new Exception(self::CONTROLLER_NOT_FOUND[1], self::CONTROLLER_NOT_FOUND[0], [$routeController, $notFoundClass, $notFoundNamespace]);
+            self::checkControllerExtendsCore();
+        } else {
+            if (Parameters::getOutput() !== null) {
+                self::$controllerIsRequired = self::{Parameters::getOutput().'RequiresController'}();
+                self::checkOutputIsSet();
+            } else {
+                $workingController = explode('\\', $routeController);
+
+                $notFoundClass = str_replace('\\', '', array_pop($workingController));
+                $notFoundNamespace = implode('/', $workingController);
+
+                throw new Exception(self::CONTROLLER_NOT_FOUND[1], self::CONTROLLER_NOT_FOUND[0], [$routeController, $notFoundClass, $notFoundNamespace]);
+            }
         }
-
-        self::$routeControllerName = $routeController;
-
-        self::$checkedController = true;
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-
-        self::checkControllerExtendsCore();
     }
-
 
     /**
      * Checks if the route controller extends the core controller, which is required. If it isn't,
@@ -241,7 +202,6 @@ final class Galastri implements \Language
             throw new Exception(self::CONTROLLER_DOESNT_EXTENDS_CORE[1], self::CONTROLLER_DOESNT_EXTENDS_CORE[0], [self::$routeControllerName]);
         }
 
-        self::$checkedControllerExtendsCore = true;
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
 
         self::checkControllerMethod();
@@ -263,20 +223,23 @@ final class Galastri implements \Language
         $method = Route::getChildNodeName();
         $request = Parameters::getRequest();
 
-        if (method_exists(self::$routeControllerName, $method) === false) {
-            throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $method]);
-        }
+        if (method_exists(self::$routeControllerName, $method)) {
+            if (!empty($request)) {
+                if (!method_exists(self::$routeControllerName, $request)){
+                    throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $request]);
+                }
+            }
 
-        if (!empty($request)) {
-            if (!method_exists(self::$routeControllerName, $request)){
-                throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $request]);
+            PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+
+            self::callController();
+        } else {
+            if (self::$controllerIsRequired) {
+                throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $method]);
+            } else {
+                self::checkOutputIsSet();
             }
         }
-
-        self::$checkedControllerMethod = true;
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-
-        self::callController();
     }
 
     /**
@@ -289,49 +252,64 @@ final class Galastri implements \Language
     {
         Debug::setBacklog();
 
-        $error = (function () {
-            if (!self::$checkedOffline) {
-                return 'checkedOffline';
-            }
-            if (!self::$checkedForceRedirect) {
-                return 'checkedForceRedirect';
-            }
-            if (!self::$checkedRouteExists) {
-                return 'checkedRouteExists';
-            }
-            if (!self::$checkedOutputIsSet) {
-                return 'checkedOutputIsSet';
-            }
-            if (!self::$checkedController) {
-                return 'checkedController';
-            }
-            if (!self::$checkedControllerExtendsCore) {
-                return 'checkedControllerExtendsCore';
-            }
-            if (!self::$checkedControllerMethod) {
-                return 'checkedControllerMethod';
-            }
-
-            return false;
-        })();
-
-        if ($error) {
-            throw new Exception(self::VALIDATION_ERROR[1], self::VALIDATION_ERROR[0], [$error]);
-        }
-
         self::$routeController = new self::$routeControllerName();
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+
+        self::checkOutputIsSet();
     }
 
+
+    /**
+     * Checks if the resolved route has the route parameter 'output' set properly. If not, an
+     * exception is thrown.
+     *
+     * @return void
+     */
+    private static function checkOutputIsSet(): void
+    {
+        Debug::setBacklog();
+
+        if (Parameters::getOutput() === null) {
+            throw new Exception(self::UNDEFINED_OUTPUT[1], self::UNDEFINED_OUTPUT[0]);
+        }
+
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+
+        self::callOutput();
+    }
+
+    /**
+     * callOutput
+     *
+     * @return void
+     */
     private static function callOutput(): void
     {
         Debug::setBacklog();
 
-        $output = self::$routeController->getOutput();
+        $output = Parameters::getOutput();
 
         self::$output();
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+    }
+
+    /**
+     * return404
+     *
+     * @return void
+     */
+    private function return404()
+    {
+        Debug::setBacklog()::bypassGenericMessage();
+
+        if (Parameters::getNotFoundRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text') {
+            header("HTTP/1.0 404 Not Found");
+            throw new Exception(self::ERROR_404[1], self::ERROR_404[0]);
+        } else {
+            PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+            Redirect::to(Parameters::getNotFoundRedirect());
+        }
     }
 }

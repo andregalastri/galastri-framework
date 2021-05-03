@@ -124,13 +124,13 @@ final class Route implements \Language
     /**
      * Stores child nodes specific parameters.
      *
-     * @key bool fileDownloadable                   Works only with File output. Defines if the
+     * @key bool downloadable                       Works only with File output. Defines if the
      *                                              file is downloadable.
      *
-     * @key null|string fileBaseFolder              Works only with File output. Defines a custom
-     *                                              folder where the file is located.
+     * @key array|null allowedExtensions            Works only with File output. Defines the allowed
+     *                                              extensions that can be be accessed.
      *
-     * @key null|string viewFilePath                Works only with View output. Defines a custom
+     * @key null|string viewPath                    Works only with View output. Defines a custom
      *                                              view file instead the default.
      *
      * @key array|null|string request               Points to an internal method that will be called
@@ -146,9 +146,9 @@ final class Route implements \Language
      * @var array
      */
     private static array $childParameters = [
-        'fileDownloadable' => false,
-        'fileBaseFolder' => null,
-        'viewFilePath' => null,
+        'downloadable' => false,
+        'allowedExtensions' => null,
+        'viewPath' => null,
         'request' => null,
         'parameters' => null,
     ];
@@ -186,6 +186,36 @@ final class Route implements \Language
         self::validateAndStoreParameters();
 
         unset($GLOBALS['GALASTRI_PROJECT']);
+    }
+
+    private static function validateAndStoreParameters(): void
+    {
+        Parameters::setTimezone($GLOBALS['GALASTRI_PROJECT']['timezone'] ?? null);
+        Parameters::setController(self::$parentParameters['controller']);
+
+        Parameters::setOffline(self::$routeParameters['offline']);
+        Parameters::setProjectTitle(self::$routeParameters['projectTitle']);
+        Parameters::setPageTitle(self::$routeParameters['pageTitle']);
+        Parameters::setAuthTag(self::$routeParameters['authTag']);
+        Parameters::setAuthFailRedirect(self::$routeParameters['authFailRedirect']);
+        Parameters::setForceRedirect(self::$routeParameters['forceRedirect']);
+        Parameters::setNamespace(self::$routeParameters['namespace']);
+        Parameters::setNotFoundRedirect(self::$routeParameters['notFoundRedirect']);
+        Parameters::setOutput(self::$routeParameters['output']);
+        Parameters::setBrowserCache(self::$routeParameters['browserCache']);
+        Parameters::setTemplateFile(self::$routeParameters['templateFile']);
+        Parameters::setBaseFolder(self::$routeParameters['baseFolder']);
+        Parameters::setOfflineMessage(self::$routeParameters['offlineMessage']);
+        Parameters::setAuthFailMessage(self::$routeParameters['authFailMessage']);
+        Parameters::setPermissionFailMessage(self::$routeParameters['permissionFailMessage']);
+
+        Parameters::setDownloadable(self::$childParameters['downloadable']);
+        Parameters::setAllowedExtensions(self::$childParameters['allowedExtensions']);
+        Parameters::setViewPath(self::$childParameters['viewPath']);
+        Parameters::setRequest(self::$childParameters['request']);
+        Parameters::setUrlParameters(self::$childParameters['parameters']);
+
+        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
     /**
@@ -230,11 +260,11 @@ final class Route implements \Language
      *                                              returns a HTML; - Json: returns data in json
      *                                              format; - Text: returns data in plain text.
      *
-     * @key null|int browserCache                   Defines a cache time to the node and its
-     *                                              children (in seconds). When null, the node won't
-     *                                              be cached.
+     * @key null|array browserCache                 Defines cache control headers for browsers to
+     *                                              the node and its children. When null, these
+     *                                              headers won't be defined.
      *
-     * @key null|string viewTemplateFile            Works only with View output. Defines the
+     * @key null|string templateFile                Works only with View output. Defines the
      *                                              template base file where the view will be
      *                                              printed. This template base file can have
      *                                              template parts, defined in the parameter
@@ -242,49 +272,17 @@ final class Route implements \Language
      *                                              other parts that can be imported inside the base
      *                                              template.
      *
-     * @key null|string viewBaseFolder              Works only with View output. Defines a custom
-     *                                              folder where views are located.
+     * @key null|string baseFolder                  Defines a custom folder for View and File output
+     *                                              file location.
      *
-     * @key array offlineMessage                    Defines a custom offline message to the node and
+     * @key string offlineMessage                   Defines a custom offline message to the node and
      *                                              its children.
      *
-     * @key array authFailMessage                   Defines a custom authentication fail message to
+     * @key string authFailMessage                  Defines a custom authentication fail message to
      *                                              the node and its children.
      *
-     * @key array permissionFailMessage             Defines a custom permission access restriction
+     * @key string permissionFailMessage            Defines a custom permission access restriction
      *                                              message to the node and its children.
-     *
-     * @return void
-     */
-    private static function validateAndStoreParameters(): void
-    {
-        Parameters::setTimezone($GLOBALS['GALASTRI_PROJECT']['timezone'] ?? null);
-        Parameters::setController(self::$parentParameters['controller']);
-
-        Parameters::setOffline(self::$routeParameters['offline']);
-        Parameters::setOfflineMessage(self::$routeParameters['offlineMessage']);
-        Parameters::setForceRedirect(self::$routeParameters['forceRedirect']);
-        Parameters::setOutput(self::$routeParameters['output']);
-        Parameters::setNotFoundRedirect(self::$routeParameters['notFoundRedirect']);
-        Parameters::setNamespace(self::$routeParameters['namespace']);
-        Parameters::setProjectTitle(self::$routeParameters['projectTitle']);
-        Parameters::setPageTitle(self::$routeParameters['pageTitle']);
-        Parameters::setAuthTag(self::$routeParameters['authTag']);
-        Parameters::setAuthFailRedirect(self::$routeParameters['authFailRedirect']);
-        Parameters::setViewTemplateFile(self::$routeParameters['viewTemplateFile']);
-        Parameters::setViewBaseFolder(self::$routeParameters['viewBaseFolder']);
-
-        Parameters::setFileDownloadable(self::$childParameters['fileDownloadable']);
-        Parameters::setFileBaseFolder(self::$childParameters['fileBaseFolder']);
-        Parameters::setViewFilePath(self::$childParameters['viewFilePath']);
-        Parameters::setRequest(self::$childParameters['request']);
-        Parameters::setUrlParameters(self::$childParameters['parameters']);
-
-        PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
-    }
-
-    /**
-     * setup
      *
      * @return void
      */
@@ -301,8 +299,8 @@ final class Route implements \Language
             'notFoundRedirect' => $GLOBALS['GALASTRI_PROJECT']['notFoundRedirect'] ?? null,
             'output' => null,
             'browserCache' => null,
-            'viewTemplateFile' => $GLOBALS['GALASTRI_PROJECT']['viewTemplateFile'] ?? null,
-            'viewBaseFolder' => null,
+            'templateFile' => $GLOBALS['GALASTRI_PROJECT']['templateFile'] ?? null,
+            'baseFolder' => null,
             'offlineMessage' => $GLOBALS['GALASTRI_PROJECT']['offlineMessage'] ?? null,
             'authFailMessage' => $GLOBALS['GALASTRI_PROJECT']['authFailMessage'] ?? null,
             'permissionFailMessage' => $GLOBALS['GALASTRI_PROJECT']['permissionFailMessage'] ?? null,
@@ -560,6 +558,7 @@ final class Route implements \Language
         }
 
         self::resolveChildParameters($childParameterValue);
+        self::resolveRouteParameters($childParameterValue);
         self::resolveUrlParameters();
         self::resolveRequestMethod();
     }

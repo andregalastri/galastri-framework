@@ -71,6 +71,34 @@ trait FilePath
     }
 
     /**
+     * directoryExists
+     *
+     * @param null|string $path
+     *
+     * @return bool
+     */
+    public function directoryExists(): bool
+    {
+        if ($this->isEmpty()) {
+            throw new Exception(self::EMPTY_FILE_PATH[1], self::EMPTY_FILE_PATH[0], __METHOD__);
+        }
+
+        return is_dir($this->realPath()->get());
+    }
+
+    /**
+     * directoryNotExists
+     *
+     * @param null|string $path
+     *
+     * @return bool
+     */
+    public function directoryNotExists(): bool
+    {
+        return !$this->directoryExists();
+    }
+
+    /**
      * Creates a file and all the directory path, if the file will be stored inside a path that
      * doesn't exist.
      *
@@ -104,7 +132,7 @@ trait FilePath
      *
      * @return self
      */
-    public function insertContent(string $string, string $method = 'a'): self
+    public function fileInsertContents(string $string, string $method = 'a'): self
     {
         $filePath = $this->realPath()->get();
 
@@ -113,5 +141,15 @@ trait FilePath
         fclose($fileOpen);
 
         return $this;
+    }
+
+    /**
+     * Gets the content from a file.
+     *
+     * @return mixed
+     */
+    public function fileGetContents()
+    {
+        return file_get_contents($this->realPath()->get());
     }
 }

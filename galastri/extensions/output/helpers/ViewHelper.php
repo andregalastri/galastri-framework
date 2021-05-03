@@ -45,6 +45,39 @@ final class ViewHelper implements \Language
         $this->viewFilePath = $viewFilePath;
     }
 
+    public function data(/*int|string*/ ...$keys)// : mixed
+    {
+        Debug::setBacklog();
+
+        $routeControllerData = $this->routeControllerData;
+
+        if (empty($keys)) {
+            return $routeControllerData;
+        }
+
+        return $this->execData(...$keys);
+    }
+
+    public function print(/*int|string*/ ...$keys)// : mixed
+    {
+        Debug::setBacklog();
+
+        if (empty($keys)) {
+            throw new Exception(self::VIEW_UNDEFINED_DATA_KEY[1], self::VIEW_UNDEFINED_DATA_KEY[0]);
+        }
+
+        $data = $this->execData(...$keys);
+
+        switch (gettype($data)) {
+            case 'array':
+            case 'object':
+                throw new Exception(self::VIEW_INVALID_PRINT_DATA[1], self::VIEW_INVALID_PRINT_DATA[0]);
+        }
+
+        echo htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+
+    }
+
     /**
      * This method gets the data returned by the route controller. It can return all the data or
      * specific keys. If the key doesn't exist, an exception is thrown.
@@ -74,49 +107,55 @@ final class ViewHelper implements \Language
      *
      * @return mixed
      */
-    public function data(/*int|string*/ ...$keys)// : mixed
-    {
-        Debug::setBacklog();
+    private function execData(/*int|string*/ ...$keys)// : mixed
+        {
+            $routeControllerData = $this->routeControllerData;
 
-        $routeControllerData = $this->routeControllerData;
+            if (empty($keys)) {
+                return $routeControllerData;
+            }
 
-        if (empty($keys)) {
+            foreach ($keys as $value) {
+                if (isset($routeControllerData[$value])) {
+                    $routeControllerData = $routeControllerData[$value];
+                } else {
+                    throw new Exception(self::VIEW_INVALID_DATA_KEY[1], self::VIEW_INVALID_DATA_KEY[0], [$value]);
+                }
+            }
+
             return $routeControllerData;
         }
 
-        foreach ($keys as $value) {
-            if (isset($routeControllerData[$value])) {
-                $routeControllerData = $routeControllerData[$value];
-            } else {
-                throw new Exception(self::VIEW_INVALID_DATA_KEY[1], self::VIEW_INVALID_DATA_KEY[0], [$value]);
-            }
-        }
 
-        return $routeControllerData;
-    }
 
     /**
      * Import an PHP file to the template of view file keeping the $galastri object usable inside
      * that file. When the value is 'view' it will automatically import the view set in the View
      * output.
      *
-     * @param  null|string $path                    Path of the file that will be imported. If the
+     * @param  string $path                         Path of the file that will be imported. If the
      *                                              value is 'view', it will get the view file set
      *                                              in the View output.
      *
      * @return bool
      */
-    public function import(?string $path): ?bool
+    public function import(string $path): ?bool
     {
         Debug::setBacklog();
 
         $galastri = $this;
 
         if ($path === 'view' and $this->viewFilePath->isNotNull()) {
-            return require($this->viewFilePath->realPath()->get());
+            if ($this->viewFilePath->fileExists()) {
+                return require($this->viewFilePath->realPath()->get());
+            }
         } else {
             $path = new TypeString($path);
-            return include($path->realPath()->get());
+            if ($path->fileExists()) {
+                return include($path->realPath()->get());
+            }
         }
+
+        return null;
     }
 }

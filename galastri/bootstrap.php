@@ -89,6 +89,7 @@ try {
      *   will work based on the URL.
      */
     define('GALASTRI_URL_TAGS', require(GALASTRI_PROJECT_DIR.'/app/config/url-tags.php'));
+    define('GALASTRI_CONTENT_TYPE', require(GALASTRI_PROJECT_DIR.'/app/config/content-type.php'));
     define('GALASTRI_VERSION', file_get_contents(GALASTRI_PROJECT_DIR.'/galastri/VERSION'));
 
     PerformanceAnalysis::begin(PERFORMANCE_ANALYSIS_LABEL, Parameters::getPerformanceAnalysis());

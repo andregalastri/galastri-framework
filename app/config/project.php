@@ -53,7 +53,7 @@ return [
      *
      * @key title array
      */
-    'viewTemplateFile' => '/app/templates/main.php',
+    'templateFile' => '/app/templates/main.php',
 
     'offline' => false,
 
