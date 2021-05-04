@@ -126,7 +126,7 @@ trait View
 
 
         if (self::$viewFilePath->fileNotExists()) {
-            if (empty(self::$routeController->getViewFilePath())) {
+            if (empty(self::$routeController->getViewPath())) {
                 self::$viewFilePath->setNull();
             } else {
                 throw new Exception(self::VIEW_FILE_NOT_FOUND[1], self::VIEW_FILE_NOT_FOUND[0], [self::$viewFilePath->get()]);
