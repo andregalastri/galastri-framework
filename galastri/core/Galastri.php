@@ -11,6 +11,7 @@ use galastri\extensions\output\Json;
 use galastri\extensions\output\Text;
 use galastri\extensions\output\File;
 use galastri\modules\Redirect;
+use galastri\modules\Authentication;
 use galastri\modules\PerformanceAnalysis;
 
 /**
@@ -61,6 +62,7 @@ final class Galastri implements \Language
             self::checkOffline();
             self::checkForceRedirect();
             self::checkRouteExists();
+            self::checkAuthentication();
             self::checkController();
         } catch (Exception $e) {
             Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
@@ -123,18 +125,33 @@ final class Galastri implements \Language
             self::return404();
         } else {
             $urlParameters = [];
+
             foreach(Parameters::getUrlParameters() as $tagName => $tagValue) {
                 if (strpos($tagName, '?') === false and $tagValue === null) {
                     self::return404();
                 }
+
+                $urlParameters[ltrim($tagName, '?')] = $tagValue;
             }
+
             Parameters::setUrlParameters($urlParameters);
+
+            if (!empty(Route::getUrlArray())) {
+                self::return404();
+            }
         }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
-
+    private static function checkAuthentication(): void
+    {
+        if ($authTag = Parameters::getAuthTag()) {
+            if (Authentication::validate($authTag) === false) {
+                self::returnAuthFail();
+            }
+        }
+    }
     /**
      * Checks if there is a class to be called, based on the resolved URL nodes in
      * \galastri\Core\Route.
@@ -176,15 +193,19 @@ final class Galastri implements \Language
         } else {
             if (Parameters::getOutput() !== null) {
                 self::$controllerIsRequired = self::{Parameters::getOutput().'RequiresController'}();
-                self::checkOutputIsSet();
-            } else {
-                $workingController = explode('\\', $routeController);
 
-                $notFoundClass = str_replace('\\', '', array_pop($workingController));
-                $notFoundNamespace = implode('/', $workingController);
-
-                throw new Exception(self::CONTROLLER_NOT_FOUND[1], self::CONTROLLER_NOT_FOUND[0], [$routeController, $notFoundClass, $notFoundNamespace]);
+                if (self::$controllerIsRequired === false) {
+                    self::checkOutputIsSet();
+                    return;
+                }
             }
+
+            $workingController = explode('\\', $routeController);
+
+            $notFoundClass = str_replace('\\', '', array_pop($workingController));
+            $notFoundNamespace = implode('/', $workingController);
+
+            throw new Exception(self::CONTROLLER_NOT_FOUND[1], self::CONTROLLER_NOT_FOUND[0], [$routeController, $notFoundClass, $notFoundNamespace]);
         }
     }
 
@@ -310,6 +331,23 @@ final class Galastri implements \Language
         } else {
             PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
             Redirect::to(Parameters::getNotFoundRedirect());
+        }
+    }
+
+    /**
+     * returnAuthFail
+     *
+     * @return void
+     */
+    private function returnAuthFail()
+    {
+        Debug::setBacklog()::bypassGenericMessage();
+
+        if (Parameters::getAuthFailRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text') {
+            throw new Exception(Parameters::getAuthFailMessage(), self::DEFAULT_AUTH_FAIL_MESSAGE[0]);
+        } else {
+            PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
+            Redirect::to(Parameters::getAuthFailRedirect());
         }
     }
 }
