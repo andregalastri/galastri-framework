@@ -27,10 +27,9 @@ trait RestrictLists
      */
     public function restrictList(array $allowedValues): self
     {
-        $allowedValues = new TypeArray($allowedValues);
-        $allowedValues->flatten()->set();
+        $allowedValues = (new TypeArray($allowedValues))->flatten()->get();
 
-        if ($allowedValues->isEmpty()) {
+        if (empty($allowedValues)) {
             throw new Exception(
                 self::VALIDATION_UNDEFINED_VALUES_ALLOWED_LIST[1],
                 self::VALIDATION_UNDEFINED_VALUES_ALLOWED_LIST[0],
@@ -39,13 +38,13 @@ trait RestrictLists
 
         $this->chain[] = function () use ($allowedValues) {
             $resolveValues = function () use ($allowedValues) {
-                foreach ($allowedValues->get() as $allowedValue) {
+                foreach ($allowedValues as $allowedValue) {
                     $data[] = $allowedValue.'('.str_replace(['double'], ['float'], $allowedValue).')';
                 }
                 return implode(', ', $data);
             };
 
-            foreach ($allowedValues->get() as $allowedValue) {
+            foreach ($allowedValues as $allowedValue) {
                 if ($allowedValue === $this->value) {
                     return;
                 }
@@ -79,10 +78,9 @@ trait RestrictLists
      */
     public function denyValues(array $deniedValues): self
     {
-        $deniedValues = new TypeArray($deniedValues);
-        $deniedValues->flatten()->set();
+        $deniedValues = (new TypeArray($deniedValues))->flatten()->get();
 
-        if ($deniedValues->isEmpty()) {
+        if (empty($deniedValues)) {
             throw new Exception(
                 self::VALIDATION_UNDEFINED_VALUES_DENIED_LIST[1],
                 self::VALIDATION_UNDEFINED_VALUES_DENIED_LIST[0],
@@ -91,13 +89,13 @@ trait RestrictLists
 
         $this->chain[] = function () use ($deniedValues) {
             $resolveValues = function () use ($deniedValues) {
-                foreach ($deniedValues->get() as $deniedValue) {
+                foreach ($deniedValues as $deniedValue) {
                     $data[] = $deniedValue.'('.str_replace(['double'], ['float'], $deniedValue).')';
                 }
                 return implode(', ', $data);
             };
 
-            foreach ($deniedValues->get() as $deniedValue) {
+            foreach ($deniedValues as $deniedValue) {
                 if ($deniedValue === $this->value) {
                     $this->defaultMessageSet(
                         self::VALIDATION_VALUE_IN_DENIED_LIST[1],

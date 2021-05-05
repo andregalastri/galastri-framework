@@ -2,8 +2,6 @@
 
 namespace galastri\modules\types\traits;
 
-use galastri\modules\types\TypeArray;
-
 /**
  * This trait has the methods related to manipulate substrings.
  */
@@ -13,7 +11,7 @@ trait StringMatch
     {
         preg_match_all($regex, $this->getValue(), $crudeMatch);
 
-        $this->execHandleValue(new TypeArray($crudeMatch));
+        $this->execHandleValue($crudeMatch);
 
         return $this;
     }
