@@ -7,63 +7,58 @@ use \galastri\modules\types\TypeArray;
 
 class Permission implements \Language
 {
-    private static array $allowedList = [];
-    private static bool $required = false;
+    private array $allowedList = [];
+    private bool $required = false;
 
-    private function __construct()
-    {
-    }
-
-    public static function allow(...$allowedList)// : self
+    public function allow(...$allowedList): self
     {
         $allowedList = (new TypeArray($allowedList))->flatten()->get();
 
         foreach ($allowedList as $allowed) {
-            self::$allowedList[] = $allowed;
+            $this->allowedList[] = $allowed;
         }
 
-        return __CLASS__;
+        return $this;
     }
 
-
-    public static function require(...$requiredList)// : self
+    public function require(...$requiredList): self
     {
-        self::$required = true;
+        $this->required = true;
 
-        self::allow(...$requiredList);
+        $this->allow(...$requiredList);
 
-        return __CLASS__;
+        return $this;
     }
 
-    public static function remove(...$removeList): void
+    public function remove(...$removeList): void
     {
         $removeList = (new TypeArray($removeList))->flatten()->get();
 
         foreach ($removeList as $removeValue) {
-            $keyList = array_keys(self::$allowedList, $removeValue);
+            $keyList = array_keys($this->allowedList, $removeValue);
             foreach ($keyList as $removeKey) {
-                unset(self::$allowedList[$removeKey]);
+                unset($this->allowedList[$removeKey]);
             }
         }
     }
 
-    public static function onFail(string $message)// : self
+    public function onFail(string $message): self
     {
         Parameters::setPermissionFailMessage($message);
 
-        return __CLASS__;
+        return $this;
     }
 
-    public static function validate(...$permissions): void
+    public function validate(...$permissions): void
     {
-        $allowedList = self::$allowedList;
+        $allowedList = $this->allowedList;
         $permissions = (new TypeArray($permissions))->flatten()->get();
 
         $validated = false;
 
         foreach ($allowedList as $allowed) {
             if (array_search($allowed, $permissions) === false) {
-                if (self::$required) {
+                if ($this->required) {
                     $validated = false;
                     break;
                 }
@@ -80,10 +75,11 @@ class Permission implements \Language
         }
     }
 
-    public static function clear()// : self
+    public function clear(): self
     {
-        self::$allowed = [];
+        $this->allowedList = [];
+        $this->required = false;
 
-        return __CLASS__;
+        return $this;
     }
 }
