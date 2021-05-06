@@ -360,11 +360,11 @@ final class TypeArray implements \Language
     //     return $this;
     // }
 
-    public function onError(/*array|string*/ $messageCode, /*float|int|string*/ ...$printfData): self
+    public function onFail(/*array|string*/ $messageCode, /*float|int|string*/ ...$printfData): self
     {
         $message = $this->execBuildErrorMessage($messageCode, $printfData);
 
-        $this->arrayValidation->onError($message[1], $message[0]);
+        $this->arrayValidation->onFail($message[1], $message[0]);
 
         return $this;
     }

@@ -85,7 +85,7 @@ trait Common
      *
      * @return void
      */
-    public function onError(string $message, ?string $code): void
+    public function onFail(string $message, ?string $code): void
     {
         Debug::bypassGenericMessage();
 
@@ -113,7 +113,7 @@ trait Common
 
     /**
      * Internal method that sets a default message when an exception is thrown. This message is
-     * overwritten if the onError() method is set in the validation chain.
+     * overwritten if the onFail() method is set in the validation chain.
      *
      * @param  string $message                      The text message that will be retuned when a
      *                                              exception is thrown.

@@ -258,11 +258,11 @@ abstract class TypeNumeric implements \Language
      *
      * @return self
      */
-    public function onError(/*array|string*/ $messageCode, /*float|int|string*/ ...$printfData): self
+    public function onFail(/*array|string*/ $messageCode, /*float|int|string*/ ...$printfData): self
     {
         $message = $this->execBuildErrorMessage($messageCode, $printfData);
 
-        $this->numericValidation->onError($message[1], $message[0]);
+        $this->numericValidation->onFail($message[1], $message[0]);
 
         return $this;
     }

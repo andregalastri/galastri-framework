@@ -59,10 +59,10 @@ final class Redirect implements \Language
     {
         Debug::setBacklog();
 
-        $locationString = new TypeString(null);
+        $locationString = new TypeString();
         $locationString
             ->denyEmpty()
-            ->onError([
+            ->onFail([
                 self::INVALID_LOCATION_DATA_TYPE[1],
                 self::INVALID_LOCATION_DATA_TYPE[0]
             ])
