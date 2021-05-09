@@ -30,6 +30,8 @@ final class Authentication
 
     public static function setField(string $field, string $value): string // self
     {
+        Debug::setBacklog();
+
         if(in_array($field, self::$reservedFields)) {
             throw new Exception('self::VIEW_INVALID_DATA_KEY[1]', 'self::VIEW_INVALID_DATA_KEY[0]');
         } else {

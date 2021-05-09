@@ -51,6 +51,8 @@ class Permission implements \Language
 
     public function validate(...$permissions): void
     {
+        Debug::setBacklog();
+
         $allowedList = $this->allowedList;
         $permissions = (new TypeArray($permissions))->flatten()->get();
 

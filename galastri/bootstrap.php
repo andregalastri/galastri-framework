@@ -84,10 +84,12 @@ try {
     /**
      * Definition of constants
      *
-     * - GALASTRI_URL_TAGS : stores the framework version (only used on the default template).
+     * - GALASTRI_DATABASE : stores database configurations.
+     * - GALASTRI_URL_TAGS : stores url tags.
      * - GALASTRI_VERSION : stores the framework version (only used on the default template).
      *   will work based on the URL.
      */
+    define('GALASTRI_DATABASE', require(GALASTRI_PROJECT_DIR.'/app/config/database.php'));
     define('GALASTRI_URL_TAGS', require(GALASTRI_PROJECT_DIR.'/app/config/url-tags.php'));
     define('GALASTRI_CONTENT_TYPE', require(GALASTRI_PROJECT_DIR.'/app/config/content-type.php'));
     define('GALASTRI_VERSION', file_get_contents(GALASTRI_PROJECT_DIR.'/galastri/VERSION'));

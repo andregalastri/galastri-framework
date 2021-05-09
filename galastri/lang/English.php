@@ -354,6 +354,30 @@ interface English
         'G0027', "Wrong value type. Location URL or URL Tag value need to be 'string' and cannot be empty."
     ];
 
+    const PDO_QUERY_EXECUTION_FAIL = [
+        'PDO0000', "Can't execute the query. PDO has returned the following error: '%s'."
+    ];
+
+    const PDO_CONNECTION_FAIL = [
+        'PDO0000', "Can't connect to database. PDO has returned the following error: '%s'."
+    ];
+
+    const DATABASE_BIND_PARAMETER_TYPE = [
+        'G0035', "Bind parameter #1 need to be string, int or an array."
+    ];
+
+    const DATABASE_CONNECTION_FAIL_UNDEFINED_PROPERTY = [
+        'G0035', "Can't connect to database. Property '%s' was not configured."
+    ];
+
+    const DATABASE_UNINITIALIZED_CLASS = [
+        'G0035', "Before execute any database method, execute the 'connect()' method."
+    ];
+
+    const DATABASE_UNAVAILABLE_EXPORT_METHOD = [
+        'G0035', "Method 'export' isn't available to the '%s' class"
+    ];
+
     /**
      * Constants used in \galastri\modules\types\traits\Math
      */

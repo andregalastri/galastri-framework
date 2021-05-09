@@ -23,7 +23,9 @@ trait FilePath
      */
     public function realPath(): self
     {
-        $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, GALASTRI_PROJECT_DIR . '/' . $this->trim(DIRECTORY_SEPARATOR)->get());
+        $path = str_replace(GALASTRI_PROJECT_DIR, '', $this->get());
+        $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, GALASTRI_PROJECT_DIR . DIRECTORY_SEPARATOR . $path);
+
         $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
         $absolutes = array();
         foreach ($parts as $part) {
@@ -104,20 +106,33 @@ trait FilePath
      *
      * @return self
      */
-    public function createFile(): self
+    public function createFile($permission = 0755): self
     {
         $filePath = $this->realPath()->get();
         $parentDir = $this->concat('/..')->realPath()->get();
 
         if (!file_exists($parentDir)) {
             $permissionResolve = umask(0);
-            mkdir($parentDir, 0777, true);
+            mkdir($parentDir, $permission, true);
             umask($permissionResolve);
         }
 
         if (!file_exists($filePath)) {
             $fileOpen = fopen($filePath, 'a');
             fclose($fileOpen);
+        }
+
+        return $this;
+    }
+
+    public function createDirectory($permission = 0755): self
+    {
+        $dirPath = $this->realPath()->get();
+
+        if (!is_dir($dirPath)) {
+            $permissionResolve = umask(0);
+            mkdir($dirPath, $permission, true);
+            umask($permissionResolve);
         }
 
         return $this;
