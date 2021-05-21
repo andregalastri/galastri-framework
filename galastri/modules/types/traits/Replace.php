@@ -8,7 +8,7 @@ namespace galastri\modules\types\traits;
 trait Replace
 {
     /**
-     * This method searches for a substring inside the current value and replaces it for another
+     * This method searches for a substring inside the current value and replaces it by another
      * given string.
      *
      * @param  array|string $search                 The substring that will be searched and
@@ -18,7 +18,7 @@ trait Replace
      *
      * @return self
      */
-    public function replace($search, $replace): self
+    public function replace(/*array|string*/ $search, /*array|string*/ $replace): self
     {
         $this->execHandleValue(str_replace($search, $replace, $this->getValue()));
 

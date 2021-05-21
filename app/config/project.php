@@ -1,79 +1,98 @@
 <?php
 
 /**
- * Default project settings.
+ * This is the project configuration file. This file stores an array with project parameters that
+ * configure some parameters in the project.
+ *
+ * Some of these parameters can be configured in the route configuration file too.
  */
-
 return [
     /**
-     * The url root path refers to the starting point of the URL routing. In
-     * short, it is the portion of the URL that will be ignored.
+     * The url root path refers to the starting point of the URL routing. In short, it is the
+     * portion of the URL that will be ignored.
      *
-     * Normally it is based on where your index.php is located, inside the
-     * public folder. The root of the URLs for routing is based on where your
-     * index.php is located, importing the \galastri\bootstrap.php file. If it
-     * is inside the root of the public folder, then your URLs will be like
-     * this:
+     * Normally it is based on where your index.php is located, inside the public folder. If the
+     * index.php file is inside the root of the public folder, then your URLs will be like this:
      *
-     *      mydomain.com/framework/controlled/paths
+     *      mydomain.com/
      *
-     * But if your index.php file is located inside subfolders, then this path
-     * will fail. You need to configure here the correct directory where your
-     * index.php is located. For exemple, if it is located inside /mysubfolder,
-     * then:
+     * But if your index.php file is located inside subfolders, then this path above will fail. You
+     * need to configure here the correct directory where your index.php is located. For exemple, if
+     * it is located inside /mysubfolder, then:
      *
      *      'urlRoot' => '/mysubfolder'
      *
-     * With that, every request that has mydomain.com/mysubfolder, will be
-     * controlled by the framework. Every other request that doen't contain this
-     * address will be controlled by the server.
+     * With that, every request that has mydomain.com/mysubfolder, will be controlled by the
+     * framework. Every other request that doen't contain this address will be controlled by the
+     * server directory system.
      *
-     * @key urlRoot string
+     * string
      */
     'urlRoot' => '/',
 
     /**
-     * The name of the project.
+     * Default timezone of the project. To use the server's timezone, set it to null or remove it
+     * from this configuration file.
      *
-     * @key projectTitle string
+     * null|string
+     */
+    'timezone' => 'America/Sao_Paulo',
+
+    /**
+     * The name of the project. This information can be retrieved by the route controllers and the
+     * outputs. If you want to define different project titles for different routes, you can define
+     * this parameter in the route configuration file.
+     *
+     * string
      */
     'projectTitle' => 'Galastri Framework',
 
     /**
-     * Works only with View output. Defines the template file where the view
-     * will be printed.
+     * Configures the default template file for the View output. Most of sites have only one
+     * template, which can be configured only here. However, if your project used multiple templates
+     * for View Files, then you can define this parameter in the route configuration file.
      *
-     * NOTE: It isn't the view itself, the view will be other file. This
-     * parameter here refers just to the template file, the skeleton which the
-     * view and other stuff will be part.
-     *
-     * If your project have multiple templates, you can ignore this as empty and
-     * configure the template path in the route configuration, in
-     * \app\config\routes.php file.
-     *
-     * @key title array
+     * string
      */
     'templateFile' => '/app/templates/main.php',
 
+    /**
+     * Defines if the application is offline. When true, the entire project won't be accessible and
+     * an error message will be shown informing that the app is offline. If you want to define that
+     * an specific route is offline, then you can define this parameter in the route configuration
+     * file.
+     *
+     * bool
+     */
     'offline' => false,
 
+    /**
+     * Defines a global URL to redirect the request when an error 404 occurs. is offline. When null,
+     * an exception will be thrown showing the error 404 message.
+     *
+     * null|string
+     */
     'notFoundRedirect' => null,
 
     /**
-     * Default defaultmessage for a differents cases.
-     *
-     * @key timezone string
+     * A default message to show when the 'offline' parameter is true. To set different messages to
+     * different routes, you can define this parameter in the route configuration
+     * file.
      */
     # 'offlineMessage' => "This area is currently offline. Please, try again later.",
-    # 'authFailMessage' => "You aren't authorized to access this area.",
-    # 'permissionFailMessage' => "You don't have permission to execute this action.",
 
     /**
-     * (Optional) Default timezone of the project. To use the server's timezone,
-     * set it to false. It can be defined in the controller too, in case of
-     * dynamic timezones.
-     *
-     * @key timezone string|boolean
+     * A default message to show when an authentication fails. To set different messages to
+     * different routes, you can define this parameter in the route configuration
+     * file.
      */
-    'timezone' => 'America/Sao_Paulo',
+    # 'authFailMessage' => "You aren't authorized to access this area.",
+
+
+    /**
+     * A default message to show when an permission fails. To set different messages to
+     * different routes, you can define this parameter in the route configuration
+     * file.
+     */
+    # 'permissionFailMessage' => "You don't have permission to execute this action.",
 ];

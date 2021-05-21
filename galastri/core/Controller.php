@@ -5,120 +5,125 @@ namespace galastri\core;
 use galastri\core\Route;
 use galastri\core\Debug;
 use galastri\core\Parameters;
-use galastri\modules\types\TypeString;
 use galastri\modules\PerformanceAnalysis;
 
 /**
- * This is the core controller. This class stores the parameters resolved by the
- * \galastri\core\Route class and make it ready to use by the route controller (the child of this
- * class here).
+ * This is the core controller class that needs to be inherited by the route controller.
  *
- * The class calls for methods of the child class and return a array with the returned data.
+ * This class:
+ * - Call for a __doBefore method if it exists in the route controller
+ * - Call for the method that is defined by the child node's name
+ *   - Call for the request method if it is defined in the route configuration.
+ * - Call for a __doAfter method if it exists in the route controller
+ * - Merge all the returning values of each of these methods in an array and mankes it available for
+ *   the output scripts.
  */
 abstract class Controller
 {
     /**
-     * Sets if the constructor of the class finished its instanciantion.
+     * Stores the state of the route controller. The execution of the route controller methods can
+     * occur only one time and this property prevents multiple executions if the user, for example,
+     * calls for the __construct() method in the route controller.
+     *
+     * When this property is false, it means that the methods can be called. When it is true, it
+     * means that the methods won't be called again.
      *
      * @var bool
      */
     private bool $isConstructed = false;
 
     /**
-     * Stores the returned data of the method __doBefore(), if it exists in the route controller.
+     * Stores the data returned by the __doBefore method.
      *
      * @var array
      */
     private array $doBeforeData = [];
 
     /**
-     * Stores the returned data of the method __doAfter(), if it exists in the route controller.
+     * Stores the data returned by the __doAfter method.
      *
      * @var array
      */
     private array $doAfterData = [];
 
     /**
-     * Stores the returned data of the route method.
+     * Stores the data returned by the route controller method.
      *
      * @var array
      */
     private array $controllerData = [];
 
     /**
-     * Stores the returned data of the request method, if it exists in the route configuration
-     * parameter 'requestMethod'.
+     * Stores the data returned by the request method.
      *
      * @var array
      */
     private array $requestMethodData = [];
 
     /**
-     * Stores a merged array of $doBeforeData, $doAfterData, $controllerData and $requestMethodData
-     * properties.
+     * Stores the merged data from the $doBeforeData, $doAfterData, $controllerData and the
+     * $requestMethodData properties.
      *
      * @var array
      */
     private array $resultData = [];
 
     /**
-     * Sets if the core controller will proceed to call other methods (false) or it will stop in the
-     * current method and conclude the execution (true).
+     * Stores the state of the execution of the next methods. When the user need to prevent the
+     * executions of the method chain and skip to the end of the controller, it can to call the
+     * skipNextMethods method to set this property as true. All the methods that come next to the
+     * current method will be ignored.
      *
      * @var bool
      */
-    private bool $stopControllerFlag = false;
+    private bool $skipNextMethods = false;
 
+    /**
+     * Stores an array that contains a file content, a content type and a file name. It is used when
+     * the controller gets a file content to be returned to the File output. Only used by the File
+     * output.
+     *
+     * @var array|null
+     */
     private ?array $fileContents = null;
 
     /**
-     * Any route controller needs to have a main() method. This abstract method here makes it a
-     * requirement that all child class need to declare.
+     * Declares that the route controller needs to have a main method declared too.
      *
      * @return array
      */
-    abstract protected function main();
+    abstract protected function main(): array;
 
     /**
-     * This is just a declaration of the method __doBefore(). This method will be override by the
-     * route controller, when it is needed to run a code before the route method.
+     * Declares a base __doBefore method. This method isn't required to be in the route controller,
+     * but when it exists it will always be executed before the route method. It serves to a
+     * constructor like purpose.
      *
      * @return array
      */
-    protected function __doBefore()
+    protected function __doBefore(): array
     {
         return [];
     }
 
     /**
-     * This is just a declaration of the method __doAfter(). This method will be override by the
-     * route controller, when it is needed to run a code after the route method.
+     * Declares a base __doAfter method. This method isn't required to be in the route controller,
+     * but when it exists it will always be executed after the route method.
      *
      * @return array
      */
-    protected function __doAfter()
+    protected function __doAfter(): array
     {
         return [];
     }
 
     /**
-     * When the route class is instanciated, the __construct() method will do some jobs.
+     * The constructor method calls the chain of methods in order. It calls, first, the __doBefore
+     * method, then the route method and the request method (if it exists), the __doAfter method
+     * and, finally, merge all the returned values that will be used by the output scripts.
      *
-     * It will set the parameters defined in the \galastri\core\Route class and will store it in
-     * internal properties owned by this class. It makes things easier to get the route parameter
-     * values and also set new values, if it is needed.
-     *
-     * Then it calls for the __doBefore() method, if it exists in the route controller, the route
-     * method defined in the \galastri\core\Galastri, checks if there is additional request methods
-     * available and calls it and finally calls the __doAfter() method, if it exists.
-     *
-     * All the results of these calls are merged into one array, stored in the $resultData
-     * property.
-     *
-     * NOTE: The __construct() method cannot be called by the route controller nor reexecuted by it.
-     * That is why the property $isContructed is tested. When false, the construction will do what
-     * is needed and then sets it to true. This way, it won't reexecute its code if it is called by
-     * the route controller via parent::__construct();
+     * This chain of methods is executed once, when the class is instantiated. After, the
+     * $isConstructed property is defined as true, which prevents further executions.
      *
      * @return void
      */
@@ -135,13 +140,8 @@ abstract class Controller
     }
 
     /**
-     * This method checks if the method __doBefore() exists in the route controller. If it is true,
-     * then the method is called.
-     *
-     * The purpouse of this is to have a method that is always executed before the route method, to
-     * set some data or object that will be used before any request.
-     *
-     * The __doBefore() must return an array. If not, it will throw an exception.
+     * This method calls for the __doBefore method and stores its returning array in the
+     * $doBeforeData property.
      *
      * @return void
      */
@@ -155,12 +155,13 @@ abstract class Controller
     }
 
     /**
-     * This method calls the route method define as child note in the \galastri\core\Route.
+     * This method calls for the route method, defined by the child node name in the route
+     * resolving and stores its returning array in the $controllerData property. This execution will
+     * only occur if the $skipNextMethods property is false.
      *
-     * It also tests if there is a request method defined in the route parameter requestMethod. If
-     * so, then it is called too right after the route method.
-     *
-     * The route method and the request method must return an array.
+     * It also checks if there is a request method defined in the route configuration. If there is,
+     * it calls it and stores its returning array in the $requestMethodData property. This execution
+     * will only occur if the $skipNextMethods property is false.
      *
      * @return void
      */
@@ -168,15 +169,13 @@ abstract class Controller
     {
         Debug::setBacklog();
 
-        if (!$this->stopControllerFlag) {
+        if (!$this->skipNextMethods) {
             $controllerMethod = Route::getChildNodeName();
-            $serverRequestMethod = new TypeString($_SERVER['REQUEST_METHOD']);
-            $serverRequestMethod->toLowercase();
 
             $this->controllerData = $this->$controllerMethod();
 
             $requestMethod = Parameters::getRequest();
-            if ($requestMethod and !$this->stopControllerFlag) {
+            if ($requestMethod and !$this->skipNextMethods) {
                 $this->requestMethodData = $this->$requestMethod();
             }
 
@@ -185,20 +184,16 @@ abstract class Controller
     }
 
     /**
-     * This method checks if the method __doAfter() exists in the route controller. If it is true,
-     * then the method is called.
+     * This method calls for the __doAfter method and stores its returning array in the $doAfterData
+     * property. This execution will only occur if the $skipNextMethods property is false.
      *
-     * The purpouse of this is to have a method that is always executed after the route method, to
-     * set some data or object that will be used after any request.
-     *
-     * The __doAfter() must return an array. If not, it will throw an exception.
      * @return void
      */
     private function callDoAfter(): void
     {
         Debug::setBacklog();
 
-        if (!$this->stopControllerFlag) {
+        if (!$this->skipNextMethods) {
             $this->doAfterData = $this->__doAfter();
 
             PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
@@ -206,8 +201,8 @@ abstract class Controller
     }
 
     /**
-     * This method merges all the returning arrays of the controller into one array and stores it in
-     * the $resultData property.
+     * After all the method executions, this method merge all the resulting arrays in a unique array
+     * $resultData property.
      *
      * @return void
      */
@@ -230,38 +225,19 @@ abstract class Controller
     }
 
     /**
-     * This sets the $stopControllerFlag atribute as true, to define that the controller needs to
-     * stop proceeding on the execution of the controller chain calls.
+     * This method sets the $skipNextMethods property to true. When this property is set to true,
+     * all the following methods will be skipped to the end of the controller.
      *
-     * @return array
+     * @return void
      */
-    final protected function stopControllerFlag(): void
+    final protected function skipNextMethods(): void
     {
-        $this->stopControllerFlag = true;
+        $this->skipNextMethods = true;
     }
 
     /**
-     * Returns the data processed by the __doBefore() method.
-     *
-     * @return array
-     */
-    final protected function getDoBeforeData(): array
-    {
-        return $this->doBeforeData;
-    }
-
-    /**
-     * Returns the data processed by the route controller method.
-     *
-     * @return array
-     */
-    final protected function getControllerData(): array
-    {
-        return $this->controllerData;
-    }
-
-    /**
-     * Returns the data processed by the route controller method.
+     * This method return the merged array, result of the data returned by the methods called from
+     * the route controller.
      *
      * @return array
      */
@@ -271,66 +247,68 @@ abstract class Controller
     }
 
     /**
-     * Overwrites the actual value of fileDownloadable parameter set in the route configuration.
+     * Works only for File output. Overwrites the 'downloadable' parameter if it is defined in the
+     * route configuration. Sets if the browser will download the file instead of showing it in the
+     * browser body.
      *
-     * @param  bool $fileDownloadable               The new value that will overwrite the previous
-     *                                              value.
-     *
-     * @return void
-     */
-    final protected function setFileDownloadable(?bool $fileDownloadable): void
-    {
-        Parameters::setFileDownloadable($fileDownloadable);
-    }
-
-    /**
-     * Returns the fileDownloadable parameter value.
-     *
-     * @return bool
-     */
-    final public function getFileDownloadable(): bool
-    {
-        return Parameters::getFileDownloadable();
-    }
-
-    /**
-     * Overwrites the actual value of fileBaseFolder parameter set in the route configuration.
-     *
-     * @param  null|string $fileBaseFolder          The new value that will overwrite the previous
-     *                                              value.
+     * @param  bool $value                          Sets true or false to the 'downloadable'
+     *                                              parameter.
      *
      * @return void
      */
-    final protected function setFileBaseFolder(?string $fileBaseFolder): void
+    final protected function setDownloadable(bool $value): void
     {
-        Parameters::setFileBaseFolder($fileBaseFolder);
+        Parameters::setDownloadable($value);
     }
 
     /**
-     * Returns the fileBaseFolder parameter value.
+     * Gets the current value of the 'downloadable' parameter.
      *
-     * @return null|string
+     * @return bool|null
      */
-    final public function getFileBaseFolder(): ?string
+    final public function getDownloadable(): ?bool
     {
-        return Parameters::getFileBaseFolder();
+        return Parameters::getDownloadable();
     }
 
     /**
-     * Overwrites the actual value of viewPath parameter set in the route configuration.
+     * Works only for File and View outputs. Overwrites the 'baseFolder' parameter if it is defined
+     * in the route configuration. Sets a default base folder where the files or views are stored.
      *
-     * @param  null|string $viewPath            The new value that will overwrite the previous
-     *                                              value.
+     * @param  string $value                        The directory path location.
      *
      * @return void
      */
-    final protected function setViewPath(?string $viewPath): void
+    final protected function setBaseFolder(string $value): void
     {
-        Parameters::setViewPath($viewPath);
+        Parameters::setBaseFolder($value);
     }
 
     /**
-     * Returns the viewPath parameter value.
+     * Gets the current value of the 'baseFolder' parameter.
+     *
+     * @return bool|null
+     */
+    final public function getBaseFolder(): ?string
+    {
+        return Parameters::getBaseFolder();
+    }
+
+    /**
+     * Works only for View output. Overwrites the 'viewPath' parameter if it is defined in the route
+     * configuration. Sets a specific view file for the View output.
+     *
+     * @param  string $value                        The path location of the view.
+     *
+     * @return void
+     */
+    final protected function setViewPath(string $value): void
+    {
+        Parameters::setViewPath($value);
+    }
+
+    /**
+     * Gets the current value of the 'viewPath' parameter.
      *
      * @return null|string
      */
@@ -340,21 +318,20 @@ abstract class Controller
     }
 
     /**
-     * Overwrites the actual value of projectTitle parameter set in the project configuration or in
-     * the route configuration.
+     * Overwrites the 'projectTitle' parameter if it is defined in the project or route
+     * configuration. Sets a project title.
      *
-     * @param  null|string $projectTitle            The new value that will overwrite the previous
-     *                                              value.
+     * @param  string $value                        The project title.
      *
      * @return void
      */
-    final protected function setProjectTitle(?string $projectTitle): void
+    final protected function setProjectTitle(string $value): void
     {
-        Parameters::setProjectTitle($projectTitle);
+        Parameters::setProjectTitle($value);
     }
 
     /**
-     * Returns the projectTitle parameter value.
+     * Gets the current value of the 'projectTitle' parameter.
      *
      * @return null|string
      */
@@ -364,20 +341,20 @@ abstract class Controller
     }
 
     /**
-     * Overwrites the actual value of pageTitle parameter set in the route configuration.
+     * Overwrites the 'pageTitle' parameter if it is defined in the route configuration. Sets a page
+     * title.
      *
-     * @param  null|string $pageTitle               The new value that will overwrite the previous
-     *                                              value.
+     * @param  string $value                        The page title.
      *
      * @return void
      */
-    final protected function setPageTitle(?string $pageTitle): void
+    final protected function setPageTitle(string $value): void
     {
-        Parameters::setPageTitle($pageTitle);
+        Parameters::setPageTitle($value);
     }
 
     /**
-     * Returns the pageTitle parameter value.
+     * Gets the current value of the 'pageTitle' parameter.
      *
      * @return null|string
      */
@@ -387,68 +364,22 @@ abstract class Controller
     }
 
     /**
-     * Overwrites the actual value of authTag parameter set in the route configuration.
+     * Overwrites the 'output' parameter if it is defined in the route configuration. Sets the
+     * output script name that will be called after the execution of the controller.
      *
-     * @param  null|string $authTag                 The new value that will overwrite the previous
-     *                                              value.
+     * @param  string $value                        The output script name.
      *
      * @return void
      */
-    final protected function setAuthTag(?string $authTag): void
+    final protected function setOutput(string $value): void
     {
-        Parameters::setAuthTag($authTag);
+        Parameters::setOutput($value);
     }
 
     /**
-     * Returns the authTag parameter value.
+     * Gets the current value of the 'output' parameter.
      *
      * @return null|string
-     */
-    final public function getAuthTag(): ?string
-    {
-        return Parameters::getAuthTag();
-    }
-
-    /**
-     * Overwrites the actual value of authFailRedirect parameter set in the route configuration.
-     *
-     * @param  null|string $authFailRedirect        The new value that will overwrite the previous
-     *                                              value.
-     *
-     * @return void
-     */
-    final protected function setAuthFailRedirect(?string $authFailRedirect): void
-    {
-        Parameters::setAuthFailRedirect($authFailRedirect);
-    }
-
-    /**
-     * Returns the authFailRedirect parameter value.
-     *
-     * @return null|string
-     */
-    final public function getAuthFailRedirect(): ?string
-    {
-        return Parameters::getAuthFailRedirect();
-    }
-
-    /**
-     * Overwrites the actual value of output parameter set in the route configuration.
-     *
-     * @param  string $output                       The new value that will overwrite the previous
-     *                                              value.
-     *
-     * @return void
-     */
-    final protected function setOutput(string $output): void
-    {
-        Parameters::setOutput($output);
-    }
-
-    /**
-     * Returns the output parameter value.
-     *
-     * @return string
      */
     final public function getOutput(): ?string
     {
@@ -456,20 +387,22 @@ abstract class Controller
     }
 
     /**
-     * setTemplateFile
+     * Works only for View output. Overwrites the 'templateFile' parameter if it is defined in the
+     * project or route configuration. Sets the template file for the View output.
      *
-     * @param  mixed $templateFile
+     * @param  string $value                        The path location of the template file.
+     *
      * @return void
      */
-    final protected function setTemplateFile(?string $templateFile): void
+    final protected function setTemplateFile(string $value): void
     {
-        Parameters::setTemplateFile($templateFile);
+        Parameters::setTemplateFile($value);
     }
 
     /**
-     * getTemplateFile
+     * Gets the current value of the 'templateFile' parameter.
      *
-     * @return string
+     * @return null|string
      */
     final public function getTemplateFile(): ?string
     {
@@ -477,34 +410,39 @@ abstract class Controller
     }
 
     /**
-     * Overwrites the actual value of baseFolder parameter set in the route configuration.
+     * Works only for File output. Defines a file content that will be used instead of searching for
+     * a file in the base folder.
      *
-     * @param  null|string $baseFolder          The new value that will overwrite the previous
-     *                                              value.
+     * @param  string $fileContents                 The file contents that will be used.
+     *
+     * @param  string $contentType                  The content type of the file
+     *
+     * @param  string $fileName                     The file name, which will be used if the file is
+     *                                              of downloadable type.
      *
      * @return void
      */
-    final protected function setBaseFolder(?string $baseFolder): void
+    final protected function setFileContents(string $fileContents, string $contentType, string $fileName): void
     {
-        Parameters::setBaseFolder($baseFolder);
+        $this->fileContents = [$fileContents, $contentType, $fileName];
     }
 
+
     /**
-     * Returns the baseFolder parameter value.
+     * Gets the current value of the 'fileContents' property.
      *
-     * @return null|string
+     * @return array
      */
-    final public function getBaseFolder(): ?string
+    final public function getFileContents(): ?array
     {
-        return Parameters::getBaseFolder();
+        return $this->fileContents;
     }
 
     /**
-     * Returns the dynamic node value stored in the tag.
+     * Gets all the URL parameters defined based on the 'parameters' parameter in the route
+     * configuration. If there is no URL parameters, it will return an empty array.
      *
-     * @param  string $tag                          Tag name defined in the route configuration.
-     *
-     * @return string
+     * @return array
      */
     final public function getUrlParameters(): array
     {
@@ -512,23 +450,21 @@ abstract class Controller
     }
 
     /**
-     * Returns the dynamic node value stored in the tag.
+     * Gets a specific URL parameter, by giving its tag name defined in the 'parameters' parameter
+     * in the route configuration. If the tag name doesn't exists it returns null.
      *
-     * @param  string $tag                          Tag name defined in the route configuration.
-     *
-     * @return string
+     * @return null|string
      */
-    final public function getUrlParameter(string $tag): ?string
+    final public function getUrlParameter(string $tagName): ?string
     {
-        return Parameters::getUrlParameter($tag) ?? null;
+        return Parameters::getUrlParameter($tagName) ?? null;
     }
 
     /**
-     * Returns the dynamic node value stored in the tag.
+     * Gets all the dynamic nodes defined in the route configuration.  If there is no dynamic nodes,
+     * it will return an empty array.
      *
-     * @param  string $tag                          Tag name defined in the route configuration.
-     *
-     * @return string
+     * @return array
      */
     final public function getDynamicNodes(): array
     {
@@ -536,36 +472,13 @@ abstract class Controller
     }
 
     /**
-     * Returns the dynamic node value stored in the tag.
+     * Gets a specific dynamic node, by giving its tag name defined in the route configuration. If
+     * the tag name doesn't exists it returns null.
      *
-     * @param  string $tag                          Tag name defined in the route configuration.
-     *
-     * @return string
+     * @return null|string
      */
-    final public function getDynamicNode(string $tag): ?string
+    final public function getDynamicNode(string $tagName): ?string
     {
-        return Route::getDynamicNode($tag) ?? null;
-    }
-
-    /**
-     * setFileContents
-     *
-     * @param  mixed $fileContents
-     * @param  mixed $contantType
-     * @return void
-     */
-    final protected function setFileContents(string $fileContents, string $contantType, string $fileName): void
-    {
-        $this->fileContents = [$fileContents, $contantType, $fileName];
-    }
-
-    /**
-     * getFileContents
-     *
-     * @return array
-     */
-    final public function getFileContents(): ?array
-    {
-        return $this->fileContents;
+        return Route::getDynamicNode($tagName) ?? null;
     }
 }

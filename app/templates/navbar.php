@@ -1,1 +1,0 @@
-<nav style="background:#ccc">navbar</nav>

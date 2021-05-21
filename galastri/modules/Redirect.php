@@ -7,20 +7,20 @@ use galastri\core\Parameters;
 use galastri\modules\types\TypeString;
 
 /**
- * This module class helps to redirect the request to another path or URL, even external.
+ * This class redirects the request to another URL (internal or external).
  */
 final class Redirect implements \Language
 {
     /**
-     * Defines if the urlRoot parameter will be ignored (true) or not (false).
+     * Defines if the urlRoot parameter will be ignored when redirecting.
      *
      * @var bool
      */
     private static bool $bypassUrlRoot = false;
 
     /**
-     * This is a singleton class, so, the __construct() method is private to avoid user to
-     * instanciate it.
+     * This is a singleton class, the __construct() method is private to avoid users to instanciate
+     * it.
      *
      * @return void
      */
@@ -29,24 +29,21 @@ final class Redirect implements \Language
     }
 
     /**
-     * Method that redirects the request. It uses 2 criteria to determine the path location:
+     * This method redirects the request. It uses 2 criteria to determine the path location:
      *
-     * 1. If the parameter $location stores a string that matches a key configured in
-     *    \app\config\url-alias.php file, then the value of that key will be used as redirect
-     *    location.
+     * 1. If the parameter $location stores a string that matches a key configured in URL alias
+     *    configuration, then the value of that key will be used as a redirect location.
      *
-     * 2. If the location isn't in the URL Alias configuration, then the string itself will be used
-     *    as redirect location.
+     * 2. If the location isn't in the URL alias configuration, then the string itself will be used
+     *    as the redirect location.
      *
-     * The location value will be tested again. If the start of the string matches a network
-     * protocol, like http or ftp, this means that the location is external and will be used as is.
+     * The location value will be tested again. If it starts with a network protocol, like http or
+     * ftp, this means that the location is external. However, if it is not, then it will check if
+     * $bypassUrlRoot property is true. If false, then the urlRoot parameter configuration will be
+     * attached in front of the location, if true, the urlRoot configuration will be ignored.
      *
-     * However, if it is not, then it will check if $bypassUrlRoot is true. It it is NOT, then the
-     * urlRoot configuration will be attached in front of the location. If $bypassUrlRoot is false,
-     * then the urlRoot configuration will be ignored.
-     *
-     * @param  string $location                     Internal path, external URL or URL Alias name
-     *                                              set in \app\config\url-alias.php file.
+     * @param  string $location                     Can be an internal or external URL or an URL
+     *                                              alias set in the URL alias configuration file.
      *
      * @param  string ...$printfData                The location can have %s tags to be replaced by
      *                                              dynamic values. These array values will replace
@@ -59,6 +56,10 @@ final class Redirect implements \Language
     {
         Debug::setBacklog();
 
+        /**
+         * Sets the location string as a TypeString, which cannot be empty. The location is filtered
+         * to remove special chars from the edges of the string.
+         */
         $locationString = new TypeString();
         $locationString
             ->denyEmpty()
@@ -70,31 +71,41 @@ final class Redirect implements \Language
 
         $location = self::sanitize($locationString->get());
 
+        /**
+         * Checks if the location is external by searching if there is a protocol in the string.
+         */
         preg_match(REDIRECT_IDENFITY_PROTOCOLS_REGEX, $location, $match);
 
+        /**
+         * If there is no protocol, then it will set the URL as internal.
+         */
         if (empty($match)) {
             $urlRoot = self::$bypassUrlRoot ? '' : '/' . self::sanitize(Parameters::getUrlRoot());
             $location = '/' . self::sanitize($urlRoot . $location);
         }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL)::store(PERFORMANCE_ANALYSIS_LABEL);
+
+        /**
+         * Redirect the request.
+         */
         exit(header('Location: ' . vsprintf($location, $printfData)));
     }
 
     /**
-     * Ignores the urlRoot parameter configured in \app\config\project.php file when the location is
-     * internal and uses the exactly location given.
+     * This method sets the $bypassUrlRoot property as true, to make the redirect ignore the urlRoot
+     * parameter, configured in project configuration.
      *
-     * @return \galastri\modules\Redirect
+     * @return self
      */
-    public static function bypassUrlRoot(): string /*self*/
+    public static function bypassUrlRoot()// : self
     {
         self::$bypassUrlRoot = true;
         return __CLASS__;
     }
 
     /**
-     * Remove every special char and spaces that can be in the beginning and ending of a string.
+     * This method removes every special char and spaces from the edges of a string.
      *
      * @param  string $string                       The string to be sanitized.
      *
@@ -102,10 +113,6 @@ final class Redirect implements \Language
      */
     private static function sanitize(/*string*/ $string): string
     {
-        Debug::setBacklog();
-
-        $string = new TypeString($string);
-
-        return $string->trim('/?:;<>,.[]{}!@#$%&*()_+-=\\|')->get();
+        return (new TypeString($string))->trim('/?:;<>,.[]{}!@#$%&*()_+-=\\|')->get();
     }
 }

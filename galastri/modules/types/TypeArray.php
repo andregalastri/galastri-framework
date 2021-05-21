@@ -5,276 +5,115 @@ namespace galastri\modules\types;
 
 use galastri\core\Debug;
 use galastri\extensions\Exception;
-use galastri\extensions\typeValidation\ArrayValidation;
+use galastri\modules\validation\ArrayValidation;
 
-final class TypeArray implements \Language
+/**
+ * This class creates objects that will act as a array types.
+ */
+final class TypeArray extends ArrayValidation implements \Language
 {
-    use traits\Common {
-        set as private _set;
-        get as private _get;
-        clear as private _clear;
-    }
+    /**
+     * For a better coding and reuse of methods, much of the methods that makes these type classes
+     * useful is in trait files, that are imported here.
+     */
+    use traits\Common;
 
-    // use traits\Concat {
-    //     concat as private _concat;
-    //     concatStart as private _concatStart;
-    //     concatSpacer as private _concatSpacer;
-    // }
-
+    /**
+     * This constant defines the type of the data that will be stored. The name of the type is based
+     * on the possible results of the PHP function gettype.
+     */
     const VALUE_TYPE = 'array';
 
+    /**
+     * Stores the real value, after being handled.
+     *
+     * @var array
+     */
     protected array $storedValue = [];
 
+    /**
+     * Stores the value while it is being handled.
+     *
+     * @var mixed
+     */
     protected $handlingValue = null;
 
-    private ArrayValidation $arrayValidation;
-
-    public function __construct(/*?string*/ $value = [])
+    /**
+     * The constructor of the class can set an initial value to be stored.
+     *
+     * @param array $value                          An initial value to be stored. It is optional to
+     *                                              set it in the constructor.
+     *
+     * @return void
+     */
+    public function __construct(/*array*/ $value = [])
     {
         Debug::setBacklog();
 
-        $this->arrayValidation = new ArrayValidation();
-
-        $this->execHandleValue($value);
-        $this->execStoreValue(false);
+        $this->_set($value ?? []);
     }
 
-    // public function key(...$keys)//: mixed
-    // {
-    //     if (empty($keys)) {
-    //         throw new Exception('self::VIEW_INVALID_DATA_KEY[1]', 'self::VIEW_INVALID_DATA_KEY[0]');
-    //     }
+    /**
+     * This method executes the methd _set from the Common trait, that stores the value in the
+     * $storedValue property.
+     *
+     * The value will have its type checked and if the value doesn't match the given type, an
+     * exception will be thrown. If there are validation methods defined before this method, they
+     * will be executed to check if the value matches the defined validation processes.
+     *
+     * Why not call the _set method directly? Because this method is used internally too, in the
+     * constructor, which doesn't allow to make the Debug backlog to be set properly. Methods that
+     * are executed directly by the user needs to have its backlog stored right after the call, but
+     * if it is called internally too, it messes up the backlog, leading to wrong information if an
+     * error occurs.
+     *
+     * Because of this, this method here works like a bridge between the Debug backlog and the
+     * method that executes the code.
+     *
+     * It can, however, execute modifications in the value before send it to the _set method, which
+     * is the case of the TypeNumeric and TypeArray classes.
+     *
+     * @param  null|string $value                   The value that will be stored.
+     *
+     * @return self
+     */
+    public function set(/*?array*/ $value = null): self
+    {
+        Debug::setBacklog();
 
-    //     $array = $this->getValue();
+        $this->forceInitialize = true;
 
-    //     if ($this->handlingValue === null) {
-    //         $storedValue = &$this->storedValue;
-    //     } else {
-    //         $storedValue = &$this->handlingValue;
-    //     }
+        $this->_set($value ?? []);
 
-    //     $result = null;
+        return $this;
+    }
 
-    //     foreach ($keys as $key) {
-    //         array_shift($keys);
-
-    //         if (isset($array[$key]) and gettype($array) === 'array') {
-    //             $array = $array[$key];
-
-    //             if (
-    //                 !is_object($array) and
-    //                 !$array instanceof TypeString and
-    //                 !$array instanceof TypeBool and
-    //                 !$array instanceof TypeInt and
-    //                 !$array instanceof TypeFloat and
-    //                 !$array instanceof TypeArray
-    //             ) {
-    //                 $class = $this->execTypeClassName($array, 'galastri\modules\types\\');
-
-    //                 $result = new $class($storedValue[$key]);
-    //                 $storedValue[$key] = $result;
-    //             } else {
-    //                 $result = $array;
-    //             }
-
-    //             if (count($keys) > 0) {
-    //                 if ($storedValue[$key] instanceof TypeArray) {
-    //                     return $storedValue[$key]->key(...$keys);
-    //                 }
-    //             }
-    //         } else {
-    //             $result = null;
-    //             break;
-    //         }
-    //     }
-
-    //     if ($result === null) {
-    //         $this->execHandleValue(null);
-    //         return $this;
-    //     }
-
-    //     return $result;
-    // }
-
-    // public function unset($key): void
-    // {
-    //     unset($this->storedValue[$key]);
-    // }
-
-    // public function set($value = null): self
-    // {
-    //     foreach ($this->getValue() as $key => $data) {
-    //         $this->key($key)->set();
-    //     }
-
-    //     $this->_set($value);
-
-    //     return $this;
-    // }
-
-    // public function clear(): self
-    // {
-    //     $this->handlingValue = [];
-
-    //     return $this;
-    // }
-
-    // public function join($spacer = ''): self
-    // {
-    //     $value = $this->getValue();
-
-    //     if (is_array($value)) {
-    //         $value = implode($spacer, $value);
-    //     }
-
-    //     $this->execHandleValue(new TypeString($value));
-
-    //     return $this;
-    // }
-
-    // public function get($return = VALUE)// : mixed
-    // {
-    //     $get = $this->_get();
-
-    //     return $return === KEY ? key($get) : $get;
-    // }
-
-    // public function add($value, $key = null): self
-    // {
-    //     $array = $this->getValue();
-
-    //     if ($key === null) {
-    //         $array[] = $value;
-    //     } else {
-    //         if (isset($array[$key])) {
-    //             throw new Exception(
-    //                 'Key $KEY already exists in the array',
-    //                 'G0026'
-    //             );
-    //         }
-    //         $array[$key] = $value;
-    //     }
-
-    //     $this->execHandleValue($array);
-
-    //     return $this;
-    // }
-
-
-    // public function keyExists($key)
-    // {
-    //     return isset($this->getValue()[$key]);
-    // }
-
-    // public function keyIndex()
-    // {
-    //     return key($this->getValue());
-    // }
-
-    // public function valueExists(string $search, int $matchType = MATCH_EXACT)
-    // {
-    //     return !empty($this->searchValue($search, $matchType)->get());
-    // }
-
-    // public function shift(&$shiftedKey = null)
-    // {
-    //     $shiftedKey = $this->handlingValue === null ? array_shift($this->storedValue) : array_shift($this->handlingValue);
-
-    //     return $this;
-    // }
-
-    // public function pop()
-    // {
-    //     $this->execHandleValue(array_pop($this->storedValue));
-
-    //     return $this->get();
-    // }
-
-    // public function searchKey(/*int|string*/ $search, int $matchType = MATCH_ANY): self
-    // {
-    //     $array = $this->getValue();
-
-    //     $arrayKeys = array_keys($array);
-    //     $found = [];
-
-    //     $regex = (function ($a, $b) {
-    //         switch ($b) {
-    //             case MATCH_EXACT:
-    //                 return "$a";
-    //             case MATCH_ANY:
-    //                 return "/$a/";
-    //             case MATCH_START:
-    //                 return "/^$a/";
-    //             case MATCH_END:
-    //                 return "/$a$/";
-    //         }
-    //     })(preg_quote((string)$search, '/'), $matchType);
-
-    //     foreach ($arrayKeys as $key) {
-    //         preg_match($regex, (string)$key, $match);
-
-    //         if (!empty($match)) {
-    //             $found[$key] = $array[$key];
-    //         }
-    //     }
-
-    //     $this->execHandleValue($found);
-
-    //     return $this;
-    // }
-
-    // public function searchValue(/*int|float|string*/ $search, int $matchType = MATCH_ANY)// : mixed
-    // {
-    //     $array = $this->getValue();
-
-    //     $arrayValues = array_values($array);
-    //     $found = [];
-
-    //     $regex = (function ($a, $b) {
-    //         switch ($b) {
-    //             case MATCH_EXACT:
-    //                 return "/\b$a\b/";
-    //             case MATCH_ANY:
-    //                 return "/$a/";
-    //             case MATCH_START:
-    //                 return "/^$a/";
-    //             case MATCH_END:
-    //                 return "/$a$/";
-    //         }
-    //     })(preg_quote($search, '/'), $matchType);
-
-    //     foreach ($arrayValues as $key => $value) {
-    //         preg_match($regex, (string)$value->get(), $match);
-    //         if (!empty($match)) {
-    //             $found[$key] = $value;
-    //         }
-    //     }
-
-    //     $this->execHandleValue($found);
-
-    //     return $this;
-    // }
-
-    // public function rearrange()// : mixed
-    // {
-    //     $this->execHandleValue(array_values($this->getValue()));
-
-    //     return $this;
-    // }
-
-    // public function keys()// : mixed
-    // {
-    //     $array = [];
-
-    //     foreach ($this->getValue() as $key => $value) {
-    //         $array[$key] = $value->get() ?? $this->key($key)->get();
-    //     }
-
-    //     $this->execHandleValue($array);
-
-    //     return $this;
-    // }
-
+    /**
+     * This class recursively rebuild the multidimensional array to a simple array. All the index
+     * names are lost in the process, replaced by serialized numbers.
+     *
+     * Example:
+     *      [
+     *          'key' => 'value',
+     *          'other' => ['value2', 'value3'],
+     *          0 => false
+     *      ];
+     *
+     * The above array will be turned into the follow array:
+     *
+     *      [
+     *          0 => 'value',
+     *          1 => 'value2',
+     *          2 => 'value3',
+     *          3 => false
+     *      ];
+     *
+     * @param  mixed $keyMatch                      Returns values only from the specified key.
+     *
+     * @param  mixed $unique                        Returns only unique values, removing duplicates.
+     *
+     * @return self
+     */
     public function flatten(/*bool|int|string*/ $keyMatch = false, bool $unique = false): self
     {
         $array = $this->getValue();
@@ -302,75 +141,5 @@ final class TypeArray implements \Language
         $this->execHandleValue($unique ? array_unique($result) : $result);
 
         return $this;
-    }
-
-    // public function concat(string ...$values): self
-    // {
-    //     return $this->execArrayModeConcats('concat', ...$values);
-    // }
-
-    // public function concatStart(string ...$values): self
-    // {
-    //     return $this->execArrayModeConcats('concatStart', ...$values);
-    // }
-
-    // public function concatSpacer(string ...$values): self
-    // {
-    //     return $this->execArrayModeConcats('concatSpacer', ...$values);
-    // }
-
-    // private function execArrayModeConcats($concatType, ...$values)
-    // {
-    //     foreach ($this->getValue() as $key => $data) {
-    //         if ($this->key($key) instanceof TypeString) {
-    //             $this->key($key)->$concatType(...$values);
-    //         }
-    //     }
-
-    //     $this->execHandleValue($this->getValue());
-
-    //     return $this;
-    // }
-
-    // public function trim(string ...$charSet): self
-    // {
-    //     return $this->execArrayModeConcats('trim', ...$charSet);
-    // }
-
-    // public function trimStart(string ...$charSet): self
-    // {
-    //     return $this->execArrayModeConcats('trimStart', ...$charSet);
-    // }
-
-    // public function trimEnd(string ...$charSet): self
-    // {
-    //     return $this->execArrayModeTrims('trimEnd', ...$charSet);
-    // }
-
-    // private function execArrayModeTrims($trimType, ...$charSet)
-    // {
-    //     foreach ($this->getValue() as $key => $data) {
-    //         if ($this->key($key) instanceof TypeString) {
-    //             $this->key($key)->$trimType(...$charSet);
-    //         }
-    //     }
-
-    //     $this->execHandleValue($this->getValue());
-
-    //     return $this;
-    // }
-
-    public function onFail(/*array|string*/ $messageCode, /*float|int|string*/ ...$printfData): self
-    {
-        $message = $this->execBuildErrorMessage($messageCode, $printfData);
-
-        $this->arrayValidation->onFail($message[1], $message[0]);
-
-        return $this;
-    }
-
-    public function validate(): ?array
-    {
-        return $this->getValue();
     }
 }

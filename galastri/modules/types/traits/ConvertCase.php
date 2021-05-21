@@ -8,42 +8,42 @@ namespace galastri\modules\types\traits;
 trait ConvertCase
 {
     /**
-     * Converts all chars of the current value to upper case.
+     * This method converts all chars of the current value to upper case.
      *
      * Example:
      * My String   ->   MY STRING
      *
      * @return self
      */
-    public function toUpperCase()
+    public function toUpperCase(): self
     {
         $this->execHandleValue(mb_convert_case($this->getValue(), MB_CASE_UPPER, 'UTF-8'));
         return $this;
     }
 
     /**
-     * Converts all chars of the current value to lower case.
+     * This method converts all chars of the current value to lower case.
      *
      * Example:
      * My String   ->   my string
      *
      * @return self
      */
-    public function toLowerCase()
+    public function toLowerCase(): self
     {
         $this->execHandleValue(mb_convert_case($this->getValue(), MB_CASE_LOWER, 'UTF-8'));
         return $this;
     }
 
     /**
-     * Converts all chars of the current value to camel case.
+     * This method converts all chars of the current value to camel case.
      *
      * Example:
      * My String   ->   myString
      *
      * @return self
      */
-    public function toCamelCase()
+    public function toCamelCase(): self
     {
         $string = $this->execFilterProgrammingCase($this->getValue(), 'CAMEL_CASE');
         $this->execHandleValue($string);
@@ -52,14 +52,14 @@ trait ConvertCase
     }
 
     /**
-     * Converts the current value to pascal case.
+     * This method converts the current value to pascal case.
      *
      * Example:
      * My String   ->   MyString
      *
      * @return self
      */
-    public function toPascalCase()
+    public function toPascalCase(): self
     {
         $string = $this->execFilterProgrammingCase($this->getValue(), 'PASCAL_CASE');
 
@@ -68,14 +68,14 @@ trait ConvertCase
     }
 
     /**
-     * Converts the current value to constant case.
+     * This method converts the current value to constant case.
      *
      * Example:
      * My String   ->   MY_STRING
      *
      * @return self
      */
-    public function toConstantCase()
+    public function toConstantCase(): self
     {
         $string = $this->execFilterProgrammingCase($this->getValue(), 'CONSTANT_CASE');
 
@@ -84,14 +84,14 @@ trait ConvertCase
     }
 
     /**
-     * Converts the current value to snake case.
+     * This method converts the current value to snake case.
      *
      * Example:
      * My String   ->   my_string
      *
      * @return self
      */
-    public function toSnakeCase()
+    public function toSnakeCase(): self
     {
         $string = $this->execFilterProgrammingCase($this->getValue(), 'SNAKE_CASE');
 
@@ -100,14 +100,14 @@ trait ConvertCase
     }
 
     /**
-     * Converts the current value to param case.
+     * This method converts the current value to param case.
      *
      * Example:
      * My String   ->   my-string
      *
      * @return self
      */
-    public function toParamCase()
+    public function toParamCase(): self
     {
         $string = $this->execFilterProgrammingCase($this->getValue(), 'PARAM_CASE');
 
@@ -116,14 +116,14 @@ trait ConvertCase
     }
 
     /**
-     * Converts the current value to dot case.
+     * This method converts the current value to dot case.
      *
      * Example:
      * My String   ->   my.string
      *
      * @return self
      */
-    public function toDotCase()
+    public function toDotCase(): self
     {
         $string = $this->execFilterProgrammingCase($this->getValue(), 'DOT_CASE');
 
@@ -132,19 +132,20 @@ trait ConvertCase
     }
 
     /**
-     * This method converts a string to a special cases, usually used in programming. The
-     * explanation of how this method works was done inside the method, for better understanding.
+     * This method executes the conversion of the string to special cases, usually used in
+     * programming. The explanation of how this method works was done inside the method, for better
+     * understanding.
      *
      * @param null|string $string                   The string that will be converted.
      *
      * @param string $type                          The type of the conversion. Can be:
      *
-     *                                              - CAMEL_CASE    : converts to camelCase
-     *                                              - PASCAL_CASE   : converts to PascalCase
-     *                                              - CONSTANT_CASE : converts to CONSTANT_CASE
-     *                                              - SNAKE_CASE    : converts to snake_case
-     *                                              - PARAM_CASE    : converts to param-case
-     *                                              - DOT_CASE      : converts to dot.case
+     *                                              - 'CAMEL_CASE'    : converts to camelCase
+     *                                              - 'PASCAL_CASE'   : converts to PascalCase
+     *                                              - 'CONSTANT_CASE' : converts to CONSTANT_CASE
+     *                                              - 'SNAKE_CASE'    : converts to snake_case
+     *                                              - 'PARAM_CASE'    : converts to param-case
+     *                                              - 'DOT_CASE'      : converts to dot.case
      *
      * @return string
      */
@@ -178,8 +179,8 @@ trait ConvertCase
         };
 
         /**
-         * The first action is to get any alphanumeric char whose position it right after a
-         * non-alphanumeric char and convert it to upper case.
+         * Gets any alphanumeric char whose position is right after a non-alphanumeric char and
+         * converts it to upper case.
          *
          * Example: tHIs! .sTring  ->  tHIs! .STring
          */
@@ -196,7 +197,7 @@ trait ConvertCase
         $string = $funcConvertUpperGroups($string);
 
         /**
-         * Next, this remove every non-alphanumeric char from the string. Following the example
+         * Removes every non-alphanumeric char from the string. Following the example
          * above, the result is:
          *
          * Example: tHis! .String  ->  tHisString
@@ -204,14 +205,14 @@ trait ConvertCase
         $string = preg_replace('/([^a-zA-Z0-9])/', '', $string);
 
         /**
-         * If the result of these replaces is an empty string, then it is returned as empty string.
+         * If the result of these replacements is an empty string, then it is returned as empty string.
          */
         if (empty($string)) {
             return '';
         }
 
         /**
-         * After this filters, the case itself will be set, based on the $type parameter:
+         * After these filters, the case itself will be set, based on the $type parameter:
          */
         switch ($type) {
             /**
@@ -245,7 +246,7 @@ trait ConvertCase
                 return $funcConvertTrailCases($string, '_', MB_CASE_UPPER);
 
             /**
-             * When SNAKE_CASE, it gets every upper case in the filtered string and adds a
+             * When SNAKE_CASE, it gets every upper case in the filtered string and adds an
              * underscore _ in front of it. Next, it trims the underscore from the left and converts
              * all the chars into lower case and return the result.
              *

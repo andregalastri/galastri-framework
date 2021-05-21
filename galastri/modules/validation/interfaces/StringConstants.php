@@ -1,27 +1,18 @@
 <?php
 
-namespace galastri\extensions\typeValidation\interfaces;
+namespace galastri\modules\validation\interfaces;
 
 /**
- * This interface stores the various messages in English language. It is dynamically implemented in
- * many classes based on the debug configuration 'language' parameter.
+ * This interface stores constants that are used by the StringValidation class.
  */
 interface StringConstants
 {
-    /**
-     * Constants that store special and accented chars. This is used by the charset method to allow
-     * a pre defined group os chars that is categorized as accented or special chars.
-     */
     const LOWER_ACCENTED_CHARS = 'àáâãäåçèéêëìíîïñòóôõöùúûüýÿŕ';
     const UPPER_ACCENTED_CHARS = 'ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝŸŔ';
     const LOWER_EXTENDED_ACCENTED_CHARS = 'ẃṕśǵḱĺźǘńḿẁỳǜǹẽỹũĩṽŵŷŝĝĥĵẑẅẗḧẍæœ';
     const UPPER_EXTENDED_ACCENTED_CHARS = 'ẂṔŚǴḰĹŹǗŃḾẀỲǛǸẼỸŨĨṼŴŶŜĜĤĴẐẄT̈ḦẌÆŒ';
     const SPECIAL_CHARS = "¹²³£¢¬º\\\\\/\-,.!@#$%\"'&*()_°ª+=\[\]{}^~`?<>:;";
 
-    /**
-     * This constant stores flags and their values. Flags are pre defined groups of chars that are
-     * easy to set and understand, instead of the use of regex combinations.
-     */
     const CHAR_FLAGS = [
         '--numbers' => '0-9',
         '--numbersUtf8' => '\p{Nl}',

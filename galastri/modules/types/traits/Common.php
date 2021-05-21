@@ -6,50 +6,71 @@ use galastri\core\Debug;
 use galastri\extensions\Exception;
 
 /**
- * This trait has the common methods that is used by various type classes. To avoid code repetition,
- * this trait can be easily implemented in the classes that need these codes.
+ * This trait has common methods that are shared within the type classes.
  */
 trait Common
 {
     /**
-     * Defines if the object was initialized or not. It is considered initialized when it stores a
-     * valid value that isn't null.
+     * Defines if the instance is initialized.
      *
      * @var bool
      */
     private bool $initialized = false;
 
     /**
-     * Stores the error message and code that will be returned when an exception occurs.
-     *
-     * @var array|null
-     */
-    private ?array $errorMessage = null;
-
-    /**
-     * Stores the debug tracking . This is used for internal framework, change this value while
-     * developing your app.
+     * Defines if the value is being handled.
      *
      * @var bool
      */
-    private int $debugTrack;
-
+    private bool $handling = false;
 
     /**
-     * Set a value to the object. The value will be checked, to make shure it matches the expected
-     * type of data or null. If not, throws an exception.
+     * Defines if the instance will be set as initialized even if its initial value is null. It is
+     * used when using the set method from the type classes.
      *
-     * @param mixed $value                          The value to be checked and stored
+     * @var bool
+     */
+    private bool $forceInitialize = false;
+
+    /**
+     * This method stores the value in the $storedValue property. It has two behaviors:
+     *
+     * When the parameter $value is not defined or is null, it will store the value that is being
+     * handle (if there is any). If there is no handling value, then 'null' will be stored.
+     *
+     * However, if the $value parameter is defined, then this is the value that will be stored.
+     *
+     * The value will have its type checked and if the value doesn't match the given type, an
+     * exception will be thrown. If there are validation methods defined before this method, they
+     * will be executed to check if the value matches the defined validation processes.
+     *
+     * The parameter $value also can be a closure function, that is executed before the storage
+     * process.
+     *
+     * @param  mixed $value                         The value that will be stored. If undefined or
+     *                                              null, the handling value will be stored. If
+     *                                              there is no handling value, then the value
+     *                                              stored will be 'null'.
      *
      * @return self
      */
-    public function set($value = null): self
+    private function _set($value = null): self
     {
-        Debug::setBacklog();
-
-        if ($value === null) {
+        /**
+         * When the value is null, checks if there is a value being handle. If it is, that is the
+         * value that will be stored.
+         */
+        if ($value === null and $this->handling) {
             $this->execHandleValue($this->getValue());
+
+        /**
+         * If not, the value declared will be stored. If the value is null, it will stored as null.
+         */
         } else {
+            /**
+             * The $value parameter can be a closure function that do any kind of process to return
+             * a final value.
+             */
             if ($value instanceof \Closure) {
                 $value = $value($this);
             }
@@ -63,45 +84,56 @@ trait Common
     }
 
     /**
-     * Returns the stored value.
-     * NOTE: The type hint is mixed because this trait can be used in any type class.
+     * This method gets the handling value, if there is any, and clears it, resetting the $handling
+     * and the $handlingValue properties. If there is no handling value, then it gets the stored
+     * value.
      *
      * @return mixed
      */
     public function get()// : mixed
     {
+        $handling = $this->handling;
         $handlingValue = $this->handlingValue;
+
+        $this->handling = false;
         $this->handlingValue = null;
 
-        return $handlingValue ?? $this->storedValue;
+        return $handling ? $handlingValue : $this->storedValue;
     }
 
-    public function disableDebugTrack(): self
-    {
-        $this->disableDebug = false;
-
-        return $this;
-    }
-
+    /**
+     * This method gets the handling value, if there is any, but do not clears it. If there is no
+     * handling value, then it gets the stored value.
+     *
+     * @return mixed
+     */
     public function preview()// : mixed
     {
         return $this->getValue();
     }
 
-    public function clear()// : mixed
+    /**
+     * This method clears the handling value.
+     *
+     * @return self
+     */
+    public function clear(): self
     {
+        $this->handling = false;
         $this->handlingValue = null;
 
         return $this;
     }
 
-
     /**
-     * Execute the varDump function in the value to get its data and properties.
+     * This method executes the vardump function in the current instance.
+     *
+     * @param  int $exit                            Stops the execution when declared with STOP
+     *                                              constant.
      *
      * @return self
      */
-    public function dump($exit = DONT_STOP): self
+    public function dump(int $exit = DONT_STOP): self
     {
         vardump($this);
 
@@ -112,7 +144,15 @@ trait Common
         return $this;
     }
 
-    public function valdump($exit = DONT_STOP): self
+    /**
+     * This method executes the vardump function in the current instance value.
+     *
+     * @param  int $exit                            Stops the execution when declared with STOP
+     *                                              constant.
+     *
+     * @return self
+     */
+    public function valdump(int $exit = DONT_STOP): self
     {
         vardump($this->getValue());
 
@@ -124,7 +164,7 @@ trait Common
     }
 
     /**
-     * This method return if the actual object is initilialized.
+     * This method checks if the instance is initialized.
      *
      * @return bool
      */
@@ -133,100 +173,136 @@ trait Common
         return $this->initialized;
     }
 
+    /**
+     * This method checks if the value is null.
+     *
+     * @return bool
+     */
     public function isNull(): bool
     {
         return $this->getValue() === null;
     }
 
+    /**
+     * This method checks if the value is not null.
+     *
+     * @return bool
+     */
     public function isNotNull(): bool
     {
         return $this->getValue() !== null;
     }
 
+    /**
+     * This method checks if the value is empty.
+     *
+     * PHP empty() function considers as empty the following values:
+     *
+     *   - An empty string             : ""
+     *   - 0 as a string               : "0"
+     *   - 0 as an integer             : 0
+     *   - 0 as a float                : 0.0
+     *   - An empty array              : array(), []
+     *   - Unintialized class property : public|private $var;
+     *   - NULL
+     *   - FALSE
+     *
+     * @return bool
+     */
     public function isEmpty(): bool
     {
         return empty($this->getValue());
     }
 
+    /**
+     * This method checks if the value is not empty.
+     *
+     * @return bool
+     */
     public function isNotEmpty(): bool
     {
         return !empty($this->getValue());
     }
 
     /**
-     * Internal executions.
-     */
-
-    /**
-     * This method stores the value into the $value property. It first checks its type; if it is
-     * null or equal to the expected value type, then it is valid. If not, an exception is thrown.
+     * This method stores the value that is being handled by modifier methods in the $handlingValue.
      *
-     * When it has a valid type, the value is validated the validation methods, if they were
-     * configured and only after this the value is stored.
-     *
-     * This method also sets if the value is valid to define the object as initialized or not, by
-     * checking if it is already initialized and if the value is not equal to null. The initial
-     * value is set only if the value meets this requirements.
-     *
-     * @param mixed $value                          The value that will be checked and stored.
-     *
-     * @param bool $forceInitialize                 Force initialize even if the value to be set is
-     *                                              null.
+     * @param  mixed $value                         The value that will be stored as handling value.
      *
      * @return void
      */
     private function execHandleValue($value): void
     {
-        if (
-            in_array(static::VALUE_TYPE, ['double', 'integer']) and
-            in_array(gettype($value), ['double', 'integer'])
-        ) {
-            $this->convertToRightNumericType($value);
-        }
+        // if (
+        //     in_array(static::VALUE_TYPE, ['double', 'integer']) and
+        //     in_array(gettype($value), ['double', 'integer'])
+        // ) {
+        //     $value = $this->convertToRightNumericType($value);
+        // }
 
+        $this->handling = true;
         $this->handlingValue = $value;
     }
 
-    private function execStoreValue(bool $forceInitialize = true): void
+    /**
+     * This method do the execution of the storing process into the $storedValue property. The value
+     * is validated and then checked if its value matches the expected value. An exception is thrown
+     * if it fails.
+     *
+     * Once passed in the validation process, the value is stored, the handling value is cleared
+     * and the instance is initialized, if it isn't yet.
+     *
+     * @return void
+     */
+    private function execStoreValue(): void
     {
-        $value = $this->handlingValue;
+        /**
+         * Execute the validation process, if there is any validation method defined before the
+         * execution of this method.
+         */
+        $this->validate();
 
-        if (gettype($value) === 'NULL' or gettype($value) === static::VALUE_TYPE) {
-            $this->storedValue = $this->validate();
+        /**
+         * The current handling value is stored in an variable. This value has its type validated.
+         * If it is equal to null or the expected value type, then it is stored.
+         */
+        $value = $this->getValue();
+
+        if (in_array(gettype($value), ['NULL', static::VALUE_TYPE])) {
+            $this->storedValue = $value;
+
+            $this->handling = false;
             $this->handlingValue = null;
 
-            if ((!$this->initialized and $this->getValue() !== null) or (!$this->initialized and $forceInitialize)) {
+            if ((!$this->initialized and $value !== null) or (!$this->initialized and $this->forceInitialize)) {
                 $this->initialized = true;
             }
+
+        /**
+         * If the value type doesn't match, then an exception is thrown. The exception can show an
+         * default message and code or the ones defined by the user, if there is a onError method
+         * defining them.
+         */
         } else {
+            $errorMessage = $this->getFailMessage();
+
             throw new Exception(
-                $this->errorMessage[1] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[1],
-                $this->errorMessage[0] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[0],
+                $errorMessage[1] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[1],
+                $errorMessage[0] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[0],
                 [static::VALUE_TYPE, $this->execGetVarType($value)]
             );
         }
     }
 
     /**
-     * execBuildErrorMessage
+     * This method returns a more concise type names. The gettype function return names of the types
+     * differently from the naming convention of the framework. This method replaces the different
+     * names replaces it to better ones.
      *
-     * @param  array|string $messageCode
-     * @param  float|int|string $printfData
-     * @return array
+     * @param  mixed $variable                      Variable that will have its value type returned.
+     *
+     * @return string
      */
-    private function execBuildErrorMessage(/*array|string*/ $messageCode, /*float|int|string*/$printfData): array
-    {
-        $message = vsprintf(is_array($messageCode) ? $messageCode[0] : $messageCode, $printfData);
-        $code = is_array($messageCode) ? $messageCode[1] : 'G0023';
-
-        if (empty($this->errorMessage)) {
-            $this->errorMessage[0] = $code;
-            $this->errorMessage[1] = $message;
-        }
-
-        return [$code, $message];
-    }
-
     private function execGetVarType($variable): string
     {
         return str_replace([
@@ -238,51 +314,35 @@ trait Common
         gettype($variable));
     }
 
-    private function execSetVarType($type): string
+    /**
+     * This method converts the numeric value types to the right ones. The TypeInt and TypeFloat
+     * classes share the same parent class TypeNumeric, but the deal with different types. This
+     * method helps to convert the value to the type of the final numeric class.
+     *
+     * @param  int|float $value                     The value that will be converted.
+     *
+     * @return int|float
+     */
+    private function convertToRightNumericType(/*int|float*/ $value)// : int|float
     {
-        $type = str_replace([
-            'bool', 'float', 'int', 'null'
-        ],
-        [
-            'boolean', 'double', 'integer', 'NULL'
-        ],
-        $type);
+        switch (gettype($value)) {
+            case 'integer':
+            case 'double':
+                settype($value, static::VALUE_TYPE);
+                break;
+        }
 
-        return settype($type);
-    }
-
-    private function execTypeClassName($data, string $location = ''): string
-    {
-        return $location . str_replace(
-            ['string', 'double', 'integer', 'boolean', 'array'],
-            ['TypeString', 'TypeFloat', 'TypeInt', 'TypeBool', 'TypeArray'],
-            gettype($data)
-        );
+        return $value;
     }
 
     /**
-     * Internal method that converts numeric values to the right type set in the VALUE_TYPE
-     * constant. This way it is always safe that a TypeInt will return an integer and a TypeFloat
-     * will return a float.
-     *
-     * @param  int|float &$value                    The value that will be converted.
+     * This method return the handling value if the $handling property is true, or the stored value
+     * if the $handling property is false.
      *
      * @return void
      */
-    private function convertToRightNumericType(/*int|float*/ &...$values): void
+    protected function getValue()
     {
-        foreach ($values as &$value) {
-            if (static::VALUE_TYPE === 'integer') {
-                $value = (int)explode('.', $value)[0];
-            }
-
-            settype($value, static::VALUE_TYPE);
-        }
-        unset($value);
-    }
-
-    private function getValue()
-    {
-        return $this->handlingValue ?? $this->storedValue;
+        return $this->handling ? $this->handlingValue : $this->storedValue;
     }
 }

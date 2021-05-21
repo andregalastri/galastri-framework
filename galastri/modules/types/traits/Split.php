@@ -10,7 +10,7 @@ use galastri\modules\types\TypeString;
 trait Split
 {
     /**
-     * This method splits the current value in to pieces and return an array with the parts. The
+     * This method splits the current value into pieces and return an array with the parts. The
      * split is based on a delimiter in the string.
      *
      * Example

@@ -6,11 +6,12 @@ use galastri\modules\types\TypeString;
 use galastri\modules\types\TypeInt;
 
 /**
- * This class creates a log file with an analysis of the entire request execution, or a other custom
- * parts of the user code.
+ * This class creates a log file with an analysis of the entire request execution, or can be used by
+ * the users to measure specific parts of their codes.
  *
- * The measures are calculated between the begin() to flush() methods and every flush() to flush()
- * methods.
+ * The measure is calculated starting from the begin method and each flush() method sets the points
+ * where the calculation will have to be temporarely stored. The store method finalizes the
+ * calculation and create the log file with the measured.
  *
  * The log file have these measures about the execution:
  *
@@ -48,39 +49,69 @@ use galastri\modules\types\TypeInt;
  */
 final class PerformanceAnalysis
 {
+    /**
+     * Default location where the log files will be stored.
+     */
     const LOG_DIRECTORY_PATH = '/logs/performance-analysis/';
 
     /**
-     * Stores the status when begin() method is called. When true, then the measures are active and
-     * the data is being collected.
+     * Stores an array with the status of a label. It is defined when the begin() method is called.
+     * Must follow this format:
+     *
+     * - Key: The label name that identifies the performance.
+     * - Value: Boolean. When true means that the measurement is active and the data is being
+     *   collocted.
      *
      * @var array
      */
     private static array $status = [];
 
     /**
-     * Stores the start time of the execution that will be compared when the measure stops.
+     * Stores an array with the start time of the execution of a label. This time that will be
+     * compared when the measure stops.
+     *
+     * Must follow this format:
+     *
+     * - Key: The label name that identifies the performance.
+     * - Value: Integer. The microtime when the measurement was started.
      *
      * @var array
      */
     private static array $microtimeStart = [];
 
     /**
-     * Stores the time when the execution stops and will be compared with the start time.
+     * Stores an array with the stop time of the execution of a label. This time that will be
+     * compared with the starting measure.
+     *
+     * Must follow this format:
+     *
+     * - Key: The label name that identifies the performance.
+     * - Value: Integer. The microtime when the measurement was stopped.
      *
      * @var array
      */
     private static array $microtimeStop = [];
 
     /**
-     * Stores the cumulative execution time.
+     * Stores an array with the cumulative time of the execution of a label. This is the rest of the
+     * calculation that subtracts the stopping time with the starting time.
+     *
+     * Must follow this format:
+     *
+     * - Key: The label name that identifies the performance.
+     * - Value: Integer. The difference between the starting time and the stopping time.
      *
      * @var array
      */
     private static array $cumulativeTime = [];
 
     /**
-     * Stores the flushed data, created to be stored in the log file.
+     * Stores an multidimensional data with the flushed data that will be stored in the log file.
+     *
+     * Must follow this format:
+     *
+     * - Key: The label name that identifies the performance.
+     * - Value: Array. Data that was measured and stored.
      *
      * @var array
      */
@@ -88,15 +119,15 @@ final class PerformanceAnalysis
 
     /**
      * Stores the last label that was created. Helps to avoid informing the label of the analysis to
-     * all methods.
+     * the methods each time that tjey are used.
      *
      * @var string
      */
     private static string $lastLabel = '';
 
     /**
-     * This is a singleton class, so, the __construct() method is private to avoid user to
-     * instanciate it.
+     * This is a singleton class, the __construct() method is private to avoid users to instanciate
+     * it.
      *
      * @return void
      */
@@ -105,15 +136,15 @@ final class PerformanceAnalysis
     }
 
     /**
-     * Sets the start of the measures and also starts the microtimer. The microtime is the current
-     * time when the execution starts in milliseconds. When a flush() method is executed, this start
-     * time will be subtracted from the stop time and with this we have the measure of how much time
-     * was spent in the execution.
+     * This method sets the start of the measurement and also starts the microtimer. The microtime
+     * is the current time when the execution starts, in milliseconds. When a flush method is
+     * executed, this starting time will be subtracted from the stopping time, which the result is
+     * the measure of how much time was spent in the execution.
      *
      * @param  string $label                        Label that identifies the analysis.
      *
      * @param  bool $status                         Sets if the analysis will be executed (true) or
-     *                                              not (false)
+     *                                              not (false).
      *
      * @return void
      */
@@ -128,12 +159,12 @@ final class PerformanceAnalysis
     }
 
     /**
-     * Creates a section in the log file with the data measured from the start to this point. This
-     * data is stored inside an array that will be processed when it is inserted inside the log
-     * file.
+     * This method creates a section in the log file with the data measured from the start to this
+     * point. This data is stored inside an array that will be processed when it is inserted inside
+     * the log file.
      *
-     * After get the data, this method also reestarts the microtimer, so when another flush() method
-     * is executed, the data measured will be of the last flush() to the next flush() and so on.
+     * After get the data, this method also restarts the microtimer, so when another flush method
+     * is executed, the data measured calculated from the previous flush to the current flush.
      *
      * @param  string $label                        Label that identifies the analysis.
      *
@@ -169,9 +200,10 @@ final class PerformanceAnalysis
     }
 
     /**
-     * Stores the collected data inside the log file. All the data is converted to a string and it
-     * is stored in the bottom of the file. The name of the file is the label that identifies the
-     * analysis, the date of the analysis and the current hour.
+     * This method stores the collected data inside the log file. All the data is converted to a
+     * string and it is stored at the bottom of the file. The name of the file is the label that
+     * identifies the analysis and each time the store method is called, it overwrites the previous
+     * file.
      *
      * @param  string $label                        Label that identifies the analysis.
      *
@@ -193,7 +225,7 @@ final class PerformanceAnalysis
             $flushedData .= str_repeat(PHP_EOL, 4);
 
             $filename = preg_replace('/[^a-zA-Z0-9]+/', '-', ($label === PERFORMANCE_ANALYSIS_LABEL ? '' : $label) . $_SERVER['REQUEST_URI']);
-            $filename = 'path_' . ltrim($filename . '.log', '-');
+            $filename = rtrim('analysis_' . ltrim(rtrim($filename, '-'), '-'), '_') . '.log';
 
             $file = new TypeString(self::LOG_DIRECTORY_PATH . $filename);
             $file->createFile()->fileInsertContents($flushedData, 'w+');
@@ -203,7 +235,7 @@ final class PerformanceAnalysis
     }
 
     /**
-     * Starts the microtimer to define when the execution started.
+     * This method starts the microtimer to define when the execution started.
      *
      * @param  string $label                        Label that identifies the analysis.
      *
@@ -217,7 +249,7 @@ final class PerformanceAnalysis
     }
 
     /**
-     * Stops the microtimer to define when the execution stoped.
+     * This method stops the microtimer to define when the execution stoped.
      *
      * @param  string $label                        Label that identifies the analysis.
      *
@@ -231,7 +263,7 @@ final class PerformanceAnalysis
     }
 
     /**
-     * Reset all the data of an analysis.
+     * This method resets the data of an analysis.
      *
      * @param  string $label                        Label that identifies the analysis.
      *

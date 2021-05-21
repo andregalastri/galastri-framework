@@ -8,26 +8,24 @@ namespace galastri\modules\types\traits;
 trait FilePath
 {
     /**
-     * Importing traits to the class.
-     */
-    use Trim;
-
-    /**
-     * Author: Sven Arduwie
+     * Based on
      * https://www.php.net/manual/pt_BR/function.realpath.php#84012
-
-     * Receives a path and converts it to the real path, based on project's
-     * root.
+     * Author: Sven Arduwie
      *
+     * This method formats strings that stores directory paths to convert it to an absolute path. It
+     * takes into account the project directory as root and will format the given path using it as
+     * base folder.
+     * 
      * @return self
      */
     public function realPath(): self
     {
         $path = str_replace(GALASTRI_PROJECT_DIR, '', $this->get());
-        $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, GALASTRI_PROJECT_DIR . DIRECTORY_SEPARATOR . $path);
+        $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, GALASTRI_PROJECT_DIR . DIRECTORY_SEPARATOR . $path);
 
         $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
-        $absolutes = array();
+        $absolutes = [];
+
         foreach ($parts as $part) {
             if ('.' == $part) continue;
             if ('..' == $part) {
@@ -43,11 +41,9 @@ trait FilePath
 
         return $this;
     }
-
+    
     /**
-     * fileExists
-     *
-     * @param null|string $path
+     * This method checks if the stored string leads to a file and return if it exists.
      *
      * @return bool
      */
@@ -61,9 +57,7 @@ trait FilePath
     }
 
     /**
-     * fileNotExists
-     *
-     * @param null|string $path
+     * This method checks if the stored string leads to a file and return if it doesn't exist.
      *
      * @return bool
      */
@@ -73,9 +67,7 @@ trait FilePath
     }
 
     /**
-     * directoryExists
-     *
-     * @param null|string $path
+     * This method checks if the stored string leads to a directory and return if it exists.
      *
      * @return bool
      */
@@ -89,9 +81,7 @@ trait FilePath
     }
 
     /**
-     * directoryNotExists
-     *
-     * @param null|string $path
+     * This method checks if the stored string leads to a directory and return if it doesn't exist.
      *
      * @return bool
      */
@@ -99,14 +89,17 @@ trait FilePath
     {
         return !$this->directoryExists();
     }
-
+    
     /**
-     * Creates a file and all the directory path, if the file will be stored inside a path that
-     * doesn't exist.
+     * This method gets the stored string as a file path and creates a file inside this path if
+     * it doesn't exist. If the directory doesn't exist, it will be created.
      *
+     * @param  int $permission                      Defines the permission mode of the file that
+     *                                              will be created.
+     * 
      * @return self
      */
-    public function createFile($permission = 0755): self
+    public function createFile(int $permission = 0755): self
     {
         $filePath = $this->realPath()->get();
         $parentDir = $this->concat('/..')->realPath()->get();
@@ -124,8 +117,17 @@ trait FilePath
 
         return $this;
     }
-
-    public function createDirectory($permission = 0755): self
+    
+    /**
+     * This method gets the stored string as a directory path and creates a folder in this path if
+     * it doesn't exist.
+     *
+     * @param  int $permission                      Defines the permission mode of the folder that
+     *                                              will be created.
+     * 
+     * @return self
+     */
+    public function createDirectory(int $permission = 0755): self
     {
         $dirPath = $this->realPath()->get();
 
@@ -137,34 +139,50 @@ trait FilePath
 
         return $this;
     }
-
+    
     /**
-     * Insert a string inside a file.
+     * This method gets the stored string as a file path and insert data inside it.
      *
-     * @param  string $string                       The text that will be included inside the file.
-     *
-     * @param  string $method                       Read/Write method used by fopen.
-     *
+     * @param  mixed $string                        Content that will be inserted in the file.
+     * 
+     * @param  mixed $method                        The fopen function operation mode.
+     * 
      * @return self
      */
-    public function fileInsertContents(string $string, string $method = 'a'): self
+    public function fileInsertContents(string $string, string $mode = 'a'): self
     {
         $filePath = $this->realPath()->get();
 
-        $fileOpen = fopen($filePath, $method);
+        $fileOpen = fopen($filePath, $mode);
         fwrite($fileOpen, $string);
         fclose($fileOpen);
 
         return $this;
     }
-
+    
     /**
-     * Gets the content from a file.
+     * This method gets the stored string as a file path and store its contents.
      *
-     * @return mixed
+     * @return self
      */
-    public function fileGetContents()
+    public function fileGetContents(): self
     {
-        return file_get_contents($this->realPath()->get());
+        $this->execHandleValue(file_get_contents($this->realPath()->get()));
+
+        return $this;
+    }
+    
+    /**
+     * This method gets the stored string as a file path and return its MIME type.
+     *
+     * @return self
+     */
+    public function mimeType(): self
+    {
+        $realPath = $this->realPath()->get();
+
+        $this->execHandleValue(is_file($realPath) ? mime_content_type($realPath) : false);
+
+        return $this;
     }
 }

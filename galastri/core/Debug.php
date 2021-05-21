@@ -3,43 +3,43 @@
 namespace galastri\core;
 
 /**
- * This class is part of the core of the framework. It helps to handle the exceptions and shows
+ * This is the debug class of the framework. It helps to handle the exceptions and shows
  * error messages when some configuration is wrong or a framework function is used incorrectly.
  */
 final class Debug implements \Language
 {
     /**
-     * The backlog array, provided by PHP debug_backtrace() function.
+     * Stores the backlog array, provided by the PHP debug_backtrace function.
      *
      * @var array
      */
     private static array $backlogData = [];
 
     /**
-     * The message that will be shown when an exception is thrown.
+     * Stores a message that will be shown when an exception is thrown.
      *
      * @var string
      */
     private static string $message = '';
 
     /**
-     * The code that identifies the exception.
+     * Stores a code that identifies the exception.
      *
      * @var int|null|string
      */
     private static /*int|null|string*/ $code = null;
 
     /**
-     * When true, bypass the displayErrors = false configuration in \app\config\debug.php and shows
-     * the error message anyway.
+     * When true, display the message of the exception even if the displayErrors debug configuration
+     * is set as false.
      *
      * @var bool
      */
     private static bool $bypassGenericMessage = false;
 
     /**
-     * This is a singleton class, so, the __construct() method is private to avoid user to
-     * instanciate this class.
+     * This is a singleton class, the __construct() method is private to avoid users to instanciate
+     * it.
      *
      * @return void
      */
@@ -48,68 +48,56 @@ final class Debug implements \Language
     }
 
     /**
-     * Stores the backlog array in the $backlog property.
+     * This method stores a backtrace array in the $backlogData property, providade by the
+     * PHP debug_backgrace function. This built-in function return an array which each key stores a
+     * trace of the method or function that is being executed.
      *
-     * @param array|null $customBacklog             A custom array backlog instead of the
-     *                                              debug_backtrace() one.
-     * @return galastri\core\Debug
+     * This method always store the previous trace, which is the key number 1, not the current trace
+     * (key number 0).
+     *
+     * @return self
      */
-    public static function setBacklog(?array $customBacklog = null): string /*self*/
+    public static function setBacklog()// : self
     {
-        if (isset(self::getLastBacklog()['class'])) {
-            if (self::getLastBacklog()['class'] === 'galastri\core\Parameters') {
-                return __CLASS__;
-            }
-        }
         self::$bypassGenericMessage = false;
 
-        self::$backlogData[] = $customBacklog ? $customBacklog[0] : debug_backtrace()[1];
+        self::$backlogData[] = debug_backtrace()[1];
 
         return __CLASS__;
     }
 
     /**
-     * Returns every data of the backlog array.
+     * Gets all backlog array data.
      *
-     * @param  int|null $index                      Return a specific group of keys of the stored
-     *                                              backlog.
-     *
-     * @param  null|string $key                     Return specific key of the most recent backlog
-     *                                              data.
-     *
-     *
-     * @return mixed
+     * @return array
      */
-    public static function getBacklog(?int $index = null, ?string $key = null) // : mixed
+    public static function getBacklog(): array
     {
-        if ($index === null and $key === null) {
-            return self::$backlogData;
-        } elseif ($index !== null and $key === null) {
-            return self::$backlogData[$index];
-        } else {
-            return self::$backlogData[$index][$key];
-        }
+        return self::$backlogData;
     }
 
     /**
-     * Returns the most recent data of the backlog array.
+     * Returns the last data added to the backlog array. When a key is specified, return only that
+     * key value. If this the case, when the key doesn't exist, return null.
      *
-     * @param  null|string $key              Return specific key of the most recent
-     *                                              backlog data.
+     * @param  null|string $key                     Specify a key of the most recent backlog data to
+     *                                              be returned.
      *
      * @return mixed
      */
-    public static function getLastBacklog(?string $key = null) // : mixed
+    public static function getLastBacklog(?string $key = null)// : mixed
     {
         $lastBacklog = self::$backlogData;
         $lastBacklog = array_pop($lastBacklog);
 
-        return $key === null ? $lastBacklog : $lastBacklog[$key];
+        return $key === null ? $lastBacklog : ($lastBacklog[$key] ?? null);
     }
 
     /**
-     * Sets the exception message and code. Can return additional data to be converted if the
-     * message have %s flags in it.
+     * This method sets the exception message and its code. If the message have %s flags in it, the
+     * values can be replaced by the printfData parameter. If the displayErrors parameter is set as
+     * false in the debug configuration, the message will be replaced by a generic one, except if
+     * the $bypassGenericMessage is set before return the exception to the request.
      *
      * This method can be chained with self::print() method.
      *
@@ -119,18 +107,18 @@ final class Debug implements \Language
      *
      * @param  int|string $code                     Code that identifies the exception.
      *
-     * @param  mixed ...$printfData                 Values that will replace %s flags in the
-     *                                              message, in the same order of appearance of the
-     *                                              flags.
+     * @param  mixed ...$printfData                 Values that will replace the %s flags of the
+     *                                              message. Needs to be set in the same order of
+     *                                              appearance of the flags of the message.
      *
      *                                              Exemple:
      *                                              - message:    'This is %s and %s'
      *                                              - printfData: ['John', 'Paul']
      *
      *                                              Result: 'This is John and Paul'
-     * @return \galastri\core\Debug
+     * @return self
      */
-    public static function setError(string $message, /*int|string*/ $code, /*mixed*/ ...$printfData): string /*self*/
+    public static function setError(string $message, /*int|string*/ $code, /*mixed*/ ...$printfData)// : self
     {
         self::$message = (function () use ($message, $printfData) {
             if (!Parameters::getDisplayErrors() and !self::$bypassGenericMessage) {
@@ -146,54 +134,60 @@ final class Debug implements \Language
     }
 
     /**
-     * Prints the exception message as a JSON and stops executing the script.
+     * Return the exception in JSON or Text format (based on the defined output) and end the
+     * execution of the script. If the displayErrors parameter is set as false in the debug
+     * configuration, the origin and line data will be null.
      *
      * @return void
      */
     public static function print(): void
     {
-        if (Parameters::getDisplayErrors()) {
-            $data = [
-                'code' => self::$code,
-                'origin' => self::getLastBacklog('file'),
-                'line' => self::getLastBacklog('line'),
-                'message' => self::$message,
-                'warning' => true,
-                'error' => true,
-            ];
-        } else {
-            $data = [
-                'code' => self::$code,
-                'origin' => null,
-                'line' => null,
-                'message' => self::$message,
-                'warning' => true,
-                'error' => true,
-            ];
-        }
-
-        if (Parameters::getShowBacklogData()) {
-            $data = array_merge($data, [
-                'backlogTrace' => self::getBacklog(),
-            ]);
-        }
-
+        /**
+         * If there is an output set in the route configuration and it is the Text output, then the
+         * data returned is the error code and the message.
+         */
         if (Parameters::getOutput() === 'text') {
             header('Content-Type: text/plain');
-            echo 'Error '.$data['code'].PHP_EOL;
-            echo $data['message'].PHP_EOL;
+            echo 'Error '.self::$code.PHP_EOL;
+            echo self::$message.PHP_EOL;
+
+        /**
+         * However, if the output is any other, or is undefined, then a JSON is returned.
+         */
         } else {
+            /**
+             * Defines how the data will be returned.
+             */
+            $displayErrors = Parameters::getDisplayErrors();
+            $data = [
+                'code' => self::$code,
+                'origin' => $displayErrors ? self::getLastBacklog('file') : null,
+                'line' => $displayErrors ? self::getLastBacklog('line') : null,
+                'message' => self::$message,
+                'warning' => true,
+                'error' => true,
+            ];
+
+            /**
+             * If the 'showBacklogData' parameter configured in the debug configuration is true,
+             * then all backlog trace will also be shown.
+             */
+            if (Parameters::getShowBacklogData()) {
+                $data = array_merge($data, [
+                    'backlogTrace' => self::getBacklog(),
+                ]);
+            }
+
             header('Content-Type: application/json');
             echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         }
+
         exit();
     }
 
     /**
-     * Sets the $bypassGenericMessage property to true temporarily to show the error message even
-     * if the displayErrors debug configuration is false.
-     *
-     * @return void
+     * This method sets the $bypassGenericMessage property to true, which means that even if the
+     * 'displayErrors' parameter is set as false, the message shown won't be the generic one.
      */
     public static function bypassGenericMessage(): void
     {

@@ -7,8 +7,9 @@ namespace galastri\modules\types\traits;
  */
 trait Math
 {
+
     /**
-     * Sums the current value by the given number.
+     * This method sums the current value with the given number.
      *
      * @param  float $number                        The number that will be added to the value.
      *
@@ -22,7 +23,7 @@ trait Math
     }
 
     /**
-     * Subtracts the current value by the given number.
+     * This method subtracts the current value by the given number.
      *
      * @param  float $number                        The number that will subtract the value.
      *
@@ -36,7 +37,7 @@ trait Math
     }
 
     /**
-     * Subtracts the given number by the current value.
+     * This method subtracts the given number by the current value.
      *
      * @param  float $number                        The number that will be subtracted by the value.
      *
@@ -50,7 +51,7 @@ trait Math
     }
 
     /**
-     * Multiplies the current value by the given number.
+     * This method multiplies the current value by the given number.
      *
      * @param  float $number                        The number that will be multiplied by the value.
      *
@@ -64,7 +65,7 @@ trait Math
     }
 
     /**
-     * Divides the current value by the given number.
+     * This method divides the current value by the given number.
      *
      * @param  float $number                        The number that will divide the value.
      *
@@ -78,7 +79,7 @@ trait Math
     }
 
     /**
-     * Divides the given number by the current value.
+     * This method divides the given number by the current value.
      *
      * @param  float $number                        The number that will be divided by the value.
      *
@@ -92,7 +93,8 @@ trait Math
     }
 
     /**
-     * Set the remainder of the division between the current value by the given number as the value.
+     * This method sets the remainder of the division between the current value by the given number
+     * as the value.
      *
      * @param  float $number                        The number that will divide the value.
      *
@@ -106,7 +108,7 @@ trait Math
     }
 
     /**
-     * Raises the current value to power of the given exponent.
+     * This method raises the current value to power of the given exponent.
      *
      * @param  float $exponent                      The number that will raises the current value to
      *                                              power.
@@ -121,7 +123,7 @@ trait Math
     }
 
     /**
-     * Raises the given base to power with the current value as exponent.
+     * This method raises the given base to power with the current value as exponent.
      *
      * @param  float $base                          The number that will be raised to power with the
      *                                              current value as exponent.
@@ -136,7 +138,7 @@ trait Math
     }
 
     /**
-     * Increments the current value by 1.
+     * This method increments the current value by 1.
      *
      * @return self
      */
@@ -152,7 +154,7 @@ trait Math
     }
 
     /**
-     * Decrement the current value by 1.
+     * This method decrements the current value by 1.
      *
      * @return self
      */
@@ -168,11 +170,11 @@ trait Math
     }
 
     /**
-     * Round the current value up. It also can round up based on a given multiple.
+     * This method rounds up the current value. It also can round up based on a given multiple.
      *
-     * @param  float $nearestMultiple               The nearest multiple to round up. For example,
-     *                                              if it is wanted to round in multiples of 5, 10
-     *                                              or even fractions like 0.5 or 0.1.
+     * @param  float $nearestMultiple               The nearest multiple to round up.
+     *
+     *                                              Examples:
      *
      *                                                  $myFloat->setValue(3.5)->ceil(5)
      *                                                  - Result: 5
@@ -199,11 +201,11 @@ trait Math
     }
 
     /**
-     * Round the current value down. It also can round down based on a given multiple.
+     * This method rounds down the current value. It also can round down based on a given multiple.
      *
-     * @param  float $nearestMultiple               The nearest multiple to round down. For example,
-     *                                              if it is wanted to round in multiples of 5, 10
-     *                                              or even fractions like 0.5 or 0.1.
+     * @param  float $nearestMultiple               The nearest multiple to round down.
+     *
+     *                                              Examples:
      *
      *                                                  $myFloat->setValue(3.5)->floor(5)
      *                                                  - Result: 0
@@ -230,12 +232,11 @@ trait Math
     }
 
     /**
-     * Round the current value up or down automatically, based on the nearest multiple or integer.
-     * It also can round down based on a given multiple.
+     * This method rounds the current value up or down automatically, based on the nearest multiple.
      *
-     * @param  float $nearestMultiple               The nearest multiple to round up or down. For
-     *                                              example, if it is wanted to round in multiples
-     *                                              of 5, 10 or even fractions like 0.5 or 0.1.
+     * @param  float $nearestMultiple               The nearest multiple to round up or down.
+     *
+     *                                              Examples:
      *
      *                                                  $myFloat->setValue(3.5)->round(5)
      *                                                  - Result: 5
@@ -262,7 +263,7 @@ trait Math
     }
 
     /**
-     * Set the current value to its absolute value.
+     * This method sets the current value to its absolute value.
      *
      * @return self
      */
@@ -274,7 +275,7 @@ trait Math
     }
 
     /**
-     * Set the current value to its root (square root, cube root, etc).
+     * This method sets the current value to a root (square root, cube root, etc).
      *
      * @param  int $degree                          The degree of the root. Square root is 2, cube
      *                                              root is 3, and so on.
@@ -296,8 +297,7 @@ trait Math
     }
 
     /**
-     * Set the current value to its square root. It is a shortcut to the root() method with $degree
-     * value equal to 2
+     * This method sets the current value to its square root. It is a shortcut to the root(2).
      *
      * @return self
      */
@@ -309,8 +309,7 @@ trait Math
     }
 
     /**
-     * Set the current value to its cube root. It is a shortcut to the root() method with $degree
-     * value equal to 3
+     * This method sets the current value to its cube root. It is a shortcut to the root(3).
      *
      * @return self
      */
@@ -319,18 +318,5 @@ trait Math
         $this->root(3);
 
         return $this;
-    }
-
-    /**
-     * Internal method to convert the result of the calculations to the types of the current object,
-     * to resolve incompatibility issues.
-     *
-     * @param  mixed $value
-     *
-     * @return void
-     */
-    private function convertToRightType(float $value)// : int|float
-    {
-        return static::VALUE_TYPE === 'integer' ? (int)$value : (float)$value;
     }
 }

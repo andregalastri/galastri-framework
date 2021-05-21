@@ -15,29 +15,94 @@ use galastri\modules\Authentication;
 use galastri\modules\PerformanceAnalysis;
 
 /**
- * This is the main core class. Here we will verify if the classes, methods and parameters defined
- * in the /app/config/routes.php are valid and then call the controller, if it is required, and
- * finally call the output, a script that will resolve the request and return a type of data.
+ * This is the main class of the framework. It will do a series of executions based on the
+ * parameters defined in the configuration files.
+ *
+ * This class:
+ * - Execute the route resolving and will store its configurations.
+ * - Check if the offline parameter is set.
+ * - Check if the forceRedirect parameter is set.
+ * - Check if the route exists.
+ * - Check if an authTag is set and if the user have it in its session.
+ * - If an output is set, it will check if it requires a controller and check if the route
+ *   controller exists. If it doesn't require a controller, it is ignored.
+ *   - Check if the route controller extends the core controller.
+ *   - Check if the route controller have the method based on its child node.
+ *   - Call the route controller.
+ * - Check if the output is set.
+ * - Call the output.
  */
 final class Galastri implements \Language
 {
+    /**
+     * All the processed data in this framework need to be returned by scripts called 'outputs'.
+     * They are defined in the route configuration file or in a route controller.
+     *
+     * Right now there are the following outputs:
+     *
+     * - View: This output return a view, based on the MVC concept. All the data processed by the
+     *   route controller are returned and made available to a template file, specified in the
+     *   project or route configuration file, or by the route controller itself. In this template
+     *   file, a view file can be imported to print a HTML to the client's browser. It requires a
+     *   route controller to work.
+     *
+     * - Json: This output return a JSON with the data processed by the route controller. It
+     *   requires a route controller to work.
+     *
+     * - Text: This output return a plain text with the data processed by the route controller. It
+     *   is useful for command line outputs. It requires a route controller to work.
+     *
+     * - File: This output return a file. It doesn't require a route controller to work, but it
+     *   needs a base folder set in the route configuration. When a controller isn't set to the
+     *   output, all URL nodes are used as the file path. If the controller is set, then the
+     *   controller can change this behavior or execute specific commands.
+     */
     use View;
     use Json;
     use Text;
     use File;
 
+    /**
+     * Sets the default namespace for the route controllers. It will be overwrite if a namespace is
+     * defined in the route configuration.
+     */
     const DEFAULT_NODE_NAMESPACE = 'app\controllers';
+
+    /**
+     * Sets a default base folder to the view output. It will be overwrite if a custom base folder
+     * is defined in the route configuration.
+     */
     const VIEW_BASE_FOLDER = '/app/views';
+
+    /**
+     * Sets the core controller class.
+     */
     const CORE_CONTROLLER = '\galastri\Core\Controller';
 
+    /**
+     * Stores route controller name that will be called based on the route configuration file.
+     *
+     * @var string
+     */
     private static string $routeControllerName;
+
+    /**
+     * Stores route controller instance, created based on the $routeControllerName property.
+     *
+     * @var Controller|null
+     */
     private static ?Controller $routeController = null;
 
+    /**
+     * Stores if the controller requires a controller or not. It is set by the output files.
+     *
+     * @var bool
+     */
     private static bool $controllerIsRequired = true;
 
     /**
-     * This is a singleton class, so, the __construct() method is private to avoid user to
-     * instanciate it.
+     * This is a singleton class, the __construct() method is private to avoid users to instanciate
+     * it.
      *
      * @return void
      */
@@ -46,7 +111,12 @@ final class Galastri implements \Language
     }
 
     /**
-     * Starts the chain of validations and executions.
+     * This is the main method of the framework. It has a chain of methods that execute the entire
+     * framework. Each method is inside in the main try/catch block. Every extension or module of
+     * the framework can thrown an exception that will be caught by it, in case of an error occurs.
+     *
+     * When an exception is thrown in any part of the framework, the Debug class will be responsible
+     * to return the error data.
      *
      * @return void
      */
@@ -54,11 +124,15 @@ final class Galastri implements \Language
     {
         try {
             /**
-             * Starts the resolution of the URL routes and its configurations in
-             * the /app/config/routes.php file.
+             * The first thing that it will execute is the route resolution. For more information,
+             * see the galastri\core\Route class file.
              */
             Route::resolve();
 
+            /**
+             * Next, a series of verifications are checked. Each of these methods are explained in
+             * their definitions.
+             */
             self::checkOffline();
             self::checkForceRedirect();
             self::checkRouteExists();
@@ -67,13 +141,21 @@ final class Galastri implements \Language
         } catch (Exception $e) {
             Debug::setError($e->getMessage(), $e->getCode(), $e->getData())::print();
         } finally {
+            /**
+             * After the execution of the method, if the performance analysis is set, it will store
+             * the result.
+             */
             PerformanceAnalysis::store(PERFORMANCE_ANALYSIS_LABEL);
         }
     }
 
     /**
-     * Checks if the resolved route has the route parameter 'offline' sets as true. In this case, a
-     * offline message is shown.
+     * This method checks if the 'offline' parameter is set in the project or the route
+     * configuration. If it is true, it will return an exception showing a message that the route is
+     * offline.
+     *
+     * The message can be defined by the 'offlineMessage' parameter, set in the project of route
+     * parameter.
      *
      * @return void
      */
@@ -89,8 +171,13 @@ final class Galastri implements \Language
     }
 
     /**
-     * Checks if the resolved route has the route parameter 'forceRedirect' sets as true. In this
-     * case, the request is redirected.
+     * This method checks if the 'forceRedirect' parameter is set in the route configuration. If it
+     * is true, the request will be redirected to the given URL.
+     *
+     * The URL can be internal or external.
+     * - When internal, the starting point will always be from the domain and doesn't the relative
+     *   URLs.
+     * - When external, it needs to start with a protocol (like http, https, ftp, etc.).
      *
      * @return void
      */
@@ -106,10 +193,8 @@ final class Galastri implements \Language
     }
 
     /**
-     * Checks if the route configuration file has the url nodes informed by the request. If the
-     * child node and parent node exists in the route configuration, then everything is ok, but if
-     * it is not, then the request is redirected to the 404 page (if the output is view of file) or
-     * return an exception text (if the output is json or text).
+     * After the route resolving, this method checks if there is a parent node and a child node, or
+     * at least the child node, set to the route.
      *
      * @return void
      */
@@ -117,13 +202,37 @@ final class Galastri implements \Language
     {
         Debug::setBacklog()::bypassGenericMessage();
 
+        /**
+         * If the route doesn't exist, it will return error 404.
+         */
         if (
             Route::getParentNodeName() === null and
             Route::getChildNodeName() === null or
             Route::getChildNodeName() === null
         ) {
             self::return404();
+
+        /**
+         * If the route exists, two verifications are checked:
+         */
         } else {
+            /**
+             * 1. If there are URL nodes remaining, it means that there are too many nodes than
+             *    necessary, which means that it is an invalid route. Because of this, the framework
+             *    will return error 404 to routes that have more URL nodes than necessary (except if
+             *    the output is defined as 'file', because the file output uses the extra url nodes
+             *    as file path).
+             */
+            if (!empty(Route::getUrlArray()) and Parameters::getOutput() !== 'file') {
+                self::return404();
+            }
+
+            /**
+             * 2. If it pass the first test, it will check if there are URL parameters set in the
+             *    'urlParameters' child parameter. If there are required parameters, but no url
+             *    nodes to fill these parameters, then it will return error 404. It only passes if
+             *    all required URL parameters are filled.
+             */
             $urlParameters = [];
 
             foreach(Parameters::getUrlParameters() as $tagName => $tagValue) {
@@ -131,19 +240,30 @@ final class Galastri implements \Language
                     self::return404();
                 }
 
+                /**
+                 * If it pass the test, the stored optional parameters are filtered to remove the
+                 * '?' character from their keys.
+                 */
                 $urlParameters[ltrim($tagName, '?')] = $tagValue;
             }
 
             Parameters::setUrlParameters($urlParameters);
-
-            if (!empty(Route::getUrlArray())) {
-                self::return404();
-            }
         }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }
 
+    /**
+     * This method checks if an 'authTag' route parameter is set to the route. The auth tags means
+     * that the route is protected by an authentication requisite. If the user doesn't have the
+     * given auth tag in its session, then the framework will return an authentication fail error.
+     * For more information, check the galastri\modules\Authentication class.
+     *
+     * The authentication fail can return a JSON data or, if there is an 'authFailRedirect' route
+     * parameter set in the route configuration, it will redirect the request to the given URL.
+     *
+     * @return void
+     */
     private static function checkAuthentication(): void
     {
         if ($authTag = Parameters::getAuthTag()) {
@@ -152,21 +272,12 @@ final class Galastri implements \Language
             }
         }
     }
+
     /**
-     * Checks if there is a class to be called, based on the resolved URL nodes in
-     * \galastri\Core\Route.
+     * This method checks if there is a route controller set to the route.
      *
-     * If there is a specific controller set, then that is the controller that will be call. If not,
-     * then the default way to call controllers will be executed:
-     *
-     * \base\namespace\ParentNode
-     *
-     * If the call is to a child node, then:
-     *
-     * \base\namespace\ParentNode\ChildNode
-     *
-     * The base namespace can be the default \app\controller or a custom one, set in the route
-     * configuration 'namespace' parameter. When this parameter isn't set, the default one is used.
+     * It do several verifications to define a valid route controller and if the output requires a
+     * controller to work.
      *
      * @return void
      */
@@ -174,23 +285,47 @@ final class Galastri implements \Language
     {
         Debug::setBacklog();
 
+        /**
+         * First, it defines the route controller name. If there is a specific controller set with
+         * the 'controller' parent parameter in the route configuration, then it is set.
+         *
+         * However, if there is no specific controller defined, it sets the controller name based on
+         * a base namespace (it can be the default namespace app/controller or a namespace defined
+         * with the 'namespace' route parameter) and the namespace that follows the URL until the
+         * parent node. The parent node is the controller class itself, and all the url nodes before
+         * forms the namespace.
+         */
         $controllerNamespace = Route::getControllerNamespace();
 
-
         if ($nodeController = Parameters::getController()) {
-            $routeController = $nodeController;
+            $routeControllerName = $nodeController;
         } else {
             $baseNodeNamespace = Parameters::getNamespace() ?: self::DEFAULT_NODE_NAMESPACE;
-            $routeController = $baseNodeNamespace . implode($controllerNamespace);
+            $routeControllerName = $baseNodeNamespace . implode($controllerNamespace);
         }
 
-        if (class_exists($routeController) !== false) {
-            self::$routeControllerName = $routeController;
+        /**
+         * Next, it checks if the class exists.
+         *
+         * if the class exists, then its name is set in the $routeControllerName property and the
+         * next method called is the checkControllerExtendsCore.
+         */
+        if (class_exists($routeControllerName)) {
+            self::$routeControllerName = $routeControllerName;
 
             PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
 
             self::checkControllerExtendsCore();
+
+        /**
+         * However, when the route controller doesn't exists, it is necessary to check if there is
+         * an output set in the route configuration.
+         */
         } else {
+            /**
+             * If there is, it checks if the given output requires a controller to work. If not,
+             * then the framework will jump to the checkOutputIsSet method and no error will occur.
+             */
             if (Parameters::getOutput() !== null) {
                 self::$controllerIsRequired = self::{Parameters::getOutput().'RequiresController'}();
 
@@ -200,18 +335,23 @@ final class Galastri implements \Language
                 }
             }
 
-            $workingController = explode('\\', $routeController);
+            /**
+             * If it requires a controller, then an exception is thrown.
+             */
+            $workingController = explode('\\', $routeControllerName);
 
             $notFoundClass = str_replace('\\', '', array_pop($workingController));
             $notFoundNamespace = implode('/', $workingController);
 
-            throw new Exception(self::CONTROLLER_NOT_FOUND[1], self::CONTROLLER_NOT_FOUND[0], [$routeController, $notFoundClass, $notFoundNamespace]);
+            throw new Exception(self::CONTROLLER_NOT_FOUND[1], self::CONTROLLER_NOT_FOUND[0], [$routeControllerName, $notFoundClass, $notFoundNamespace]);
         }
     }
 
     /**
-     * Checks if the route controller extends the core controller, which is required. If it isn't,
-     * an exception is thrown.
+     * This method will only be executed if the route controller exists.
+     *
+     * It checks if the route controller inherits the core controller class. If it isn't, an
+     * exception will be thrown.
      *
      * @return void
      */
@@ -229,11 +369,10 @@ final class Galastri implements \Language
     }
 
     /**
-     * Checks if the child node exists as a method inside the route controller. If it isn't, an
-     * exception is thrown.
+     * This method will only be executed if the route controller exists.
      *
-     * It also checks if there is a request method defined in the route parameter request and,
-     * if it is, checks if it exists in the route controller.
+     * It  checks if there is a method in the route controller that matches the name of the child
+     * node name.
      *
      * @return void
      */
@@ -242,9 +381,20 @@ final class Galastri implements \Language
         Debug::setBacklog();
 
         $method = Route::getChildNodeName();
-        $request = Parameters::getRequest();
 
+        /**
+         * If the method exists, then the route controller will be called. But before this, the
+         * framework checks if there is a 'request' child parameter defined in the route
+         * configuration. The request parameter sets a second method to be called in the route
+         * controller, so, it is needed to check if this second method exists.
+         */
         if (method_exists(self::$routeControllerName, $method)) {
+            $request = Parameters::getRequest();
+
+            /**
+             * If the request method is set, but doesn't exist in the route controller, an exception
+             * is thrown.
+             */
             if (!empty($request)) {
                 if (!method_exists(self::$routeControllerName, $request)){
                     throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $request]);
@@ -254,6 +404,10 @@ final class Galastri implements \Language
             PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
 
             self::callController();
+
+        /**
+         * If the method doesn't exist in the route controller, an exception is thrown.
+         */
         } else {
             if (self::$controllerIsRequired) {
                 throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $method]);
@@ -264,8 +418,11 @@ final class Galastri implements \Language
     }
 
     /**
-     * Checks if all stages of validation are true and then calls for the controller creating a
-     * instance of it inside the $routeController property.
+     * This method creates an instance of the route controller. The construct method of the core
+     * controller is called and will do a series of method calls in these classes. More information
+     * in the galastri\core\Controller class.
+     *
+     * After the instance creation, the method checkOutputIsSet is called.
      *
      * @return void
      */
@@ -280,10 +437,8 @@ final class Galastri implements \Language
         self::checkOutputIsSet();
     }
 
-
     /**
-     * Checks if the resolved route has the route parameter 'output' set properly. If not, an
-     * exception is thrown.
+     * This method check if an output is set. If it is not, then an exception is thrown.
      *
      * @return void
      */
@@ -301,7 +456,7 @@ final class Galastri implements \Language
     }
 
     /**
-     * callOutput
+     * After all these methods, then the main output method is called.
      *
      * @return void
      */
@@ -317,7 +472,7 @@ final class Galastri implements \Language
     }
 
     /**
-     * return404
+     * This method is called when an error 404 need to be returned.
      *
      * @return void
      */
@@ -325,9 +480,19 @@ final class Galastri implements \Language
     {
         Debug::setBacklog()::bypassGenericMessage();
 
-        if (Parameters::getNotFoundRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text') {
+        /**
+         * It checks if there is a 'notFoundRedirect' route parameter defined in the route
+         * configuration. When it doesn't exist, then an exception is thrown to return a JSON data
+         * with the 404 error.
+         */
+        if (Parameters::getNotFoundRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text'  or Parameters::getOutput() === null) {
             header("HTTP/1.0 404 Not Found");
             throw new Exception(self::ERROR_404[1], self::ERROR_404[0]);
+
+        /**
+         * However, if there is a 'notFoundRedirect' route parameter defined, then the request is
+         * redirected to the given URL.
+         */
         } else {
             PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
             Redirect::to(Parameters::getNotFoundRedirect());
@@ -335,7 +500,7 @@ final class Galastri implements \Language
     }
 
     /**
-     * returnAuthFail
+     * This method is called when an authentication fails.
      *
      * @return void
      */
@@ -343,8 +508,18 @@ final class Galastri implements \Language
     {
         Debug::setBacklog()::bypassGenericMessage();
 
-        if (Parameters::getAuthFailRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text') {
+        /**
+         * It checks if there is a 'authFailredirect' route parameter defined in the route
+         * configuration. When it doesn't exist, then an exception is thrown to return a JSON data
+         * with the error message.
+         */
+        if (Parameters::getAuthFailRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text'  or Parameters::getOutput() === null) {
             throw new Exception(Parameters::getAuthFailMessage(), self::DEFAULT_AUTH_FAIL_MESSAGE[0]);
+
+        /**
+         * However, if there is a 'authFailredirect' route parameter defined, then the request is
+         * redirected to the given URL.
+         */
         } else {
             PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
             Redirect::to(Parameters::getAuthFailRedirect());

@@ -1,28 +1,18 @@
 <?php
 
-function jsonDump(...$values): void
-{
-    $debug = debug_backtrace()[0];
-
-    $varDump = _getVarDump(VARDUMP_JSON_TYPE, $values);
-
-    header('Content-Type: application/json');
-    echo json_encode([
-        'code' => 'GALASTRI_JSON_DUMP',
-        'origin' => $debug['file'],
-        'line' => $debug['line'],
-        'values' => $varDump,
-        'message' => 'Returned a JSON var_dump',
-        'error' => false,
-        'warning' => true,
-    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-}
-
+/**
+ * Global function that is a superset of the var_dump PHP function. This function return a more
+ * readable HTML output for var_dump.
+ *
+ * @param  mixed $values                            Data that will be dumped.
+ *
+ * @return void
+ */
 function varDump(...$values): void
 {
     $debug = debug_backtrace()[0];
 
-    $varDump = _getVarDump(VARDUMP_HTML_TYPE, $values);
+    $varDump = _getVarDump(true, ...$values);
 
     $varDump = preg_replace(
         '/\]=>\n[\s]+/',
@@ -30,7 +20,7 @@ function varDump(...$values): void
     $varDump);
 
     $varDump = preg_replace(
-        '/(\[)(".*?")(?:\:(?:"(.*?)"))?:(private|protected|public)(\])/',/**/
+        '/(\[)(".*?")(?:\:(?:"(.*?)"))?:(private|protected|public)(\])/',
         '<objectKey title="$3">$1$2:<small>$4</small>$5</objectKey>',
     $varDump);
 
@@ -50,7 +40,7 @@ function varDump(...$values): void
     $varDump);
 
     $varDump = preg_replace(
-        '/(string\(.*?\))\s(".*?")/',
+        '/(string\(.*?\))\s(".*")/',
         '<stringValue>$2</stringValue> <stringTitle>$1</stringTitle>',
     $varDump);
 
@@ -92,12 +82,49 @@ function varDump(...$values): void
     </div>";
 }
 
-function _getVarDump(int $type, ...$values): string
+/**
+ * Global function that is a superset of the var_dump PHP function. This function return the
+ * var_dump output in JSON format.
+ *
+ * @param  mixed $values                            Data that will be dumped.
+ *
+ * @return void
+ */
+function jsonDump(...$values): void
+{
+    $debug = debug_backtrace()[0];
+
+    $varDump = _getVarDump(false, ...$values);
+
+    header('Content-Type: application/json');
+    echo json_encode([
+        'code' => 'GALASTRI_JSON_DUMP',
+        'origin' => $debug['file'],
+        'line' => $debug['line'],
+        'values' => $varDump,
+        'message' => 'Returned a JSON var_dump',
+        'error' => false,
+        'warning' => true,
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+}
+
+/**
+ * Global function that store the var_dump output and return its content. It is meant to be used by
+ * the varDump and jsonDump function, but can be used by its own.
+ *
+ * @param  string $html                             When true, a HTML div will be printed between
+ *                                                  the values.
+ *
+ * @param  mixed $values                            Data that will be dumped.
+ *
+ * @return string
+ */
+function _getVarDump(bool $html, ...$values): string
 {
     ob_start();
-    foreach ($values[0] as $key => $value) {
+    foreach ($values as $key => $value) {
         $key++;
-        echo $type !== VARDUMP_JSON_TYPE ? "<span class=\"division\">$key</span>" : '';
+        echo $html === true ? '<span class="division">' . $key . '</span>' : '';
         var_dump($value);
     };
     $content = ob_get_contents();

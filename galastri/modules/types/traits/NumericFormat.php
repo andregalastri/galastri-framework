@@ -29,9 +29,8 @@ trait NumericFormat
     private string $thousandSeparator = ',';
 
     /**
-     * This method configures the default behavior of the object when the getNumberFormat() method
-     * is called. Once configured, it will always use the same configuration. This method do not
-     * return the formatted value, it just configures it.
+     * This method converts the current value into the configured format. It will always use the
+     * same configuration each time it is configured.
      *
      * @param  mixed $decimals                      Number of decimal places.
      *
@@ -41,7 +40,7 @@ trait NumericFormat
      *
      * @return self
      */
-    public function formatThousands(int $decimals, string $decimalSeparator = '.', string $thousandSeparator = ','): self
+    public function formatThousands(int $decimals = 2, string $decimalSeparator = '.', string $thousandSeparator = ','): self
     {
         $this->decimals = $decimals;
         $this->decimalSeparator = $decimalSeparator;
@@ -53,10 +52,11 @@ trait NumericFormat
     }
 
     /**
-     * Author: xelozz@gmail.com
+     * Based on:
      * https://www.php.net/manual/pt_BR/function.memory-get-usage.php#96280
+     * Author: xelozz@gmail.com
      *
-     * Converts a number of bytes in formatted string showing its value in kb, mb, etc.
+     * This method converts a number of bytes in formatted string showing its value in kb, mb, etc.
      *
      * @return string
      */

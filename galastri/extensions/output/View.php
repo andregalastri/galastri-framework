@@ -9,31 +9,37 @@ use \galastri\extensions\Exception;
 use \galastri\extensions\output\helpers\ViewHelper;
 
 /**
- * This is the View output script that is used by \galastri\core\Galastri class to return a HTML
- * file to the request. The trait will find for two files, the template and the view. The template
- * is a file that can have the HTML parts, like navigation bar, menus and that sets the <head> tags.
- * The view is the content of the route, usually the middle of the page.
+ * This trait is the View output, used by the Galastri class, to return a HTML to the request.
+ *
+ * This trait:
+ * - Defines the path for the template file, which have the HTML template.
+ * - Defines the path for the view file, which has the content that can be printed with the
+ *   template.
+ * - Checks if these files exists.
+ * - Import the template and pass the route controller data and the view to that.
+ *
+ * Every property and method name start with 'view' to prevent incompatibilities with other output
+ * traits.
  */
 trait View
 {
     /**
-     * Stores the path of the template file.
+     * Stores an object that contains the path of the template file.
      *
-     * @var string
+     * @var TypeString
      */
     private static TypeString $viewTemplateFile;
 
     /**
-     * Stores the path of the view file or null if the view file doesn't exists.
+     * Stores an object that contains the path of the view file. If the view file doesn't exists, it
+     * wil stores null.
      *
-     * @var null|string
      */
-    private static TypeString $viewFilePath;
+    private static TypeString $viewPath;
 
     /**
-     * Main method that call the verification chain that checks if the template and view files exist
-     * and finally require the template file passing the route controller data and the view file
-     * path as parameters.
+     * This is the main method of the View output. It has a chain of methods to define and validate
+     * the view data and to import the files that will return the HTML to the request.
      *
      * @return void
      */
@@ -41,24 +47,29 @@ trait View
     {
         Debug::setBacklog();
 
+        /**
+         * Calls the methods to define and validate the template and view files.
+         */
         self::viewCheckTemplateFile();
         self::viewDefineViewPath();
         self::viewCheckFileExists();
 
+        /**
+         * Calls the method that will import the template file to be returned to the request.
+         */
         self::viewRequireTemplate(
             new ViewHelper(
                 self::$routeController->getResultData(),
-                self::$viewFilePath
+                self::$viewPath
             ),
             self::$viewTemplateFile
         );
     }
 
     /**
-     * Checks if the template file path was set. If not, it will throw an exception. The template
-     * file is required for View output.
-     *
-     * If the template file is set, then it is stored.
+     * This method checks if the template file path was defined. If not, it will throw an exception
+     * because the template file is required. It it is defined, then it is stored in the
+     * $viewTemplateFile property as a TypeString object.
      *
      * @return void
      */
@@ -72,78 +83,101 @@ trait View
     }
 
     /**
-     * Checks if the view file path was set. The path is based on two parts:
+     * This method checks if the view file path was set. The path is based on two parts:
      *
-     * - viewBaseFolder: the base folder where the view files are stored.
-     * - viewFilePath: is the view file location inside the base folder.
-     *
-     * This method checks if the base folder is set in the configurations or by the controller. If
-     * it is, it is stored in the $viewBaseFolder variable. If it is not, the base folder will be
-     * the default '/app/views'.
-     *
-     * However, the route parameter 'viewFilePath' can be used in the route configuration. If this
-     * is set, everything is ignored and only the parameter value is set as view file path. If it
-     * isn't set, then it gets the namespace as base of the filepath and the child node name as file
-     * name.
+     * 1. viewBaseFolder: the directory where the view files are stored. This can be the default
+     *    app/views directory or can a custom one, defined by the 'baseFolder' parameter in the
+     *    route configuration.
+     * 2. viewPath: the view file location inside the base folder. This can follow the default
+     *    based on the namespace of the route with the child node name as the name of the view file,
+     *    or can be a custom one, defined by the 'viewPath' parameter in the route
+     *    configuration.
      *
      * @return void
      */
     private static function viewDefineViewPath(): void
     {
+        /**
+         * First it checks if the 'baseFolder' parameter is empty. If it is, the base folder will be
+         * the default 'app/views' directory. If not, it will be the folder defined in the
+         * parameter.
+         */
         if (empty($viewBaseFolder = self::$routeController->getBaseFolder())) {
             $viewBaseFolder = self::VIEW_BASE_FOLDER;
         }
 
-        if (empty($viewFilePath = self::$routeController->getViewPath())) {
-            $controllerNamespace = implode(array_map(function ($a) {
-                return str_replace(['\Index', '\\'], ['/', '/'], $a);
-            }, Route::getControllerNamespace()));
+        /**
+         * Second it checks if the 'viewPath' parameter is empty. If it is, then it will get the
+         * namespace and use it as the directory path and the child node name as the view file name.
+         */
+        if (empty($viewPath = self::$routeController->getViewPath())) {
+
+            $controllerNamespace = Route::getControllerNamespace();
+
+            foreach ($controllerNamespace as &$value) {
+                $value = str_replace(['\Index', '\\'], ['/', '/'], $value);
+            }
+            unset($value);
 
             $childNodeName = Route::getChildNodeName();
 
-            $viewFilePath = $controllerNamespace.'/'.$childNodeName.'.php';
+            $viewPath = implode($controllerNamespace) . '/' . $childNodeName . '.php';
+
+        /**
+         * However, if the parameter exists in the route configuration, then the base folder will be
+         * ignored, even if it is set in the 'baseFolder' parameter. This is needed because the
+         * 'viewPath' points to the absolute path of the view file.
+         */
         } else {
             $viewBaseFolder = '';
         }
 
-        self::$viewFilePath = new TypeString($viewBaseFolder.$viewFilePath);
-
+        self::$viewPath = new TypeString($viewBaseFolder . $viewPath);
     }
 
     /**
-     * This method checks if the template and view file exists. The template file is required, so if
-     * it doesn't exist an exception is thrown. If the view doesn't exist, the method check if it
-     * was manually set. If true, then an exception is thrown, if false, the view file path will be
-     * just null.
+     * This method checks if the template and view files exist.
      *
      * @return void
      */
     private static function viewCheckFileExists(): void
     {
+        /**
+         * The template file is required, so, if it doesn't exist, an exception is thrown.
+         */
         if (self::$viewTemplateFile->fileNotExists()) {
             throw new Exception(self::TEMPLATE_FILE_NOT_FOUND[1], self::TEMPLATE_FILE_NOT_FOUND[0], [self::$viewTemplateFile->get()]);
         }
 
-
-        if (self::$viewFilePath->fileNotExists()) {
+        /**
+         * The view file isn't required if the 'viewPath' parameter wasn't defined in the route
+         * configuration. In this case, if the file doesn't exist in the view directory, the
+         * $viewPath property will be set as null. However, if there is a 'viewPath' parameter
+         * defined, then an exception will be thrown if the file doesn't exist.
+         */
+        if (self::$viewPath->fileNotExists()) {
             if (empty(self::$routeController->getViewPath())) {
-                self::$viewFilePath->setNull();
+                self::$viewPath->setNull();
             } else {
-                throw new Exception(self::VIEW_FILE_NOT_FOUND[1], self::VIEW_FILE_NOT_FOUND[0], [self::$viewFilePath->get()]);
+                throw new Exception(self::VIEW_FILE_NOT_FOUND[1], self::VIEW_FILE_NOT_FOUND[0], [self::$viewPath->get()]);
             }
         }
     }
 
     /**
-     * This is the last part of the View output. It just import the template path. An important
-     * thing is the $galastri parameter. It is an object that will be used in the template file to
-     * get the data returned by the route controller.
+     * This is the last part of the View output. This method import the template file, based on the
+     * template path.
      *
-     * @param  ViewHelper $galastri                 Object of ViewHelper class, with many methods to
-     *                                              get and manipulate the data returned by the
-     *                                              route controller.
+     * Note that the $galastri parameter isn't used here, despite it being declared and required.
+     * This is because the $galastri parameter is an object for the ViewHelper, which has methods to
+     * retrive or print route controller data and import other template parts to the main template
+     * file.
      *
-     * @param  TypeString $templatePath             The path of the template file.
+     * @param  ViewHelper $galastri                 An object used in the template and view files to
+     *                                              handle route controller data. It isn't used
+     *                                              here, but in the imported files.
+     *
+     * @param  TypeString $templatePath             The template file path.
      *
      * @return void
      */
@@ -152,6 +186,12 @@ trait View
         require($templatePath->realPath()->get());
     }
 
+    /**
+     * This method is exclusively used by the Galastri class to determine if this output requires a
+     * controller to work.
+     *
+     * @return bool
+     */
     private static function viewRequiresController(): bool
     {
         return true;

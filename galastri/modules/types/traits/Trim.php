@@ -8,11 +8,10 @@ namespace galastri\modules\types\traits;
 trait Trim
 {
     /**
-     * Remove whitespaces and any of the given charSet from both the edges of the string (from start
-     * and from end).
+     * This method removes the given charSet from both the edges of the string, from start and from
+     * the end.
      *
-     * @param  string $charSet                      Optional chars that will be removed from the
-     *                                              string.
+     * @param  string $charSet                      Chars that will be removed from the string.
      *
      * @return self
      */
@@ -23,10 +22,9 @@ trait Trim
     }
 
     /**
-     * Remove whitespaces and any of the given charSet from the start edge of the string.
+     * This method removes the given charSet from the start of the string.
      *
-     * @param  string $charSet                      Optional chars that will be removed from the
-     *                                              string.
+     * @param  string $charSet                      Chars that will be removed from the string.
      *
      * @return self
      */
@@ -37,10 +35,9 @@ trait Trim
     }
 
     /**
-     * Remove whitespaces and any of the given charSet from the end edge of the string.
+     * This method removes the given charSet from the end edge of the string.
      *
-     * @param  string $charSet                      Optional chars that will be removed from the
-     *                                              string.
+     * @param  string $charSet                      Chars that will be removed from the string.
      *
      * @return self
      */
@@ -49,45 +46,14 @@ trait Trim
         $this->execHandleValue($this->execTrimEnd($this->getValue(), $charSet));
         return $this;
     }
-
-
     /**
-     * Prepare the charset to be recognized by the PHP ltrim() and rtrim() functions. It needs to
-     * filter the charset to regex ready chars.
+     * This method executes the removal of the given charsets from the both edges of the string. The
+     * charsets are prepared and then it executes a rtrim function to filter the end edge and
+     * ltrim() function to filter the start edge.
      *
-     * It first set the whitespace as a part of the charset. After that, it check each of the
-     * $charSet parameter. If its first char is equal to a backslash bar \, then it is ignored,
-     * else, it is converted to a regex ready char.
+     * @param  null|string $string                  The string that will be filtered
      *
-     * After all, the method return all the charset into one string.
-     *
-     * @param  array $charSet                       Chars that will be prepared by the method.
-     *
-     * @return string
-     */
-    private function prepareTrimCharSet(array $charSet): string
-    {
-        $charSet[] = ' ';
-        foreach ($charSet as &$char) {
-            if ($char[0] === '\\') {
-                continue;
-            }
-            $char = preg_quote($char);
-        }
-
-        unset($char);
-
-        return implode($charSet);
-    }
-
-    /**
-     * This method execute the removal of the whitespaces and given charsets from the both edges of
-     * the string. The charsets are prepared and then it executes a rtrim() function to filter the
-     * end edge and ltrim() function to filter the start edge.
-     *
-     * @param  mixed $string                        The string that will be filtered
-     *
-     * @param  mixed $charSet                       The charsets that will be removed from the
+     * @param  array $charSet                       The charsets that will be removed from the
      *                                              edges.
      *
      * @return string
@@ -99,14 +65,13 @@ trait Trim
     }
 
     /**
-     * This method execute the removal of the whitespaces and given charsets from the start edge of
-     * the string. The charsets are prepared and then it executes a ltrim() function to filter the
-     * start edge.
+     * This method executes the removal of the given charsets from the start of the string. The
+     * charsets are prepared and then it executes a ltrim function to filter the start edge.
      *
      * @param  mixed $string                        The string that will be filtered
      *
-     * @param  mixed $charSet                       The charsets that will be removed from the
-     *                                              start edge.
+     * @param  mixed $charSet                       The charsets that will be removed from the start
+     *                                              edge.
      *
      * @return string
      */
@@ -116,16 +81,14 @@ trait Trim
         return ltrim($string, $charSet);
     }
 
-
     /**
-     * This method execute the removal of the whitespaces and given charsets from the start edge of
-     * the string. The charsets are prepared and then it executes a rtrim() function to filter the
-     * end edge.
+     * This method executes the removal of the given charsets from the end of the string. The
+     * charsets are prepared and then it executes a rtrim function to filter the end edge.
      *
      * @param  mixed $string                        The string that will be filtered
      *
-     * @param  mixed $charSet                       The charsets that will be removed from the
-     *                                              end edge.
+     * @param  mixed $charSet                       The charsets that will be removed from the end
+     *                                              edge.
      *
      * @return string
      */
@@ -133,5 +96,39 @@ trait Trim
     {
         $charSet = $this->prepareTrimCharSet($charSet);
         return rtrim($string, $charSet);
+    }
+
+    /**
+     * This method prepares the charset to the charset to regex ready chars, to be recognizable by
+     * the PHP ltrim and rtrim functions.
+     *
+     * @param  array $charSet                       Chars that will be prepared by the method.
+     *
+     * @return string
+     */
+
+    private function prepareTrimCharSet(array $charSet): string
+    {
+        /**
+         * Sets the whitespace as a part of the charset by default.
+         */
+        $charSet[] = ' ';
+
+        /**
+         * Checks each of the $charSet parameter. If its first char is equal to a backslash bar \,
+         * then it is ignored, else, it is converted to a regex ready char.
+         */
+        foreach ($charSet as &$char) {
+            if ($char[0] === '\\') {
+                continue;
+            }
+            $char = preg_quote($char);
+        }
+        unset($char);
+
+        /**
+         * Returns all the charset into one string.
+         */
+        return implode($charSet);
     }
 }

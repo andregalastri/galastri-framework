@@ -2,20 +2,10 @@
 
 namespace galastri\lang;
 
-/**
- * This interface stores the various messages in English language. It is dynamically implemented in
- * many classes based on the debug configuration 'language' parameter.
- */
 interface English
 {
-    /**
-     * Constants used in \galastri\core\Debug.
-     */
     const GENERIC_MESSAGE = "An error occurred. Please, contact the administrator.";
 
-    /**
-     * Constants used in \galastri\core\Galastri.
-     */
     const INVALID_OFFLINE_MESSAGE_TYPE = [
         'G0026', "Wrong value type. Type of route parameter 'offlineMessage' need to be 'string'."
     ];
@@ -40,7 +30,6 @@ interface English
         'G0025', "You don't have permission to execute this action."
     ];
 
-
     const ERROR_404 = [
         'G0003', "Error 404: The requested route or file was not found."
     ];
@@ -57,9 +46,6 @@ interface English
         'G0006', "Controller '%s' doesn't have the requested method '@%s'."
     ];
 
-    /**
-     * Constants used in \galastri\core\Route.
-     */
     const INVALID_PARAM_TYPE = [
         'G0008', "Invalid parameter configuration. Parameter '%s' needs to be '%s'. '%s' given."
     ];
@@ -72,13 +58,6 @@ interface English
         'G0010', "Request method '%s' has an invalid name."
     ];
 
-    /**
-     * Constants used in \galastri\extensions\ViewOutputData.
-     */
-    const VIEW_INVALID_DATA_KEY = [
-        'G0011', "Key '%s' doesn't exist in the data returned by controller."
-    ];
-
     const VIEW_UNDEFINED_DATA_KEY = [
         'G0011', "Undefined data key to print."
     ];
@@ -87,9 +66,6 @@ interface English
         'G0011', "Data cannot be of type 'array' of 'object'. Use 'data' method for these types of values."
     ];
 
-    /**
-     * Constants used in \galastri\modules\types\traits\FilePath.
-     */
     const EMPTY_FILE_PATH = [
         'G0012', "The path parameter is empty in method '%s'"
     ];
@@ -98,30 +74,28 @@ interface English
         'G0012', "The path parameter is empty in method '%s'"
     ];
 
-    /**
-     * Constants used in \galastri\types\ Type* files.
-     */
     const TYPE_DEFAULT_INVALID_MESSAGE = [
         'G0014', "Wrong data type. Expecting '%s', but '%s' was given."
     ];
 
-    /**
-     * Constants used in \galastri\extensions\output\View
-     */
     const UNDEFINED_TEMPLATE_FILE = [
         'G0015', "No template file set to this route. Set a default template in project or route configuration."
     ];
 
     const UNDEFINED_BASE_FOLDER = [
-        'G0015', "No base folder set to this file output. Set a 'fileBaseFolder' parameter that points to the directory where the files are stored."
+        'G0015', "No base folder set to this file output. Set a 'baseFolder' parameter that points to the directory where the files are stored."
     ];
 
     const TEMPLATE_FILE_NOT_FOUND = [
         'G0016', "Template file '%s' not found."
     ];
 
-    const UNDEFINED_EXTENSION_CONTENT_TYPE = [
-        'G0016', "Undefined '%s' extension. Define it in the file extension configuration, setting the extension and its content type."
+    const UNDEFINED_EXTENSION_MIME_TYPE = [
+        'G0016', "Undefined '%s' extension. Define it in the MIME type configuration file, setting the extension and its MIME type."
+    ];
+
+    const INVALID_MIME_TYPE_FOR_EXTENSION = [
+        'G0016', "Invalid MIME type for file extension. Expecting MIME type to be '%s' for the '%s' extension, but '%s' was given."
     ];
 
     const UNDEFINED_FILE_PATH = [
@@ -132,15 +106,28 @@ interface English
         'G0017', "View file '%s' not found."
     ];
 
-    /**
-     * Constants used in \galastri\extensions\typeValidation\StringValidation
-     */
+    const UNDEFINED_AUTH_TAG = [
+        'G0026', "No authentication tag defined. Define it as parameter of the method."
+    ];
+
+    const UNCONFIGURED_AUTH_TAG = [
+        'G0026', "There is no authTag '%s' configured. Configure it using the 'configure' method before use the 'create' method."
+    ];
+
     const UNDEFINED_VALIDATION_ALLOWED_CHARSET = [
         'G0018', "Method 'allowedCharset()' requires one or more charsets defined to work. None was given."
     ];
 
     const UNDEFINED_VALIDATION_REQUIRED_CHARSET = [
         'G0019', "Method 'requiredChars()' needs one or more charsets defined to work. None was given."
+    ];
+
+    const VALIDATION_CANNOT_BE_NULL = [
+        'G0023', "The value cannot be null."
+    ];
+
+    const VALIDATION_CANNOT_BE_EMPTY = [
+        'G0023', "The value cannot be empty."
     ];
 
     const VALIDATION_STRING_LOWER_CASE_ONLY = [
@@ -167,9 +154,6 @@ interface English
         'G0023', "The value needs to contain '%s' of these chars '%s' but '%s' were informed."
     ];
 
-    /**
-     * Constants used in \galastri\modules\types\traits\Common
-     */
     const TYPE_HISTORY_KEY_NOT_FOUND = [
         'G0020', "There is no key '%s' in the history of the type object."
     ];
@@ -178,16 +162,10 @@ interface English
         'G0021', "Save history is disabled, there is no data to be reverted. If you want enable this, set to 'true' the second constructor parameter in the definition of this object of types."
     ];
 
-    /**
-     * Constants used in \galastri\modules\types\traits\RandomStringValue
-     */
     const SECURE_RANDOM_GENERATOR_NOT_FOUND = [
         'G0022', "No cryptographically secure random string generation function available. You need to check your PHP configuration to make the 'random_bytes()' or 'openssl_random_pseudo_bytes()' functions available."
     ];
 
-    /**
-     * Constants used in \galastri\extensions\typeValidation\NumericValidation
-     */
     const VALIDATION_NUMERIC_MIN_VALUE = [
         'G0023', "Expecting minimum value '%s' but '%s' were given."
     ];
@@ -196,9 +174,6 @@ interface English
         'G0023', "Expecting maximum value '%s' but '%s' were given."
     ];
 
-    /**
-     * Constants used in \galastri\extensions\typeValidation\traits\AllowedValueList
-     */
     const VALIDATION_UNDEFINED_VALUES_ALLOWED_LIST = [
         'G0023', "It is required to define at least one value in 'allowedValues' method."
     ];
@@ -215,9 +190,6 @@ interface English
         'G0023', "The value (%s) is not an allowed value. The values that aren't allowed are [%s]."
     ];
 
-    /**
-     * Constants used in \galastri\core\Config
-     */
     const INVALID_KEY_PARAMETER_TYPE = [
         'G0026', "Wrong key type. There is a node in this route whose key was set as %s. Check the route configuration file and define any non-string keys to string type."
     ];
@@ -346,6 +318,10 @@ interface English
         'G0026', "Wrong value type. Type of debug parameter 'language' need to be 'string'."
     ];
 
+    const LANGUAGE_FILE_NOT_FOUND = [
+        'G0026', "The language '%s' is invalid. There is no such language file in the directory."
+    ];
+
     const UNDEFINED_LANGUAGE = [
         'G0026', "Undefined debug parameter 'language' to this route. Set it in the route configuration file."
     ];
@@ -378,9 +354,6 @@ interface English
         'G0035', "Method 'export' isn't available to the '%s' class"
     ];
 
-    /**
-     * Constants used in \galastri\modules\types\traits\Math
-     */
     const MATH_ROOT_CANNOT_BE_ZERO = [
         'G0024', "The root() method cannot have the degree of root equals to zero."
     ];

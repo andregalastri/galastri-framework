@@ -15,12 +15,13 @@ trait Concat
     private string $concatSpacer = '';
 
     /**
-     * Concatenate the given parameters at the end of the current value.
+     * This method concatenates the given values at the end of the current value. It passes the
+     * value to the execConcatenation method with the 0 parameter, indicating that the values need
+     * to be placed at the end of the current value.
      *
      * @param string ...$values                     Values that will be concatenated in the current
-     *                                              object value. If an spacer is set, then all
-     *                                              values will be placed between the defined
-     *                                              spacer.
+     *                                              value. If an spacer is set, then all values will
+     *                                              be placed between the defined spacer.
      *
      * @return self
      */
@@ -32,12 +33,13 @@ trait Concat
     }
 
     /**
-     * Concatenate the given parameters at the start of the current value.
+     * This method concatenates the given parameters at the start of the current value. It passes
+     * the value to the execConcatenation method with the 1 parameter, indicating that the values
+     * need to be placed at the start of the current value.
      *
      * @param string ...$values                     Values that will be concatenated in the current
-     *                                              object value. If an spacer is set, then all
-     *                                              values will be placed between the defined
-     *                                              spacer.
+     *                                              value. If an spacer is set, then all values will
+     *                                              be placed between the defined spacer.
      *
      * @return self
      */
@@ -48,9 +50,8 @@ trait Concat
         return $this;
     }
 
-
     /**
-     * Defines a string that will work as a spacer between the concatenated values.
+     * This method defines a string that will work as a spacer between the concatenated values.
      *
      * @param string $value                         The string that will be used as spacer.
      *
@@ -64,12 +65,7 @@ trait Concat
     }
 
     /**
-     * Executes the concatenation. It sets an $spacer variable if the current value is not empty.
-     * Then, it checks the direction. If it is 0, the concatenation will occur at the end of the
-     * current value. If it is 1, the concatenation will occur at the start of the current value.
-     *
-     * Finally, it checks if the concatenation spacer is temporary. If it is, then its value will be
-     * set as empty string '', because it only lasts one concatenation execution.
+     * This method executes the concatenation.
      *
      * @param  int $direction                       When 0, means that the concatenation will occur
      *                                              at the end of the current value. When 1, means
@@ -80,11 +76,21 @@ trait Concat
      */
     private function execConcatenation(array $values, int $direction): void
     {
+        /**
+         * It sets an $spacer variable if the current value is not empty.
+         */
         $spacer = $this->isEmpty() ? '' : $this->concatSpacer;
 
+        /**
+         * If the direction is 0, the concatenation will occur at the end of the current value.
+         */
         if ($direction === 0) {
             $concat = $spacer . implode($this->concatSpacer, $values);
             $this->execHandleValue($this->getValue() . $concat);
+
+        /**
+         * If the direction is 1, the concatenation will occur at the start of the current value.
+         */
         } else {
             $concat = implode($this->concatSpacer, $values) . $spacer;
             $this->execHandleValue($concat . $this->getValue());
