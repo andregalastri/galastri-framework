@@ -12,15 +12,14 @@ It is a MVC OOP microframework which I started to develop by studing more deeply
 This is an early development project. This means that I can drastically change the way the framework works between every commit and without any warn. If you use the framework in real projects, it is a good idea to keep it stick with the version you are using, without updating it. If you do want to update to newer versions, do a backup before and be aware which changes were made.
 
 ## Features
-- MySQL **Database** class with multiple features like pagination and storing results;
+- MySQL, PostgreSQL and SQLite **Database** classes with easy configuration and usage;
 - Easy **routing control** with multiple parameters and configurations;
-- Easy way to return data by just setting up which *solver* will be used (View, JSON, File or Text);
+- Easy way to return data by just setting up which *output* will be used (View, JSON, File or Text);
 - **Redirect** class that can use preconfigured named urls instead of plain urls (easy to change url redirection)
 - **Fetch** class that resolves the compatibility issues with $_POST or $_GET globals when using Javascript Promise calls;
 - **Authentication** class for protected routes;
-- **Permission** class for permission control; 
-- Powerful **Validation** class, with multiple options to validate data;
-- <a href="https://github.com/PHPMailer/PHPMailer">PHPMailer</a> for sending emails.
+- **Permission** class for permission control;
+- Powerful **Type** classes, with multiple methods to format, validate and store data;
 
 ## Documentation
 - Working on it
