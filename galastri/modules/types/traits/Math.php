@@ -284,14 +284,7 @@ trait Math
      */
     public function root(int $degree): self
     {
-        if ($degree === 0) {
-            throw new Exception(
-                self::MATH_ROOT_CANNOT_BE_ZERO[1],
-                self::MATH_ROOT_CANNOT_BE_ZERO[0]
-            );
-        }
-
-        $this->execHandleValue(pow($this->getValue(), 1/$degree));
+        $this->execHandleValue($degree === 0 ? 0 : pow($this->getValue(), 1/$degree));
 
         return $this;
     }

@@ -353,8 +353,4 @@ interface English
     const DATABASE_UNAVAILABLE_EXPORT_METHOD = [
         'G0035', "Method 'export' isn't available to the '%s' class"
     ];
-
-    const MATH_ROOT_CANNOT_BE_ZERO = [
-        'G0024', "The root() method cannot have the degree of root equals to zero."
-    ];
 }

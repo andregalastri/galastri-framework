@@ -92,13 +92,12 @@ trait Common
      */
     public function get()// : mixed
     {
-        $handling = $this->handling;
-        $handlingValue = $this->handlingValue;
+        $value = $this->getValue();
 
         $this->handling = false;
         $this->handlingValue = null;
 
-        return $handling ? $handlingValue : $this->storedValue;
+        return $value;
     }
 
     /**
@@ -284,13 +283,21 @@ trait Common
          * defining them.
          */
         } else {
-            $errorMessage = $this->getFailMessage();
-
-            throw new Exception(
-                $errorMessage[1] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[1],
-                $errorMessage[0] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[0],
-                [static::VALUE_TYPE, $this->execGetVarType($value)]
+            $this->defaultMessageSet(
+                self::TYPE_DEFAULT_INVALID_MESSAGE[1],
+                self::TYPE_DEFAULT_INVALID_MESSAGE[0],
+                static::VALUE_TYPE,
+                $this->execGetVarType($value)
             );
+            $this->throwFail();
+
+            // $errorMessage = $this->getFailMessage();
+
+            // throw new Exception(
+            //     $errorMessage[1] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[1],
+            //     $errorMessage[0] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[0],
+            //     ]
+            // );
         }
     }
 

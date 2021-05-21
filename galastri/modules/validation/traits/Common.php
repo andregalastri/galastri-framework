@@ -147,7 +147,7 @@ trait Common
      *
      * @return void
      */
-    private function defaultMessageSet(string $message, ?string $code, /*mixed*/ ...$printfData): void
+    protected function defaultMessageSet(string $message, ?string $code, /*mixed*/ ...$printfData): void
     {
         Debug::bypassGenericMessage();
 
