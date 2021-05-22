@@ -224,6 +224,17 @@ trait Common
     }
 
     /**
+     * This method return the handling value if the $handling property is true, or the stored value
+     * if the $handling property is false.
+     *
+     * @return void
+     */
+    protected function getValue()
+    {
+        return $this->handling ? $this->handlingValue : $this->storedValue;
+    }
+
+    /**
      * This method stores the value that is being handled by modifier methods in the $handlingValue.
      *
      * @param  mixed $value                         The value that will be stored as handling value.
@@ -232,13 +243,6 @@ trait Common
      */
     private function execHandleValue($value): void
     {
-        // if (
-        //     in_array(static::VALUE_TYPE, ['double', 'integer']) and
-        //     in_array(gettype($value), ['double', 'integer'])
-        // ) {
-        //     $value = $this->convertToRightNumericType($value);
-        // }
-
         $this->handling = true;
         $this->handlingValue = $value;
     }
@@ -290,14 +294,6 @@ trait Common
                 $this->execGetVarType($value)
             );
             $this->throwFail();
-
-            // $errorMessage = $this->getFailMessage();
-
-            // throw new Exception(
-            //     $errorMessage[1] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[1],
-            //     $errorMessage[0] ?? self::TYPE_DEFAULT_INVALID_MESSAGE[0],
-            //     ]
-            // );
         }
     }
 
@@ -340,16 +336,5 @@ trait Common
         }
 
         return $value;
-    }
-
-    /**
-     * This method return the handling value if the $handling property is true, or the stored value
-     * if the $handling property is false.
-     *
-     * @return void
-     */
-    protected function getValue()
-    {
-        return $this->handling ? $this->handlingValue : $this->storedValue;
     }
 }
