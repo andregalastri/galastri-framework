@@ -190,6 +190,18 @@ interface English
         'G0023', "The value (%s) is not an allowed value. The values that aren't allowed are [%s]."
     ];
 
+    const VALIDATION_INVALID_DATETIME = [
+        'G0023', "The value (%s) is an invalid date-time or it doesn't match the format (%s)."
+    ];
+
+    const VALIDATION_DATETIME_MAX = [
+        'G0023', "The date-time cannot be greater than %s."
+    ];
+
+    const VALIDATION_DATETIME_MIN = [
+        'G0023', "The date-time cannot be lesser than %s."
+    ];
+
     const INVALID_KEY_PARAMETER_TYPE = [
         'G0026', "Wrong key type. There is a node in this route whose key was set as %s. Check the route configuration file and define any non-string keys to string type."
     ];
