@@ -229,7 +229,7 @@ trait Common
      *
      * @return void
      */
-    protected function getValue()
+    public function getValue()
     {
         return $this->handling ? $this->handlingValue : $this->storedValue;
     }
