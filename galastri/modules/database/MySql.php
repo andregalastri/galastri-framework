@@ -51,7 +51,7 @@ class MySql extends Database
     }
 
     /**
-     * This method stores the port property. It overwrites the inherited setPort method from the
+     * This method stores the port property. It overrides the inherited setPort method from the
      * Database class because the PDO connection needs that the port is declared in the string
      * statment with the format 'port=<num>' (when a port is defined), which isn't the default
      * behavior of the inherited method.

@@ -63,13 +63,13 @@ final class Galastri implements \Language
     use File;
 
     /**
-     * Sets the default namespace for the route controllers. It will be overwrite if a namespace is
+     * Sets the default namespace for the route controllers. It will be overwritten if a namespace is
      * defined in the route configuration.
      */
     const DEFAULT_NODE_NAMESPACE = 'app\controllers';
 
     /**
-     * Sets a default base folder to the view output. It will be overwrite if a custom base folder
+     * Sets a default base folder to the view output. It will be overwritten if a custom base folder
      * is defined in the route configuration.
      */
     const VIEW_BASE_FOLDER = '/app/views';

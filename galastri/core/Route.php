@@ -520,7 +520,7 @@ final class Route implements \Language
      * This method pass throught each predefined route parameter, stored in the $routeParameters
      * property, checking if it exists in the parent or child node that was found and store its
      * value when it exists. If the the parameter doesn't exist but was found in previous nodes, the
-     * previous value is kept and is never reseted until another node overwrite its value.
+     * previous value is kept and is never reseted until another node overwrites its value.
      *
      * @param  array $nodeFound                     Array with the parent or child node values.
      *

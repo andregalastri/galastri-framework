@@ -38,7 +38,7 @@ class PostgreSql extends MySql
     /**
      * This method returns the last inserted id after insert data in a table.
      *
-     * This method overwrites the method from the MySQl class because the way that the last ID is
+     * This method overrides the method from the MySQl class because the way that the last ID is
      * returned by the PostgreSql is different from the MySql.
      *
      * @return int
