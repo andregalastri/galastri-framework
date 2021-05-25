@@ -8,6 +8,7 @@ use galastri\extensions\Exception;
 use galastri\modules\validation\ArrayValidation;
 
 /**
+ * NOTE: THIS TYPE CLASS IS NOT FINISHED.
  * This class creates objects that will act as a array types.
  */
 final class TypeArray extends ArrayValidation implements \Language
@@ -23,6 +24,18 @@ final class TypeArray extends ArrayValidation implements \Language
      * on the possible results of the PHP function gettype.
      */
     const VALUE_TYPE = 'array';
+
+    /**
+     * List of the type classes. This constant is used when the get method is called.
+     */
+    const TYPE_CLASS_LIST = [
+        'galastri\modules\types\TypeBool',
+        'galastri\modules\types\TypeDate',
+        'galastri\modules\types\TypeDateTime',
+        'galastri\modules\types\TypeFloat',
+        'galastri\modules\types\TypeInt',
+        'galastri\modules\types\TypeString',
+    ];
 
     /**
      * Stores the real value, after being handled.
@@ -86,6 +99,59 @@ final class TypeArray extends ArrayValidation implements \Language
         $this->_set($value ?? []);
 
         return $this;
+    }
+
+    /**
+     * This method put the key value in the handling value property to be handled by the class. It
+     * can access multidimensional arrays in two ways: by passing the keys as parameter (in order)
+     * or by calling this method multiple times.
+     *
+     * Example: $array = new TypeArray(<array...>);
+     *
+     *      $array->key(0, 0, 1);
+     *      Or
+     *      $array->key(0)->key(0)->key(1);
+     *
+     * @param  int|string ...$keys
+     *
+     * @return void
+     */
+    public function key(/*int|string*/ ...$keys)
+    {
+        $value = $this->getValue();
+
+        foreach ($keys as $key) {
+            if (is_array($value) and array_key_exists($key, $value)) {
+                $value = $value[$key];
+            } else {
+                $value = null;
+            }
+        }
+
+        $this->execHandleValue($value);
+
+        return $this;
+    }
+
+    /**
+     * This method overrides the get method from the Common trait because it needs to return the
+     * value differently. If the value is an instance of the type classes, the value to be get is
+     * from get method of the type classes. If not, then it will return the value itself.
+     *
+     * @return mixed
+     */
+    public function get()// : mixed
+    {
+        $value = $this->getValue();
+
+        $this->handling = false;
+        $this->handlingValue = null;
+
+        if (is_object($value) and in_array(get_class($value), static::TYPE_CLASS_LIST)) {
+            return $value->get();
+        } else {
+            return $value;
+        }
     }
 
     /**
