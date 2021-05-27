@@ -219,15 +219,15 @@
 <div class="main">
     <header>
         <h1></h1>
-        <span>UM MICROFRAMEWORK PHP7</span>
+        <span>A PHP 7 MICROFRAMEWORK</span>
     </header>
 
     <nav>
         <div class="info"></div>
 
-        <a class="button" info="Em breve...">
+        <a class="button" info="Coming soon...">
             <div class="icon docs"></div>
-            <span>DOCUMENTAÇÃO</span>
+            <span>DOCUMENTATION</span>
         </a>
 
         <a class="button" href="https://github.com/andregalastri/galastri-framework" target="_blank">
