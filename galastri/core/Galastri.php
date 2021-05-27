@@ -477,7 +477,7 @@ final class Galastri implements \Language
      *
      * @return void
      */
-    private function return404()
+    private static function return404()
     {
         Debug::setBacklog()::bypassGenericMessage();
 
@@ -505,7 +505,7 @@ final class Galastri implements \Language
      *
      * @return void
      */
-    private function returnAuthFail()
+    private static function returnAuthFail()
     {
         Debug::setBacklog()::bypassGenericMessage();
 
