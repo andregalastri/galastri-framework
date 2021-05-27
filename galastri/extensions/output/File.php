@@ -298,7 +298,9 @@ trait File
          * Check if the MIME type is set in the MIME type configuration file. If it is, the
          * $mimeType is set based on the index of the array of the extension.
          */
-        if ($mimeTypeIndex = array_search($mimeType, GALASTRI_MIME_TYPE[$fileExtension])) {
+        $mimeTypeIndex = array_search($mimeType, GALASTRI_MIME_TYPE[$fileExtension]);
+
+        if ($mimeTypeIndex !== false) {
             $mimeType = GALASTRI_MIME_TYPE[$fileExtension][$mimeTypeIndex];
 
         /**
