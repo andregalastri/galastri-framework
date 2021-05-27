@@ -25,7 +25,11 @@ return [
     '/' => [
         'output' => 'view',
 
-        '@main' => [
+        '@main' => [],
+
+        '@images' => [
+            'output' => 'file',
+            'baseFolder' => '/app/images',
         ],
     ],
 ];
