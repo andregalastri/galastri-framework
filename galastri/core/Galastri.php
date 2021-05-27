@@ -305,6 +305,14 @@ final class Galastri implements \Language
         }
 
         /**
+         * Checks if there is an output set in the route configuration. If there is, checks if the
+         * defined output requires a controller to work.
+         */
+        if (Parameters::getOutput() !== null) {
+            self::$controllerIsRequired = self::{Parameters::getOutput().'RequiresController'}();
+        }
+
+        /**
          * Next, it checks if the class exists.
          *
          * if the class exists, then its name is set in the $routeControllerName property and the
@@ -317,26 +325,19 @@ final class Galastri implements \Language
 
             self::checkControllerExtendsCore();
 
-        /**
-         * However, when the route controller doesn't exists, it is necessary to check if there is
-         * an output set in the route configuration.
-         */
         } else {
             /**
-             * If there is, it checks if the given output requires a controller to work. If not,
-             * then the framework will jump to the checkOutputIsSet method and no error will occur.
+             * However, when the route controller doesn't exists, if the given output do not
+             * requires a controller to work, it will jump to the checkOutputIsSet method and no
+             * error will occur.
              */
-            if (Parameters::getOutput() !== null) {
-                self::$controllerIsRequired = self::{Parameters::getOutput().'RequiresController'}();
-
-                if (self::$controllerIsRequired === false) {
-                    self::checkOutputIsSet();
-                    return;
-                }
+            if (self::$controllerIsRequired === false) {
+                self::checkOutputIsSet();
+                return;
             }
 
             /**
-             * If it requires a controller, then an exception is thrown.
+             * However, if it requires a controller, then an exception is thrown.
              */
             $workingController = explode('\\', $routeControllerName);
 
