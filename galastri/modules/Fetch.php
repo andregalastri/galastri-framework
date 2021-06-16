@@ -37,7 +37,7 @@ class Fetch
             case 'get': $data = $_GET; break;
         }
 
-        $data = $data ?? json_decode(file_get_contents('php://input'), true);
+        $data = empty($data) ? json_decode(file_get_contents('php://input'), true) : $data;
 
         /**
          * Return the data key or null if the key doesn't exist.
