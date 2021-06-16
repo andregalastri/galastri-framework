@@ -167,6 +167,11 @@ final class Route implements \Language
      *                                              overwritten if the Permission class is
      *                                              configured with an 'onFail' method.
      *
+     * ignoreMimeType       bool|null               Works only with File output. When true, ignores
+     *                                              the validation that checks if the mime type of
+     *                                              the file matches one of the defined in the mime
+     *                                              type configuration file. When false, null or
+     *                                              undefined, the validation will occur.
      * @var array
      */
     private static array $routeParameters;
@@ -356,6 +361,7 @@ final class Route implements \Language
             'offlineMessage' => $GLOBALS['GALASTRI_PROJECT']['offlineMessage'] ?? null,
             'authFailMessage' => $GLOBALS['GALASTRI_PROJECT']['authFailMessage'] ?? null,
             'permissionFailMessage' => $GLOBALS['GALASTRI_PROJECT']['permissionFailMessage'] ?? null,
+            'ignoreMimeType' => null,
         ];
 
         self::$parentParameters = [
@@ -812,6 +818,7 @@ final class Route implements \Language
         Parameters::setOfflineMessage(self::$routeParameters['offlineMessage']);
         Parameters::setAuthFailMessage(self::$routeParameters['authFailMessage']);
         Parameters::setPermissionFailMessage(self::$routeParameters['permissionFailMessage']);
+        Parameters::setIgnoreMimeType(self::$routeParameters['ignoreMimeType']);
 
         Parameters::setDownloadable(self::$childParameters['downloadable']);
         Parameters::setAllowedExtensions(self::$childParameters['allowedExtensions']);

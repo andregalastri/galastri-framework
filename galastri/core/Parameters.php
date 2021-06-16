@@ -36,6 +36,9 @@ final class Parameters implements \galastri\lang\English
      */
     private static ?string $timezone = null;
 
+
+
+
     //////
 
     /**
@@ -49,6 +52,9 @@ final class Parameters implements \galastri\lang\English
      * @var null|string
      */
     private static ?string $controller = null;
+
+
+
 
     //////
 
@@ -162,6 +168,9 @@ final class Parameters implements \galastri\lang\English
      */
     private static string $permissionFailMessage;
 
+
+
+
     //////
 
     /**
@@ -203,6 +212,16 @@ final class Parameters implements \galastri\lang\English
      * @var array|null
      */
     private static ?array $urlParameters = null;
+
+    /**
+     * Stores the ignoreMimeType parameter from the route configuration.
+     *
+     * @var bool|null
+     */
+    private static ?bool $ignoreMimeType = null;
+
+
+
 
     //////
 
@@ -248,6 +267,9 @@ final class Parameters implements \galastri\lang\English
     private function __construct()
     {
     }
+
+
+
 
     //////
 
@@ -305,6 +327,9 @@ final class Parameters implements \galastri\lang\English
         return self::$timezone;
     }
 
+
+
+
     //////
 
     /**
@@ -333,6 +358,8 @@ final class Parameters implements \galastri\lang\English
     {
         return self::$controller;
     }
+
+
 
     //////
 
@@ -702,6 +729,31 @@ final class Parameters implements \galastri\lang\English
         return self::$permissionFailMessage;
     }
 
+    /**
+     * Sets the ignoreMimeType parameter. The value needs to be string or null.
+     *
+     * @param  bool|null $value                     The ignoreMimeType parameter value.
+     *
+     * @return void
+     */
+    public static function setIgnoreMimeType($value): void
+    {
+        self::isOfType('boolean', $value, self::INVALID_VIEW_PATH_TYPE);
+        self::$ignoreMimeType = $value;
+    }
+
+    /**
+     * Returns the ignoreMimeType parameter.
+     *
+     * @return bool|null
+     */
+    public static function getIgnoreMimeType(): ?bool
+    {
+        return self::$ignoreMimeType;
+    }
+
+
+
 
     //////
 
@@ -838,6 +890,14 @@ final class Parameters implements \galastri\lang\English
         return self::$urlParameters[$tag] ?? null;
     }
 
+
+
+
+    //////
+
+    /**
+     * Debug parameters.
+     */
 
     /**
      * Sets the displayErrors parameter. The value needs to be boolean and cannot be null.

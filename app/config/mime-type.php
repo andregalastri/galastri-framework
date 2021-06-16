@@ -29,6 +29,7 @@ return [
     'xml'            => ['application/xml'],
     'jpg'            => ['image/jpg', 'image/jpeg'],
     'jpeg'           => ['image/jpg', 'image/jpeg'],
+    'json'           => ['application/json'],
     'txt'            => ['text/plain'],
     'png'            => ['image/png'],
     'gif'            => ['image/gif'],

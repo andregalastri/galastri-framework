@@ -297,17 +297,22 @@ trait File
         /**
          * Check if the MIME type is set in the MIME type configuration file. If it is, the
          * $mimeType is set based on the index of the array of the extension.
+         *
+         * The validation will only occur if there is no ignoreMimeType route parameter defined or
+         * if it is false. When true, the validation will be ignored.
          */
-        $mimeTypeIndex = array_search($mimeType, GALASTRI_MIME_TYPE[$fileExtension]);
+        if (Parameters::getIgnoreMimeType() !== true) {
+            $mimeTypeIndex = array_search($mimeType, GALASTRI_MIME_TYPE[$fileExtension]);
 
-        if ($mimeTypeIndex !== false) {
-            $mimeType = GALASTRI_MIME_TYPE[$fileExtension][$mimeTypeIndex];
+            if ($mimeTypeIndex !== false) {
+                $mimeType = GALASTRI_MIME_TYPE[$fileExtension][$mimeTypeIndex];
 
-        /**
-         * If not, an exception is thrown.
-         */
-        } else {
-            throw new Exception(self::INVALID_MIME_TYPE_FOR_EXTENSION[1], self::INVALID_MIME_TYPE_FOR_EXTENSION[0], [implode(', ', GALASTRI_MIME_TYPE[$fileExtension]), $fileExtension, $mimeType]);
+            /**
+             * If not, an exception is thrown.
+             */
+            } else {
+                throw new Exception(self::INVALID_MIME_TYPE_FOR_EXTENSION[1], self::INVALID_MIME_TYPE_FOR_EXTENSION[0], [implode(', ', GALASTRI_MIME_TYPE[$fileExtension]), $fileExtension, $mimeType]);
+            }
         }
 
         /**
