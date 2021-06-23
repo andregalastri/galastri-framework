@@ -114,26 +114,31 @@ trait File
     private static function filePrintContent(): void
     {
         if (null !== $browserCache = Parameters::getBrowserCache()) {
-            $etag = md5(substr(self::$fileData[0], 0, 1000).self::$fileData[2]);
+            $etag = md5(self::$fileData[0].self::$fileData[2]);
 
             header('Last-Modified: '.gmdate('r', time()));
+
             if (isset($browserCache[1])) {
                 header('Cache-Control: ' . $browserCache[1]);
             }
+
             header('Expires: Tue, 01 Jul 1980 1:00:00 GMT');
             header('Etag: '.$etag);
 
             $cached = false;
+
             if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])){
                 if(time() <= strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) + $browserCache[0]){
                     $cached = true;
                 }
             }
+
             if(isset($_SERVER['HTTP_IF_NONE_MATCH'])){
                 if(str_replace('"', '', stripslashes($_SERVER['HTTP_IF_NONE_MATCH'])) != $etag){
                     $cached = false;
                 }
             }
+
             if($cached){
                 header('HTTP/1.1 304 Not Modified');
                 exit();
@@ -290,11 +295,6 @@ trait File
     private static function fileCheckMimeType($fileName, $fileExtension): void
     {
         /**
-         * Gets the MIME type of the file.
-         */
-        $mimeType = self::$filePath->mimeType()->get();
-
-        /**
          * Check if the MIME type is set in the MIME type configuration file. If it is, the
          * $mimeType is set based on the index of the array of the extension.
          *
@@ -302,6 +302,11 @@ trait File
          * if it is false. When true, the validation will be ignored.
          */
         if (Parameters::getIgnoreMimeType() !== true) {
+            /**
+             * Gets the MIME type of the file.
+             */
+            $mimeType = self::$filePath->mimeType()->get();
+
             $mimeTypeIndex = array_search($mimeType, GALASTRI_MIME_TYPE[$fileExtension]);
 
             if ($mimeTypeIndex !== false) {
@@ -318,7 +323,7 @@ trait File
         /**
          * Finally, sets the $fileData property.
          */
-        self::$fileData = [self::$filePath->fileGetContents()->get(), $mimeType, $fileName];
+        self::$fileData = [self::$filePath->fileGetContents()->get(), GALASTRI_MIME_TYPE[$fileExtension][0], $fileName];
     }
 
     /**
