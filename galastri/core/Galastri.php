@@ -161,7 +161,7 @@ final class Galastri implements \Language
      */
     private static function checkOffline(): void
     {
-        Debug::setBacklog();
+        Debug::setBacklog()::bypassGenericMessage();
 
         if (Parameters::getOffline()) {
             throw new Exception(Parameters::getOfflineMessage(), self::DEFAULT_OFFLINE_MESSAGE[0]);

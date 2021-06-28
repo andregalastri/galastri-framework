@@ -134,10 +134,10 @@ final class Route implements \Language
      * output                 null|string           Defines a output script to the route. Can be one
      *                                              of the following: view, json, text or file.
      *
-     * browserCache           array|null            Works only with File output. Defines a cache
-     *                                              control that is returned to the browser. It is
-     *                                              in array format because it can have two keys
-     *                                              with values:
+     * browserCache           array|null            Works only with File and View outputs. Defines a
+     *                                              cache control that is returned to the browser.
+     *                                              It is in array format because it can have two
+     *                                              keys with values:
      *
      *                                              - Key 0  int     Stores the time that the cache
      *                                                               will last (in seconds).

@@ -23,6 +23,8 @@ use \galastri\extensions\output\helpers\ViewHelper;
  */
 trait View
 {
+    use traits\Common;
+
     /**
      * Stores an object that contains the path of the template file.
      *
@@ -62,7 +64,6 @@ trait View
                 self::$routeController->getResultData(),
                 self::$viewPath
             ),
-            self::$viewTemplateFile
         );
     }
 
@@ -173,6 +174,10 @@ trait View
      * retrive or print route controller data and import other template parts to the main template
      * file.
      *
+     * This method also check if the browser cache is set in the route configuration and if the file
+     * view and template files were changed. If it was, its content is downloaded from the server,
+     * if not, the cached template and view will be used instead.
+     *
      * @param  ViewHelper $galastri                 An object used in the template and view files to
      *                                              handle route controller data. It isn't used
      *                                              here, but in the imported files.
@@ -181,9 +186,20 @@ trait View
      *
      * @return void
      */
-    private static function viewRequireTemplate(ViewHelper $galastri, TypeString $templatePath): void
+    private static function viewRequireTemplate(ViewHelper $galastri): void
     {
-        require($templatePath->realPath()->get());
+        $viewLastModified = '';
+        $templateLastModified = self::$viewTemplateFile->fileLastModified()->get();
+
+        if (self::$viewPath->isNotNull()) {
+            if (self::$viewPath->fileExists()) {
+                $viewLastModified = self::$viewPath->fileLastModified()->get();
+            }
+        }
+
+        if (!self::browserCache($viewLastModified.$templateLastModified)) {
+            require(self::$viewTemplateFile->realPath()->get());
+        }
     }
 
     /**

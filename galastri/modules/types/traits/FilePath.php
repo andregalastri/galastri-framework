@@ -15,7 +15,7 @@ trait FilePath
      * This method formats strings that stores directory paths to convert it to an absolute path. It
      * takes into account the project directory as root and will format the given path using it as
      * base folder.
-     * 
+     *
      * @return self
      */
     public function realPath(): self
@@ -41,7 +41,7 @@ trait FilePath
 
         return $this;
     }
-    
+
     /**
      * This method checks if the stored string leads to a file and return if it exists.
      *
@@ -89,14 +89,14 @@ trait FilePath
     {
         return !$this->directoryExists();
     }
-    
+
     /**
      * This method gets the stored string as a file path and creates a file inside this path if
      * it doesn't exist. If the directory doesn't exist, it will be created.
      *
      * @param  int $permission                      Defines the permission mode of the file that
      *                                              will be created.
-     * 
+     *
      * @return self
      */
     public function createFile(int $permission = 0755): self
@@ -117,14 +117,14 @@ trait FilePath
 
         return $this;
     }
-    
+
     /**
      * This method gets the stored string as a directory path and creates a folder in this path if
      * it doesn't exist.
      *
      * @param  int $permission                      Defines the permission mode of the folder that
      *                                              will be created.
-     * 
+     *
      * @return self
      */
     public function createDirectory(int $permission = 0755): self
@@ -139,14 +139,14 @@ trait FilePath
 
         return $this;
     }
-    
+
     /**
      * This method gets the stored string as a file path and insert data inside it.
      *
-     * @param  mixed $string                        Content that will be inserted in the file.
-     * 
-     * @param  mixed $method                        The fopen function operation mode.
-     * 
+     * @param  string $string                       Content that will be inserted in the file.
+     *
+     * @param  string $method                       The fopen function operation mode.
+     *
      * @return self
      */
     public function fileInsertContents(string $string, string $mode = 'a'): self
@@ -159,7 +159,7 @@ trait FilePath
 
         return $this;
     }
-    
+
     /**
      * This method gets the stored string as a file path and store its contents.
      *
@@ -171,7 +171,7 @@ trait FilePath
 
         return $this;
     }
-    
+
     /**
      * This method gets the stored string as a file path and return its MIME type.
      *
@@ -182,6 +182,26 @@ trait FilePath
         $realPath = $this->realPath()->get();
 
         $this->execHandleValue(is_file($realPath) ? mime_content_type($realPath) : false);
+
+        return $this;
+    }
+
+    /**
+     * This method gets the stored string as a file path and return its last modified date or false
+     * on failure.
+     *
+     * @param  null|string $format                  When null, the method will return the Unix
+     *                                              Timestamp (when successful), otherwise, it will
+     *                                              format the Unix Timestamp into the given format.
+     *
+     * @return self
+     */
+    public function fileLastModified(?string $format = null): self
+    {
+        $filemtime = filemtime($this->realPath()->get());
+        $lastModified = $format ? date($format, $filemtime) : $filemtime;
+
+        $this->execHandleValue($lastModified);
 
         return $this;
     }

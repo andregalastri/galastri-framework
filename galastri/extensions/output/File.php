@@ -27,6 +27,8 @@ use \galastri\extensions\Exception;
  */
 trait File
 {
+    use traits\Common;
+
     /**
      * Stores an array with file data. It needs to follow this format:
      *
@@ -113,40 +115,10 @@ trait File
 
     private static function filePrintContent(): void
     {
-        if (null !== $browserCache = Parameters::getBrowserCache()) {
-            $etag = md5(self::$fileData[0].self::$fileData[2]);
-
-            header('Last-Modified: '.gmdate('r', time()));
-
-            if (isset($browserCache[1])) {
-                header('Cache-Control: ' . $browserCache[1]);
-            }
-
-            header('Expires: Tue, 01 Jul 1980 1:00:00 GMT');
-            header('Etag: '.$etag);
-
-            $cached = false;
-
-            if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])){
-                if(time() <= strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) + $browserCache[0]){
-                    $cached = true;
-                }
-            }
-
-            if(isset($_SERVER['HTTP_IF_NONE_MATCH'])){
-                if(str_replace('"', '', stripslashes($_SERVER['HTTP_IF_NONE_MATCH'])) != $etag){
-                    $cached = false;
-                }
-            }
-
-            if($cached){
-                header('HTTP/1.1 304 Not Modified');
-                exit();
-            }
+        if(!self::browserCache(self::$fileData[0].self::$fileData[2])) {
+            header('Content-type: '.self::$fileData[1]);
+            @print(self::$fileData[0]);
         }
-
-        header('Content-type: '.self::$fileData[1]);
-        @print(self::$fileData[0]);
     }
 
     /**
