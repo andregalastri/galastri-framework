@@ -446,7 +446,7 @@ abstract class Database implements \Language
      *
      * @return PDO
      */
-    protected function prepareQuery(string $queryString): \PDO
+    protected function prepareQuery(string $queryString): \PDOStatement
     {
         return $this->pdo->prepare(preg_replace('/[\t\n]+/u', ' ', trim($queryString)));
     }
