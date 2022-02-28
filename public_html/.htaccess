@@ -1,17 +1,17 @@
 # DirectorySlash Off
 	RewriteEngine On
-	
+
 # Deny folder indexing
 	Options -Indexes
-	
+
 # Remove slash bar at the end of the URL
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteRule ^(.*)/$ /$1 [L,R]
-	
+
 # Remove the www from URL
 	RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 	RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
-	
+
 # Redirect all requests to index.php
 	RewriteCond %{HTTP_HOST} ^\. [NC]
 	RewriteRule ^(.*)/$ $1 [R=301,L]
