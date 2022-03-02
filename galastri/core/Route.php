@@ -393,7 +393,7 @@ final class Route implements \Language
     {
         Parameters::setUrlRoot($GLOBALS['GALASTRI_PROJECT']['urlRoot'] ?? null);
 
-        $urlArray = explode('?', str_replace(Parameters::getUrlRoot(), '', $_SERVER['REQUEST_URI']));
+        $urlArray = explode('?', (new TypeString($_SERVER['REQUEST_URI']))->replaceOnce(Parameters::getUrlRoot(), '')->get());
         $urlArray = explode('/', $urlArray[0]);
 
         if (empty($urlArray[1])) {
