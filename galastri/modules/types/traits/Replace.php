@@ -14,13 +14,17 @@ trait Replace
      * @param  array|string $search                 The substring that will be searched and
      *                                              replaced.
      *
-     * @param  array|string $replace                The string that will replace the searched one.
+     * @param  array|int|string $replace            The string that will replace the searched one.
      *
      * @return self
      */
-    public function replace(/*array|string*/ $search, /*array|string*/ $replace): self
+    public function replace(/*array|string*/ $search, /*array|int|string*/ $replace): self
     {
-        $this->execHandleValue(str_replace($search, $replace, $this->getValue()));
+        if (empty($search)) {
+            $this->execHandleValue($this->getValue());
+        } else {
+            $this->execHandleValue(str_replace($search, $replace, $this->getValue()));
+        }
 
         return $this;
     }
@@ -32,17 +36,21 @@ trait Replace
      * @param  array|string $search                 The substring that will be searched and
      *                                              replaced.
      *
-     * @param  array|string $replace                The string that will replace the searched one.
+     * @param int|string $replace                   The string that will replace the searched one.
      *
      * @return self
      */
-    public function replaceOnce(/*array|string*/ $search, /*array|string*/ $replace): self
+    public function replaceOnce(/*array|string*/ $search, /*int|string*/ $replace): self
     {
         $value = $this->getValue();
 
-        $pos = strpos($value, $search);
-        if ($pos !== false) {
-            $value = substr_replace($value, $replace, $pos, strlen($search));
+        $search = gettype($search) !== 'array' ? [$search] : $search;
+
+        foreach($search as $searchKey => $searchValue) {
+            $pos = empty($searchValue) ? false : strpos($value, $searchValue);
+            if ($pos !== false) {
+                $value = substr_replace($value, $replace, $pos, strlen($searchValue));
+            }
         }
 
         $this->execHandleValue($value);
