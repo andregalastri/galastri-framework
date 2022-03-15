@@ -73,42 +73,65 @@ final class ViewHelper implements \Language
      *
      * @return mixed
      */
-    public function data(/*int|string*/ ...$keys)// : mixed
+    public function getData(/*int|string*/ ...$keys)// : mixed
     {
         Debug::setBacklog();
 
-        return $this->execData(...$keys);
+        return $this->execData('controller', ...$keys);
     }
 
     /**
-     * This method works in the same way of the data method, but instead of return the value, it
+     * This method works in the same way of the getData method, but instead of return the value from
+     * the controller, it returns internal data from the framework.
+     *
+     * @param  mixed $keys                          Works in the same way of the getData method, but
+     *                                              refers to specific framework data.
+     *
+     * @return void
+     */
+    public function getFrameworkData(/*int|string*/ ...$keys)// : mixed
+    {
+        Debug::setBacklog();
+
+        return $this->execData('galastri', ...$keys);
+    }
+
+    /**
+     * This method works in the same way of the getData method, but instead of return the value, it
      * prints the data in the HTML. Because of that, it can't print an array or an object and will
      * thrown an exception when this occur. It also will throw an exception if no key is specified
      * as a parameter.
      *
-     * @param  mixed $keys                          Works in the same way of the data method,
+     * @param  mixed $keys                          Works in the same way of the getData method,
      *                                              excepts that it will throw an error if no key is
      *                                              specified.
      *
      * @return void
      */
-    public function print(/*int|string*/ ...$keys)// : mixed
+    public function printData(/*int|string*/ ...$keys) : void
     {
         Debug::setBacklog();
 
-        if (empty($keys)) {
-            throw new Exception(self::VIEW_UNDEFINED_DATA_KEY[1], self::VIEW_UNDEFINED_DATA_KEY[0]);
-        }
+        $this->execData('controller', ...$keys);
+    }
 
-        $data = $this->execData(...$keys);
+    /**
+     * This method works in the same way of the getFrameworkData method, but instead of return the
+     * value, it prints the data in the HTML. Because of that, it can't print an array or an object
+     * and will thrown an exception when this occur. It also will throw an exception if no key is
+     * specified as a parameter.
+     *
+     * @param  mixed $keys                          Works in the same way of the getFrameworkData
+     *                                              method, excepts that it will throw an error if
+     *                                              no key is specified.
+     *
+     * @return void
+     */
+    public function printFrameworkData(/*int|string*/ ...$keys) : void
+    {
+        Debug::setBacklog();
 
-        switch (gettype($data)) {
-            case 'array':
-            case 'object':
-                throw new Exception(self::VIEW_INVALID_PRINT_DATA[1], self::VIEW_INVALID_PRINT_DATA[0]);
-        }
-
-        echo htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+        $this->execPrint('galastri', ...$keys);
     }
 
     /**
@@ -160,14 +183,21 @@ final class ViewHelper implements \Language
 
     /**
      * Internal method that do the job of searching for the keys in the data returned the route
-     * controller. This method is used by the data and print methods.
+     * controller. This method is used by the getData, getFrameworkData and execPrint methods.
      *
-     * @param  mixed $keys
+     * @param  string $dataType                     Defines which array main key, from the
+     *                                              controller, it will select. There are 2 possible
+     *                                              values for now: galastri (refers to specific
+     *                                              data from the framework) or controller (refers
+     *                                              to the data from the controller)
+     *
+     * @param  mixed $keys                          Works in the same way of the getData method.
+     *
      * @return void
      */
-    private function execData(/*int|string*/ ...$keys)// : mixed
+    private function execData(string $dataType, /*int|string*/ ...$keys)// : mixed
     {
-        $routeControllerData = $this->routeControllerData;
+        $routeControllerData = $this->routeControllerData[$dataType];
 
         if (empty($keys)) {
             return $routeControllerData;
@@ -182,5 +212,36 @@ final class ViewHelper implements \Language
         }
 
         return $routeControllerData;
+    }
+
+    /**
+     * Internal method that do the job of printing the key value. This method is used by the data
+     * and print methods.
+     *
+     * @param  string $dataType                     Defines which array main key, from the
+     *                                              controller, it will select. There are 2 possible
+     *                                              values for now: galastri (refers to specific
+     *                                              data from the framework) or controller (refers
+     *                                              to the data from the controller)
+     *
+     * @param  mixed $keys                          Works in the same way of the getData method.
+     *
+     * @return void
+     */
+    private function execPrint(string $dataType, /*int|string*/ ...$keys) : void
+    {
+        if (empty($keys)) {
+            throw new Exception(self::VIEW_UNDEFINED_DATA_KEY[1], self::VIEW_UNDEFINED_DATA_KEY[0]);
+        }
+
+        $data = $this->execData($dataType, ...$keys);
+
+        switch (gettype($data)) {
+            case 'array':
+            case 'object':
+                throw new Exception(self::VIEW_INVALID_PRINT_DATA[1], self::VIEW_INVALID_PRINT_DATA[0]);
+        }
+
+        echo htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
     }
 }

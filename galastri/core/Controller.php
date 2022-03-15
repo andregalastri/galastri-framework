@@ -208,18 +208,20 @@ abstract class Controller
      */
     private function mergeResults(): void
     {
-        $returningParameters = $this->getOutput() === 'text' ? [] : [
-            'projectTitle' => $this->getProjectTitle(),
-            'pageTitle' => $this->getPageTitle(),
-        ];
-
-        $this->resultData = array_merge(
+        $this->resultData['controller'] = array_merge(
             $this->doBeforeData,
             $this->controllerData,
             $this->requestMethodData,
             $this->doAfterData,
-            $returningParameters
+            [
+                'projectTitle' => $this->getProjectTitle(),
+                'pageTitle' => $this->getPageTitle(),
+            ]
         );
+
+        $this->resultData['galastri'] = [
+            'urlRoot' => '/'.Parameters::getUrlRoot(),
+        ];
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
     }

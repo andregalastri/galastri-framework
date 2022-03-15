@@ -42,7 +42,7 @@
     }
 
     header h1 {
-        background-image: url('/images/galastri-framework.png');
+        background-image: url('images/galastri-framework.png');
         background-repeat: no-repeat;
         background-size: contain;
         margin: 0;
