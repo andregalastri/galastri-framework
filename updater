@@ -3,7 +3,7 @@ namespace updater;
 
 final class Updater
 {
-    const VERSION = '0.1.1';
+    const VERSION = '0.1.2';
     const LAYOUT_SIZE = 70;
     const BOX_STYLES = [
         //                      0    1    2    3    4    5    6    7
@@ -231,7 +231,7 @@ final class Updater
                     case 'Y':
                     case 's':
                     case 'S':
-                        self::executeUpdate($currentVersion, $versionList, $versionPosition, $packageQty);
+                        self::executeUpdate($versionList, $versionPosition, $packageQty);
                         break;
                     
                     default:
@@ -299,13 +299,12 @@ final class Updater
     /**
      * executeUpdate
      *
-     * @param  mixed $currentVersion
      * @param  mixed $versionList
      * @param  mixed $versionPosition
      * @param  mixed $packageQty
      * @return void
      */
-    private static function executeUpdate(string $currentVersion, array $versionList, int $versionPosition, int $packageQty): void
+    private static function executeUpdate(array $versionList, int $versionPosition, int $packageQty): void
     {
         self::drawMessageBox(Language::text('STARTING_UPDATE', 0));
         self::wait(5, true, false);
@@ -316,15 +315,15 @@ final class Updater
 
         self::draw('thick', 'top');
         foreach ($versionList as $i => $version) {
+            $currentVersion = trim(file_get_contents('galastri/VERSION'));
+
             if ($i <= $versionPosition) continue;
 
             if ($packageNumber > 1) {
                 self::draw('thick', 'line');
             }
 
-            if (!file_exists(self::LOCAL_WORKING_FOLDER)) {
-                mkdir(self::LOCAL_WORKING_FOLDER);
-            }
+            mkdir(self::LOCAL_WORKING_FOLDER);
 
             $packageTarGzFile = $version.'.tar.gz';
             $packageTarFile = $version.'.tar';
@@ -348,6 +347,7 @@ final class Updater
             }
             self::copyDirectory($workingFolder.'/'.$version, self::LOCAL_PACKAGE_PATH.'/'.$version);
             self::deleteAll($workingFolder);
+            self::deleteAll(self::LOCAL_WORKING_FOLDER);
 
             $backupFolder = self::LOCAL_BACKUP_PATH.'/'.date('YmdHis_').$currentVersion;
 
@@ -403,6 +403,7 @@ final class Updater
                 $packageNumber++;
                 $lastVersion = $version;
             }
+            self::wait(2, false, false);
         }
         self::draw('thick', 'bottom');
         self::drawMessageBox(Language::text('UPDATE_DONE', 0), Language::text('UPDATE_DONE', 1).$lastVersion);
