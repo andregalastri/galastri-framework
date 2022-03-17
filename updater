@@ -3,7 +3,7 @@ namespace updater;
 
 final class Updater
 {
-    const VERSION = '0.1.3';
+    const VERSION = '0.1.4';
     const LAYOUT_SIZE = 70;
     const BOX_STYLES = [
         //                      0    1    2    3    4    5    6    7
@@ -13,13 +13,15 @@ final class Updater
         'doubled'          => ["╔", "╗", "╚", "╝", "═", "║", "╠", "╣"],
     ];
 
-    const LOCAL_VERSION_LIST = 'tmp/versionList.php';
+    const LOCAL_VERSION_LIST = __DIR__.'/tmp/versionList.php';
+    const LOCAL_VERSION_FILE = __DIR__.'/galastri/VERSION';
+
     const REMOTE_VERSION_LIST = 'https://raw.githubusercontent.com/andregalastri/galastri-framework-updates/main/versionList.php';
     
-    const LOCAL_TMP_PATH = 'tmp';
-    const LOCAL_PACKAGE_PATH = 'tmp/packages';
-    const LOCAL_BACKUP_PATH = 'tmp/backup';
-    const LOCAL_WORKING_FOLDER = 'tmp/working';
+    const LOCAL_TMP_PATH = __DIR__.'/tmp';
+    const LOCAL_PACKAGE_PATH = __DIR__.'/tmp/packages';
+    const LOCAL_BACKUP_PATH = __DIR__.'/tmp/backup';
+    const LOCAL_WORKING_FOLDER = __DIR__.'/tmp/working';
 
     const REMOTE_PACKAGE_URL = 'https://github.com/andregalastri/galastri-framework-updates/raw/main/updates';
 
@@ -45,7 +47,7 @@ final class Updater
         self::isWritable(__DIR__);
         self::isWritable(__DIR__.'/galastri');
 
-        if (!file_exists('galastri/VERSION')) {
+        if (!file_exists(self::LOCAL_VERSION_FILE)) {
             self::drawMessageBox(Language::text('NO_VERSION_FILE', 0), Language::text('NO_VERSION_FILE', 1));
             self::pressEnterToContinue();
             exit;
@@ -55,19 +57,19 @@ final class Updater
             mkdir(self::LOCAL_TMP_PATH);
         }
 
-        self::isWritable(__DIR__.'/'.self::LOCAL_TMP_PATH);
+        self::isWritable(self::LOCAL_TMP_PATH);
 
         if (!file_exists(self::LOCAL_BACKUP_PATH)) {
             mkdir(self::LOCAL_BACKUP_PATH);
         }
 
-        self::isWritable(__DIR__.'/'.self::LOCAL_BACKUP_PATH);
+        self::isWritable(self::LOCAL_BACKUP_PATH);
 
         if (!file_exists(self::LOCAL_PACKAGE_PATH)) {
             mkdir(self::LOCAL_PACKAGE_PATH);
         }
 
-        self::isWritable(__DIR__.'/'.self::LOCAL_PACKAGE_PATH);
+        self::isWritable(self::LOCAL_PACKAGE_PATH);
 
         self::$restoreBackupStatus = false;
     }
@@ -189,7 +191,7 @@ final class Updater
      */
     private static function checkUpdates(): void
     {
-        $currentVersion = trim(file_get_contents('galastri/VERSION'));
+        $currentVersion = trim(file_get_contents(self::LOCAL_VERSION_FILE));
         
         self::drawMessageBox(Language::text('CHECKING_UPDATES', 0));
         
@@ -262,21 +264,21 @@ final class Updater
 
                 self::text('thick', Language::text('RESTORING_BACKUP_PROCESS', 0).$backupData['label']);
 
-                $currentVersion = trim(file_get_contents('galastri/VERSION'));
+                $currentVersion = trim(file_get_contents(self::LOCAL_VERSION_FILE));
 
                 $workingFiles = require($backupFolder.'/changes/deleted-files.php');
                 foreach($workingFiles as $file) {
-                    self::copyFile($backupFolder.'/'.$file, $file);
+                    self::copyFile($backupFolder.'/'.$file, __DIR__.'/'.$file);
                 }
 
                 $workingFiles = require($backupFolder.'/changes/new-files.php');
                 foreach($workingFiles as $file) {
-                    unlink($file);
+                    unlink(__DIR__.'/'.$file);
                 }
 
                 $workingFiles = require($backupFolder.'/changes/modified-files.php');
                 foreach($workingFiles as $file) {
-                    self::copyFile($backupFolder.'/'.$file, $file);
+                    self::copyFile($backupFolder.'/'.$file, __DIR__.'/'.$file);
                 }
 
                 self::deleteAll($backupFolder);
@@ -309,7 +311,7 @@ final class Updater
 
         self::draw('thick', 'top');
         foreach ($versionList as $i => $version) {
-            $currentVersion = trim(file_get_contents('galastri/VERSION'));
+            $currentVersion = trim(file_get_contents(self::LOCAL_VERSION_FILE));
 
             if ($i <= $versionPosition) continue;
 
@@ -353,19 +355,19 @@ final class Updater
 
             $workingFiles = require($packageFolder.'/deleted-files.php');
             foreach($workingFiles as $file) {
-                self::copyFile($file, $backupFolder.'/'.$file);
-                unlink(realpath($file));
+                self::copyFile(__DIR__.'/'.$file, $backupFolder.'/'.$file);
+                unlink(__DIR__.'/'.$file);
             }
 
             $workingFiles = require($packageFolder.'/new-files.php');
             foreach($workingFiles as $file) {
-                self::copyFile($packageFolder.'/'.$file, $file);
+                self::copyFile($packageFolder.'/'.$file, __DIR__.'/'.$file);
             }
 
             $workingFiles = require($packageFolder.'/modified-files.php');
             foreach($workingFiles as $file) {
-                self::copyFile($file, $backupFolder.'/'.$file);
-                self::copyFile($packageFolder.'/'.$file, $file);
+                self::copyFile(__DIR__.'/'.$file, $backupFolder.'/'.$file);
+                self::copyFile($packageFolder.'/'.$file, __DIR__.'/'.$file);
             }
 
             $newUpdater = $packageFolder.'/updater';
