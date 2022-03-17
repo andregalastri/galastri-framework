@@ -3,6 +3,7 @@ namespace updater;
 
 final class Updater
 {
+    const VERSION = '0.1.1';
     const LAYOUT_SIZE = 70;
     const BOX_STYLES = [
         //                      0    1    2    3    4    5    6    7
@@ -131,7 +132,7 @@ final class Updater
     {
         $backupList = [];
 
-        foreach(glob(self::LOCAL_BACKUP_PATH.'/*', GLOB_ONLYDIR) as $key => $backupPath) {
+        foreach(array_reverse(glob(self::LOCAL_BACKUP_PATH.'/*', GLOB_ONLYDIR)) as $key => $backupPath) {
             $backupName = str_replace(self::LOCAL_BACKUP_PATH.'/', '', $backupPath);
             $backupData = explode('_', $backupName);
             $date = (\Datetime::createFromFormat('YmdHis', $backupData[0]))->format('Y-m-d, H:i:s');
@@ -142,12 +143,13 @@ final class Updater
                 'label' => $backupLabel,
             ];
         }
-        
+
         if (count($backupList) <= 0) {
             self::drawMessageBox(Language::text('NO_BACKUP_FOUND', 0), ':(');
         } else {
             do {
                 self::drawBackupWindow($backupList);
+
                 echo Language::text('CHOOSE_BACKUP_RESTORATION', 0);
                 $key = readline(Language::text('CHOOSE_BACKUP_RESTORATION', 1));
 
@@ -163,7 +165,7 @@ final class Updater
                             case 'Y':
                             case 's':
                             case 'S':
-                                self::executeRestore($backupList[$key-1]['path']);
+                                self::executeRestore($backupList, $key-1);
                                 break;
                             
                             default:
@@ -229,7 +231,6 @@ final class Updater
                     case 'Y':
                     case 's':
                     case 'S':
-                        self::executeBackup($currentVersion);
                         self::executeUpdate($currentVersion, $versionList, $versionPosition, $packageQty);
                         break;
                     
@@ -247,35 +248,52 @@ final class Updater
      * @param  mixed $backupPath
      * @return void
      */
-    private static function executeRestore(string $backupPath)
+    private static function executeRestore(array $backupList, int $restorePoint)
     {
         self::drawMessageBox(Language::text('RESTORING_BACKUP', 0));
-        self::deleteAll('galastri');
-        self::copyDirectory($backupPath.'/galastri', 'galastri');
-        self::drawMessageBox(Language::text('BACKUP_RESTORED', 0));
-    }
-    
-    /**
-     * executeBackup
-     *
-     * @param  mixed $currentVersion
-     * @return void
-     */
-    private static function executeBackup(string $currentVersion)
-    {
-        self::drawMessageBox(Language::text('BACKUP_PROCESS', 0));
-
-        $backupFolder = self::LOCAL_BACKUP_PATH.'/'.date('YmdHis_').$currentVersion;
-
-        if (!file_exists($backupFolder)) {
-            mkdir($backupFolder);
-        }
-        self::copyDirectory("galastri", $backupFolder, 'galastri');
-
-        self::drawMessageBox(Language::text('BACKUP_PROCESS', 1), $backupFolder);
         self::wait(5, true, false);
         echo "\n";
-        exit;
+
+        self::draw('thick', 'top');
+
+        foreach($backupList as $backupPoint => $backupData) {
+            if ($backupPoint <= $restorePoint) {
+                $backupFolder = $backupData['path'];
+
+                self::text('thick', Language::text('RESTORING_BACKUP_PROCESS', 0).$backupData['label']);
+
+                $currentVersion = trim(file_get_contents('galastri/VERSION'));
+
+                $changeLog = 'Changelog v.'.$currentVersion.'.txt';
+                
+                if (file_exists($changeLog)) {
+                    unlink($changeLog);
+                }
+
+                $workingFiles = require($backupFolder.'/changes/deleted-files.php');
+                foreach($workingFiles as $file) {
+                    self::copyFile($backupFolder.'/'.$file, $file);
+                }
+
+                $workingFiles = require($backupFolder.'/changes/new-files.php');
+                foreach($workingFiles as $file) {
+                    unlink($file);
+                }
+
+                $workingFiles = require($backupFolder.'/changes/modified-files.php');
+                foreach($workingFiles as $file) {
+                    self::copyFile($backupFolder.'/'.$file, $file);
+                }
+
+                self::deleteAll($backupFolder);
+            }
+        }
+        self::draw('thick', 'bottom');
+        self::wait(2, false, false);
+        echo "\n";
+
+
+        self::drawMessageBox(Language::text('BACKUP_RESTORED', 0));
     }
     
     /**
@@ -331,14 +349,32 @@ final class Updater
             self::copyDirectory($workingFolder.'/'.$version, self::LOCAL_PACKAGE_PATH.'/'.$version);
             self::deleteAll($workingFolder);
 
-            self::text('thick', Language::text('UPDATE_PROCESS', 02));
-            $deleteFiles = require($packageFolder.'/delete.php');
-            foreach($deleteFiles as $file) {
+            $backupFolder = self::LOCAL_BACKUP_PATH.'/'.date('YmdHis_').$currentVersion;
+
+            if (!file_exists($backupFolder)) {
+                mkdir($backupFolder);
+            }
+
+            self::copyFile($packageFolder.'/deleted-files.php', $backupFolder.'/changes/deleted-files.php');
+            self::copyFile($packageFolder.'/new-files.php', $backupFolder.'/changes/new-files.php');
+            self::copyFile($packageFolder.'/modified-files.php', $backupFolder.'/changes/modified-files.php');
+
+            self::text('thick', Language::text('UPDATE_PROCESS', 2));
+
+            $workingFiles = require($packageFolder.'/deleted-files.php');
+            foreach($workingFiles as $file) {
+                self::copyFile($file, $backupFolder.'/'.$file);
                 unlink(realpath($file));
             }
 
-            $copyFiles = require($packageFolder.'/copy.php');
-            foreach($copyFiles as $file) {
+            $workingFiles = require($packageFolder.'/new-files.php');
+            foreach($workingFiles as $file) {
+                self::copyFile($packageFolder.'/'.$file, $file);
+            }
+
+            $workingFiles = require($packageFolder.'/modified-files.php');
+            foreach($workingFiles as $file) {
+                self::copyFile($file, $backupFolder.'/'.$file);
                 self::copyFile($packageFolder.'/'.$file, $file);
             }
 
@@ -348,13 +384,12 @@ final class Updater
             }
 
             $newUpdater = $packageFolder.'/updater';
+
             if (file_exists($newUpdater)) {
-
-                $packageNumber++;
-                $lastVersion = $version;
-                self::drawMessageBox(Language::text('UPDATE_DONE', 1).$lastVersion);
-
                 self::draw('thick', 'bottom');
+                
+                self::drawMessageBox(Language::text('UPDATE_DONE', 1).$version);
+
                 self::drawMessageBox(
                     Language::text('UPDATER_UPDATED', 0),
                     Language::text('UPDATER_UPDATED', 1),
@@ -426,7 +461,7 @@ final class Updater
     {
         self::draw('thick', 'top');
         self::text('thick', 'GALASTRI FRAMEWORK UPDATER', 'center');
-        self::text('thick', 'v0.0.1', 'center');
+        self::text('thick', 'v'.self::VERSION, 'center');
         self::draw('thick-to-thin', 'line');
         self::text('thin', Language::text('WELCOME_WINDOW', 0), 'center');
         self::draw('thin', 'line');
@@ -498,8 +533,10 @@ final class Updater
         self::text('thin', Language::text('BACKUP_WINDOW_ABOUT', 2));
         self::draw('thin', 'empty');
         self::text('thin', Language::text('BACKUP_WINDOW_ABOUT', 3));
+        self::draw('thin', 'empty');
+        self::text('thin', Language::text('BACKUP_WINDOW_ABOUT', 4));
         self::draw('thin', 'line');
-        self::text('thin', Language::text('BACKUP_WINDOW_ABOUT', 4), 'center');
+        self::text('thin', Language::text('BACKUP_WINDOW_ABOUT', 5), 'center');
         self::draw('thin', 'bottom');
     }
 
@@ -877,6 +914,15 @@ final class Language
         ],
     ];
 
+    const RESTORING_BACKUP_PROCESS = [
+        'en' => [
+            '- Restoring files from ',
+        ],
+        'br' => [
+            '- Restaurando os arquivos de ',
+        ],
+    ];
+
     const BACKUP_RESTORED = [
         'en' => [
             'Restoration process done! :D',
@@ -1037,14 +1083,16 @@ final class Language
     const BACKUP_WINDOW_ABOUT = [
         'en' => [
             'About the restoring process:',
-            '- The backup will restore 100% of the files you choose.',
+            '- The restoration process restore the updates from the most recent to the selected point you choose.',
+            '- The restored backup data is removed from the backup folder.',
             '- It WON\'T CHANGE the files inside "app", "logs", "public_html" and "vendor", nor the files .gitattributes", ".gitignore", "composer.json", "LICENSE" and "README.md".',
             '- Any other file can be restored.',
             'Choose the number of the backup you want to restore, or type 0 (zero) to cancel.',
         ],
         'br' => [
             'Sobre o processo de restauração:',
-            '- O backup é 100% restaurado para o opção que você escolher',
+            '- A restauração reverte as alterações do ponto mais recente até o ponto que você escolher.',
+            '- Os dados do backup restaurado são removidos da pasta de backup.',
             '- NÃO SERÃO ALTERADOS arquivos contidos em "app", "logs", "public_html" e "vendor", nem os arquivos ".gitattributes", ".gitignore", "composer.json", "LICENSE" e "README.md".',
             '- Quaisquer outros arquivos podem sofrer alterações.',
             'Informe agora o número do backup que deseja restaurar, ou digite 0 (zero) para cancelar.',
