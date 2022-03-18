@@ -2,3 +2,4 @@ updater-bk
 tmp/
 releases/
 build-package.sh
+.gitattributes
