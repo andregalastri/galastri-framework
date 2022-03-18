@@ -1,5 +1,4 @@
 <?php
-namespace updater;
 
 final class Updater
 {
