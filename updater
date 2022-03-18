@@ -1,14 +1,11 @@
 <?php
-
 final class Updater
 {
-    const VERSION = '0.1.4';
+    const VERSION = '0.1.5';
     const LAYOUT_SIZE = 70;
     const BOX_STYLES = [
         //                      0    1    2    3    4    5    6    7
         'thin'             => ["┌", "┐", "└", "┘", "─", "│", "├", "┤"],
-        'thick'            => ["┏", "┓", "┗", "┛", "━", "┃", "┣", "┫"],
-        'thick-to-thin'    => ["┏", "┓", "┗", "┛", "━", "┃", "┡", "┩"],
         'doubled'          => ["╔", "╗", "╚", "╝", "═", "║", "╠", "╣"],
     ];
 
@@ -255,13 +252,13 @@ final class Updater
         self::wait(5, true, false);
         echo "\n";
 
-        self::draw('thick', 'top');
+        self::draw('doubled', 'top');
 
         foreach($backupList as $backupPoint => $backupData) {
             if ($backupPoint <= $restorePoint) {
                 $backupFolder = $backupData['path'];
 
-                self::text('thick', Language::text('RESTORING_BACKUP_PROCESS', 0).$backupData['label']);
+                self::text('doubled', Language::text('RESTORING_BACKUP_PROCESS', 0).$backupData['label']);
 
                 $currentVersion = trim(file_get_contents(self::LOCAL_VERSION_FILE));
 
@@ -283,7 +280,7 @@ final class Updater
                 self::deleteAll($backupFolder);
             }
         }
-        self::draw('thick', 'bottom');
+        self::draw('doubled', 'bottom');
         self::wait(2, false, false);
         echo "\n";
 
@@ -308,14 +305,14 @@ final class Updater
         $packageNumber = 1;
         $lastVersion = '';
 
-        self::draw('thick', 'top');
+        self::draw('doubled', 'top');
         foreach ($versionList as $i => $version) {
             $currentVersion = trim(file_get_contents(self::LOCAL_VERSION_FILE));
 
             if ($i <= $versionPosition) continue;
 
             if ($packageNumber > 1) {
-                self::draw('thick', 'line');
+                self::draw('doubled', 'line');
             }
 
             if (!file_exists(self::LOCAL_WORKING_FOLDER)) {
@@ -325,10 +322,10 @@ final class Updater
             $packageTarFile = $version.'.tar';
             $packageTarPath = self::LOCAL_WORKING_FOLDER.'/'.$packageTarFile;
 
-            self::text('thick', Language::text('UPDATE_PROCESS', 0).$version.'" ('.$packageNumber.'/'.$packageQty.')');
+            self::text('doubled', Language::text('UPDATE_PROCESS', 0).$version.'" ('.$packageNumber.'/'.$packageQty.')');
             file_put_contents($packageTarPath, file_get_contents(self::REMOTE_PACKAGE_URL.'/'.$packageTarFile));
 
-            self::text('thick', Language::text('UPDATE_PROCESS', 1));
+            self::text('doubled', Language::text('UPDATE_PROCESS', 1));
             (new \PharData($packageTarPath))->extractTo(self::LOCAL_WORKING_FOLDER);
             unlink($packageTarPath);
 
@@ -350,7 +347,7 @@ final class Updater
             self::copyFile($packageFolder.'/new-files.php', $backupFolder.'/changes/new-files.php');
             self::copyFile($packageFolder.'/modified-files.php', $backupFolder.'/changes/modified-files.php');
 
-            self::text('thick', Language::text('UPDATE_PROCESS', 2));
+            self::text('doubled', Language::text('UPDATE_PROCESS', 2));
 
             $workingFiles = require($packageFolder.'/deleted-files.php');
             foreach($workingFiles as $file) {
@@ -372,7 +369,7 @@ final class Updater
             $newUpdater = $packageFolder.'/updater';
 
             if (file_exists($newUpdater)) {
-                self::draw('thick', 'bottom');
+                self::draw('doubled', 'bottom');
                 
                 self::drawMessageBox(Language::text('UPDATE_DONE', 1).$version);
 
@@ -391,7 +388,7 @@ final class Updater
             }
             self::wait(2, false, false);
         }
-        self::draw('thick', 'bottom');
+        self::draw('doubled', 'bottom');
         self::drawMessageBox(Language::text('UPDATE_DONE', 0), Language::text('UPDATE_DONE', 1).$lastVersion);
     }
     
@@ -446,10 +443,10 @@ final class Updater
      */
     private static function drawMainWindow(): void
     {
-        self::draw('thick', 'top');
-        self::text('thick', 'GALASTRI FRAMEWORK UPDATER', 'center');
-        self::text('thick', 'v'.self::VERSION, 'center');
-        self::draw('thick-to-thin', 'line');
+        self::draw('doubled', 'top');
+        self::text('doubled', 'GALASTRI FRAMEWORK UPDATER', 'center');
+        self::text('doubled', 'v'.self::VERSION, 'center');
+        self::draw('doubled', 'bottom');
         self::text('thin', Language::text('WELCOME_WINDOW', 0), 'center');
         self::draw('thin', 'line');
         self::text('thin', Language::text('WELCOME_WINDOW', 1));
@@ -474,9 +471,9 @@ final class Updater
     {
         $headerText = $packageQty > 1 ? Language::text('UPDATE_WINDOW_HEADER', 0).$packageQty.Language::text('UPDATE_WINDOW_HEADER', 1) : Language::text('UPDATE_WINDOW_HEADER', 2);
 
-        self::draw('thick', 'top');
-        self::text('thick', $headerText, 'center');
-        self::draw('thick-to-thin', 'line');
+        self::draw('doubled', 'top');
+        self::text('doubled', $headerText, 'center');
+        self::draw('doubled', 'bottom');
         self::text('thin', Language::text('UPDATE_WINDOW_VERSIONS', 0).$currentVersion);
         self::text('thin', Language::text('UPDATE_WINDOW_VERSIONS', 1).$lastVersion);
         self::draw('thin', 'line');
@@ -504,9 +501,10 @@ final class Updater
         $backupQty = count($backupList);
         $headerText = $backupQty > 1 ? Language::text('BACKUP_WINDOW_HEADER', 0).$backupQty.Language::text('BACKUP_WINDOW_HEADER', 1) : Language::text('BACKUP_WINDOW_HEADER', 2);
 
-        self::draw('thick', 'top');
-        self::text('thick', $headerText, 'center');
-        self::draw('thick-to-thin', 'line');
+        self::draw('doubled', 'top');
+        self::text('doubled', $headerText, 'center');
+        self::draw('doubled', 'bottom');
+
 
         foreach($backupList as $backupData) {
             self::text('thin', $backupData['label']);
