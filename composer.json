@@ -1,6 +1,7 @@
 {
     "name": "andregalastri/galastri-framework",
     "type": "project",
+    "version": "0.5.3-alpha",
     "description": "Galastri Framework is a simple MVC PHP microframework for websites and webapps",
     "authors": [
         {
