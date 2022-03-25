@@ -109,7 +109,7 @@ trait File
         flush();
         ob_start();
         @print(self::$fileData[0]);
-        ob_end_flush;
+        ob_end_flush();
         flush();
     }
 

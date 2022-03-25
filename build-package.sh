@@ -57,6 +57,7 @@ ignoredUpdatePaths=(
     '^app\/'
     '^logs\/'
     '^public_html\/'
+    '^public\/'
     '^tmp\/'
     '^vendor\/'
 );
