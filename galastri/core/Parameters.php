@@ -168,6 +168,19 @@ final class Parameters implements \galastri\lang\English
      */
     private static string $permissionFailMessage;
 
+    /**
+     * Stores the ignoreMimeType parameter from the route configuration.
+     *
+     * @var bool|null
+     */
+    private static ?bool $ignoreMimeType = null;
+
+    /**
+     * Stores the templateEngine parameter from the route configuration.
+     *
+     * @var array|null
+     */
+    private static ?array $templateEngine = null;
 
 
 
@@ -212,13 +225,6 @@ final class Parameters implements \galastri\lang\English
      * @var array|null
      */
     private static ?array $urlParameters = null;
-
-    /**
-     * Stores the ignoreMimeType parameter from the route configuration.
-     *
-     * @var bool|null
-     */
-    private static ?bool $ignoreMimeType = null;
 
 
 
@@ -286,7 +292,11 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setUrlRoot($value): void
     {
-        self::isOfTypeNotNull('string', $value, self::INVALID_URL_ROOT_TYPE, self::UNDEFINED_URL_ROOT);
+        self::isOfTypeNotNull(
+            'string', $value,
+            self::INVALID_URL_ROOT_TYPE,
+            self::UNDEFINED_URL_ROOT
+        );
         self::$urlRoot = ltrim($value, '/');
     }
 
@@ -309,7 +319,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setTimezone($value): void
     {
-        self::isOfType('string', $value, self::INVALID_TIMEZONE_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_TIMEZONE_TYPE
+        );
         self::$timezone = $value;
 
         if($value !== null) {
@@ -345,7 +358,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setController($value): void
     {
-        self::isOfType('string', $value, self::INVALID_CONTROLLER_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_CONTROLLER_TYPE
+        );
         self::$controller = $value;
     }
 
@@ -376,7 +392,11 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setOffline($value): void
     {
-        self::isOfTypeNotNull('boolean', $value, self::INVALID_OFFLINE_TYPE, self::UNDEFINED_OFFLINE);
+        self::isOfTypeNotNull(
+            'boolean', $value,
+            self::INVALID_OFFLINE_TYPE,
+            self::UNDEFINED_OFFLINE
+        );
         self::$offline = $value;
     }
 
@@ -399,7 +419,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setProjectTitle($value): void
     {
-        self::isOfType('string', $value, self::INVALID_PROJECT_TITLE_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_PROJECT_TITLE_TYPE
+        );
         self::$projectTitle = $value;
     }
 
@@ -422,7 +445,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setPageTitle($value): void
     {
-        self::isOfType('string', $value, self::INVALID_PAGE_TITLE_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_PAGE_TITLE_TYPE
+        );
         self::$pageTitle = $value;
     }
 
@@ -445,7 +471,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setAuthTag($value): void
     {
-        self::isOfType('string', $value, self::INVALID_AUTH_TAG_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_AUTH_TAG_TYPE
+        );
         self::$authTag = $value;
     }
 
@@ -468,7 +497,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setAuthFailRedirect($value): void
     {
-        self::isOfType('string', $value, self::INVALID_AUTH_FAIL_REDIRECT_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_AUTH_FAIL_REDIRECT_TYPE
+        );
         self::$authFailRedirect = $value;
     }
 
@@ -491,7 +523,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setForceRedirect($value): void
     {
-        self::isOfType('string', $value, self::INVALID_FORCE_REDIRECT_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_FORCE_REDIRECT_TYPE
+        );
         self::$forceRedirect = $value;
     }
 
@@ -514,7 +549,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setNamespace($value): void
     {
-        self::isOfType('string', $value, self::INVALID_NAMESPACE_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_NAMESPACE_TYPE
+        );
         self::$namespace = $value;
     }
 
@@ -537,7 +575,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setNotFoundRedirect($value): void
     {
-        self::isOfType('string', $value, self::INVALID_NOT_FOUND_REDIRECT_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_NOT_FOUND_REDIRECT_TYPE
+        );
         self::$notFoundRedirect = $value;
     }
 
@@ -565,7 +606,13 @@ final class Parameters implements \galastri\lang\English
             if (in_array($value, ['view', 'json', 'file', 'text'])) {
                 self::$output = $value;
             } else {
-                throw new Exception(self::INVALID_OUTPUT[1], self::INVALID_OUTPUT[0], [var_export($value, true)]);
+                throw new Exception(
+                    self::INVALID_OUTPUT[1],
+                    self::INVALID_OUTPUT[0],
+                    [
+                        var_export($value, true)
+                    ]
+                );
             }
         }
     }
@@ -591,14 +638,27 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setBrowserCache($values): void
     {
-        self::isOfType('array', $values, self::INVALID_BROWSER_CACHE_TYPE);
+        self::isOfType(
+            'array', $values,
+            self::INVALID_BROWSER_CACHE_TYPE
+        );
 
-        if (isset($values[0])) {
-            self::isOfTypeNotNull('integer', $values[0], self::INVALID_BROWSER_CACHE_TIME_TYPE, self::INVALID_BROWSER_CACHE_TIME_TYPE);
-        }
-
-        if (isset($values[1])) {
-            self::isOfTypeNotNull('string', $values[1], self::INVALID_BROWSER_CACHE_HEADER_TYPE, self::INVALID_BROWSER_CACHE_HEADER_TYPE);
+        if($values !== null) {
+            if (array_key_exists(0, $values)) {
+                self::isOfTypeNotNull(
+                    'integer', $values[0],
+                    self::INVALID_BROWSER_CACHE_TIME_TYPE,
+                    self::INVALID_BROWSER_CACHE_TIME_TYPE
+                );
+            }
+    
+            if (array_key_exists(1, $values)) {
+                self::isOfTypeNotNull(
+                    'string', $values[1],
+                    self::INVALID_BROWSER_CACHE_HEADER_TYPE,
+                    self::INVALID_BROWSER_CACHE_HEADER_TYPE
+                );
+            }
         }
 
         self::$browserCache = $values;
@@ -623,7 +683,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setTemplateFile($value): void
     {
-        self::isOfType('string', $value, self::INVALID_TEMPLATE_FILE_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_TEMPLATE_FILE_TYPE
+        );
         self::$templateFile = $value;
     }
 
@@ -646,7 +709,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setBaseFolder($value): void
     {
-        self::isOfType('string', $value, self::INVALID_BASE_FOLDER_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_BASE_FOLDER_TYPE
+        );
         self::$baseFolder = $value;
     }
 
@@ -669,7 +735,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setOfflineMessage($value): void
     {
-        self::isOfType('string', $value, self::INVALID_OFFLINE_MESSAGE_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_OFFLINE_MESSAGE_TYPE
+        );
         self::$offlineMessage = $value ?? self::DEFAULT_OFFLINE_MESSAGE[1];
     }
 
@@ -692,7 +761,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setAuthFailMessage($value): void
     {
-        self::isOfType('string', $value, self::INVALID_AUTH_FAIL_MESSAGE_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_AUTH_FAIL_MESSAGE_TYPE
+        );
         self::$authFailMessage = $value ?? self::DEFAULT_AUTH_FAIL_MESSAGE[1];
     }
 
@@ -715,7 +787,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setPermissionFailMessage($value): void
     {
-        self::isOfType('string', $value, self::INVALID_PERMISSION_FAIL_MESSAGE_TYPE);
+        self::isOfType(
+            'string', $value,
+            self::INVALID_PERMISSION_FAIL_MESSAGE_TYPE
+        );
         self::$permissionFailMessage = $value ?? self::DEFAULT_PERMISSION_FAIL_MESSAGE[1];
     }
 
@@ -738,7 +813,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setIgnoreMimeType($value): void
     {
-        self::isOfType('boolean', $value, self::INVALID_VIEW_PATH_TYPE);
+        self::isOfType(
+            'boolean', $value,
+            self::INVALID_VIEW_PATH_TYPE
+        );
         self::$ignoreMimeType = $value;
     }
 
@@ -752,6 +830,69 @@ final class Parameters implements \galastri\lang\English
         return self::$ignoreMimeType;
     }
 
+    /**
+     * Sets the templateEngine parameter. The value needs to be php, twig, blade.
+     *
+     * @param  string $value                        The output parameter value.
+     *
+     * @return void
+     */
+    public static function setTemplateEngine($values): void
+    {
+        self::isOfTypeNotNull(
+            ['array', 'string'], $values,
+            self::VIEW_INVALID_TEMPLATE_ENGINE_VALUE_TYPE,
+            self::VIEW_UNDEFINED_TEMPLATE_ENGINE_VALUE_TYPE,
+        );
+
+        if (gettype($values) !== 'array') {
+            $values = [$values];
+        }
+
+        if (array_key_exists(0, $values)) {
+            $templateEngines = ['php', 'twig', 'blade', 'latte'];
+
+            self::isOfTypeNotNull(
+                'string', $values[0],
+                self::VIEW_INVALID_TEMPLATE_ENGINE_NAME_TYPE,
+                self::VIEW_UNDEFINED_TEMPLATE_ENGINE_NAME,
+            );
+
+            if (!in_array($values[0], $templateEngines)) {
+                throw new Exception(
+                    self::VIEW_INVALID_TEMPLATE_ENGINE[1],
+                    self::VIEW_INVALID_TEMPLATE_ENGINE[0],
+                    [
+                        strtoupper($values[0]),
+                        implode(', ', $templateEngines)
+                    ]
+                );
+            }
+        }
+
+        if (array_key_exists(1, $values)) {
+            self::isOfTypeNotNull(
+                'array', $values[1],
+                self::VIEW_INVALID_TEMPLATE_ENGINE_OPTIONS_TYPE,
+                self::VIEW_UNDEFINED_TEMPLATE_ENGINE_OPTIONS,
+                [
+                    implode(', ', $templateEngines)
+                ]
+            );
+        }
+
+        self::$templateEngine = $values;
+    }
+
+    /**
+     * Returns the templateEngine parameter.
+     *
+     * @return null|array
+     */
+    public static function getTemplateEngine(): ?array
+    {
+        return self::$templateEngine;
+    }
 
 
 
@@ -770,7 +911,10 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setDownloadable($value): void
     {
-        self::isOfType('boolean', $value, self::INVALID_DOWNLOADABLE_TYPE);
+        self::isOfType(
+            'boolean', $value,
+            self::INVALID_DOWNLOADABLE_TYPE
+        );
         self::$downloadable = $value;
     }
 
@@ -793,10 +937,17 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setAllowedExtensions($values): void
     {
-        self::isOfType('array', $values, self::INVALID_ALLOWED_EXTENSIONS_TYPE);
+        self::isOfType(
+            'array', $values,
+            self::INVALID_ALLOWED_EXTENSIONS_TYPE
+        );
 
         foreach ($values ?? [] as $value) {
-            self::isOfTypeNotNull('string', $value, self::INVALID_ALLOWED_EXTENSION_VALUE_TYPE, self::INVALID_ALLOWED_EXTENSION_VALUE_TYPE);
+            self::isOfTypeNotNull(
+                'string', $value,
+                self::INVALID_ALLOWED_EXTENSION_VALUE_TYPE,
+                self::INVALID_ALLOWED_EXTENSION_VALUE_TYPE
+            );
         }
 
         self::$allowedExtensions = $values;
@@ -821,7 +972,11 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setViewPath($value): void
     {
-        self::isOfType('string', $value, self::INVALID_VIEW_PATH_TYPE);
+        self::isOfType(
+            'string',
+            $value,
+            self::INVALID_VIEW_PATH_TYPE
+        );
         self::$viewPath = $value;
     }
 
@@ -908,7 +1063,11 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setDisplayErrors($value): void
     {
-        self::isOfTypeNotNull('boolean', $value, self::INVALID_DISPLAY_ERRORS_TYPE, self::UNDEFINED_DISPLAY_ERRORS);
+        self::isOfTypeNotNull(
+            'boolean', $value,
+            self::INVALID_DISPLAY_ERRORS_TYPE,
+            self::UNDEFINED_DISPLAY_ERRORS
+        );
         self::$displayErrors = $value;
     }
 
@@ -931,7 +1090,11 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setShowBacklogData($value): void
     {
-        self::isOfTypeNotNull('boolean', $value, self::INVALID_SHOW_BACKLOG_DATA_TYPE, self::UNDEFINED_SHOW_BACKLOG_DATA);
+        self::isOfTypeNotNull(
+            'boolean', $value,
+            self::INVALID_SHOW_BACKLOG_DATA_TYPE,
+            self::UNDEFINED_SHOW_BACKLOG_DATA
+        );
         self::$showBacklogData = $value;
     }
 
@@ -954,7 +1117,11 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setPerformanceAnalysis($value): void
     {
-        self::isOfTypeNotNull('boolean', $value, self::INVALID_PERFORMANCE_ANALYSIS_TYPE, self::UNDEFINED_PERFORMANCE_ANALYSIS );
+        self::isOfTypeNotNull(
+            'boolean', $value,
+            self::INVALID_PERFORMANCE_ANALYSIS_TYPE,
+            self::UNDEFINED_PERFORMANCE_ANALYSIS
+        );
         self::$performanceAnalysis = $value;
     }
 
@@ -978,10 +1145,20 @@ final class Parameters implements \galastri\lang\English
      */
     public static function setLanguage($value): void
     {
-        self::isOfTypeNotNull('string', $value, self::INVALID_LANGUAGE_TYPE, self::UNDEFINED_LANGUAGE );
+        self::isOfTypeNotNull(
+            'string', $value,
+            self::INVALID_LANGUAGE_TYPE,
+            self::UNDEFINED_LANGUAGE
+        );
 
         if (!is_file(self::LANGUAGE_DIRECTORY.'/'.$value.'.php')) {
-            throw new Exception(self::LANGUAGE_FILE_NOT_FOUND[1], self::LANGUAGE_FILE_NOT_FOUND[0], [$value]);
+            throw new Exception(
+                self::LANGUAGE_FILE_NOT_FOUND[1],
+                self::LANGUAGE_FILE_NOT_FOUND[0],
+                [
+                    $value
+                ]
+            );
         }
         self::$language = $value;
     }
@@ -1002,7 +1179,7 @@ final class Parameters implements \galastri\lang\English
      * $whenInvalid parameter array, where the key 0 is the code and the key 1 is the message. It
      * allows null values.
      *
-     * @param  string $type                         The type that the variable is expected to be.
+     * @param  string|array $types                  The types that the variable is expected to be.
      *
      * @param  mixed $value                         The variable that will be tested.
      *
@@ -1011,11 +1188,23 @@ final class Parameters implements \galastri\lang\English
      *
      * @return void
      */
-    private static function isOfType(string $type, $value, array $whenInvalid): void
+    private static function isOfType(/*string|array*/ $types, $value, array $whenInvalid, array $printfValues = []): void
     {
-        if ($value !== null and gettype($value) !== $type) {
-            throw new Exception($whenInvalid[1], $whenInvalid[0]);
+        if (gettype($types) !== 'array') {
+            $types = [$types];
         }
+
+        foreach($types as $type) {
+            if ($value === null or gettype($value) === $type) {
+                return;
+            }
+        }
+
+        throw new Exception(
+            $whenInvalid[1],
+            $whenInvalid[0],
+            $printfValues
+        );
     }
 
     /**
@@ -1025,7 +1214,7 @@ final class Parameters implements \galastri\lang\English
      * doesn't allow null values and will return an exception if it is the case following the same
      * format of the $whenInvalid parameter.
      *
-     * @param  string $type                         The type that the variable is expected to be.
+     * @param  string|array $types                  The types that the variable is expected to be.
      *
      * @param  mixed $value                         The variable that will be tested.
      *
@@ -1037,14 +1226,30 @@ final class Parameters implements \galastri\lang\English
      *
      * @return void
      */
-    private static function isOfTypeNotNull($type, $value, $whenInvalid, $whenUndefined): void
+    private static function isOfTypeNotNull(/*string|array*/$types, $value, array $whenInvalid, array $whenUndefined, array $printfValues = []): void
     {
-        if ($value !== null) {
-            if (gettype($value) !== $type) {
-                throw new Exception($whenInvalid[1], $whenInvalid[0]);
-            }
-        } else {
-            throw new Exception($whenUndefined[1], $whenUndefined[0]);
+        if (gettype($types) !== 'array') {
+            $types = [$types];
         }
+
+        foreach($types as $type) {
+            if ($value !== null) {
+                if (gettype($value) === $type) {
+                    return;
+                }
+            } else {
+                throw new Exception(
+                    $whenUndefined[1],
+                    $whenUndefined[0],
+                    $printfValues
+                );
+            }
+        }
+
+        throw new Exception(
+            $whenInvalid[1],
+            $whenInvalid[0],
+            $printfValues
+        );
     }
 }

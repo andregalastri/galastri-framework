@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <base href="<?php $galastri->printFrameworkData('urlRoot');?>">
+    <base href="<?php $galastri->print('urlRoot');?>">
 
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,6 +9,6 @@
     <title>Galastri Framework</title>
 </head>
 <body>
-    <?php $galastri->import('view');?>
+    <?php $galastri->include('view');?>
 </body>
 </html>

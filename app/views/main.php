@@ -237,6 +237,6 @@
     </nav>
 </div>
 
-<div class='version'><?php echo GALASTRI_VERSION;?></div>
+<div class='version'><?php $galastri->print('version');?></div>
 
 <script>load();</script>

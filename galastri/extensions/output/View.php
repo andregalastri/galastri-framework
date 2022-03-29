@@ -4,9 +4,9 @@ namespace galastri\extensions\output;
 
 use \galastri\core\Route;
 use \galastri\core\Debug;
+use \galastri\core\Parameters;
 use \galastri\modules\types\TypeString;
 use \galastri\extensions\Exception;
-use \galastri\extensions\output\helpers\ViewHelper;
 
 /**
  * This trait is the View output, used by the Galastri class, to return a HTML to the request.
@@ -24,6 +24,7 @@ use \galastri\extensions\output\helpers\ViewHelper;
 trait View
 {
     use traits\Common;
+    use traits\TemplateEngines;
 
     /**
      * Stores an object that contains the path of the template file.
@@ -37,7 +38,14 @@ trait View
      * wil stores null.
      *
      */
-    private static TypeString $viewPath;
+    private static TypeString $viewFilePath;
+
+    /**
+     * Stores an object that contains the path of the view file. If the view file doesn't exists, it
+     * wil stores null.
+     *
+     */
+    private static array $templateEngine;
 
     /**
      * This is the main method of the View output. It has a chain of methods to define and validate
@@ -49,22 +57,21 @@ trait View
     {
         Debug::setBacklog();
 
+        self::$templateEngine = $templateEngine = Parameters::getTemplateEngine();
+
         /**
          * Calls the methods to define and validate the template and view files.
          */
         self::viewCheckTemplateFile();
         self::viewDefineViewPath();
+
         self::viewCheckFileExists();
 
         /**
          * Calls the method that will import the template file to be returned to the request.
          */
-        self::viewRequireTemplate(
-            new ViewHelper(
-                self::$routeController->getResultData(),
-                self::$viewPath
-            ),
-        );
+        self::{'view'.ucwords(self::$templateEngine[0]).'TemplatePrint'}();
+
     }
 
     /**
@@ -81,6 +88,15 @@ trait View
         }
 
         self::$viewTemplateFile = new TypeString($viewTemplateFile);
+
+        if(self::$viewTemplateFile->fileExtension()->get() !== self::$templateEngine[0]) {
+            throw new Exception(self::VIEW_INVALID_TEMPLATE_EXTENSION[1], self::VIEW_INVALID_TEMPLATE_EXTENSION[0], [
+                ucfirst(self::$templateEngine[0]),
+                self::$viewTemplateFile->get(),
+                self::$viewTemplateFile->fileExtension()->get(),
+                self::$templateEngine[0]
+            ]);
+        }
     }
 
     /**
@@ -111,18 +127,18 @@ trait View
          * Second it checks if the 'viewPath' parameter is empty. If it is, then it will get the
          * namespace and use it as the directory path and the child node name as the view file name.
          */
-        if (empty($viewPath = self::$routeController->getViewPath())) {
+        if (empty($viewFilePath = self::$routeController->getViewPath())) {
 
             $controllerNamespace = Route::getControllerNamespace();
 
             foreach ($controllerNamespace as &$value) {
-                $value = str_replace(['\Index', '\\'], ['/', '/'], $value);
+                $value = str_replace(['\Index', '\\'], ['', '/'], $value);
             }
             unset($value);
 
             $childNodeName = Route::getChildNodeName();
 
-            $viewPath = implode($controllerNamespace) . '/' . $childNodeName . '.php';
+            $viewFilePath = implode($controllerNamespace) . '/' . $childNodeName . '.' . self::$templateEngine[0];
 
         /**
          * However, if the parameter exists in the route configuration, then the base folder will be
@@ -133,7 +149,15 @@ trait View
             $viewBaseFolder = '';
         }
 
-        self::$viewPath = new TypeString($viewBaseFolder . $viewPath);
+        self::$viewFilePath = new TypeString($viewBaseFolder . $viewFilePath);
+        if(self::$viewFilePath->fileExtension()->get() !== self::$templateEngine[0]) {
+            throw new Exception(self::VIEW_INVALID_VIEW_EXTENSION[1], self::VIEW_INVALID_VIEW_EXTENSION[0], [
+                strtoupper(self::$templateEngine[0]),
+                self::$viewFilePath->fileName()->get(),
+                self::$viewFilePath->fileExtension()->get(),
+                self::$templateEngine[0]
+            ]);
+        }
     }
 
     /**
@@ -153,52 +177,15 @@ trait View
         /**
          * The view file isn't required if the 'viewPath' parameter wasn't defined in the route
          * configuration. In this case, if the file doesn't exist in the view directory, the
-         * $viewPath property will be set as null. However, if there is a 'viewPath' parameter
+         * $viewFilePath property will be set as null. However, if there is a 'viewPath' parameter
          * defined, then an exception will be thrown if the file doesn't exist.
          */
-        if (self::$viewPath->fileNotExists()) {
+        if (self::$viewFilePath->fileNotExists()) {
             if (empty(self::$routeController->getViewPath())) {
-                self::$viewPath->set(null);
+                self::$viewFilePath->set(null);
             } else {
-                throw new Exception(self::VIEW_FILE_NOT_FOUND[1], self::VIEW_FILE_NOT_FOUND[0], [self::$viewPath->get()]);
+                throw new Exception(self::VIEW_FILE_NOT_FOUND[1], self::VIEW_FILE_NOT_FOUND[0], [self::$viewFilePath->get()]);
             }
-        }
-    }
-
-    /**
-     * This is the last part of the View output. This method import the template file, based on the
-     * template path.
-     *
-     * Note that the $galastri parameter isn't used here, despite it being declared and required.
-     * This is because the $galastri parameter is an object for the ViewHelper, which has methods to
-     * retrive or print route controller data and import other template parts to the main template
-     * file.
-     *
-     * This method also check if the browser cache is set in the route configuration and if the file
-     * view and template files were changed. If it was, its content is downloaded from the server,
-     * if not, the cached template and view will be used instead.
-     *
-     * @param  ViewHelper $galastri                 An object used in the template and view files to
-     *                                              handle route controller data. It isn't used
-     *                                              here, but in the imported files.
-     *
-     * @param  TypeString $templatePath             The template file path.
-     *
-     * @return void
-     */
-    private static function viewRequireTemplate(ViewHelper $galastri): void
-    {
-        $viewLastModified = '';
-        $templateLastModified = self::$viewTemplateFile->fileLastModified()->get();
-
-        if (self::$viewPath->isNotNull()) {
-            if (self::$viewPath->fileExists()) {
-                $viewLastModified = self::$viewPath->fileLastModified()->get();
-            }
-        }
-
-        if (!self::browserCache($viewLastModified.$templateLastModified)) {
-            require(self::$viewTemplateFile->realPath()->get());
         }
     }
 

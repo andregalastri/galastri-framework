@@ -2,6 +2,8 @@
 
 namespace galastri\modules\types\traits;
 
+use galastri\extensions\Exception;
+
 /**
  * This trait has the methods related to manipulate substrings.
  */
@@ -202,6 +204,42 @@ trait FilePath
         $lastModified = $format ? date($format, $filemtime) : $filemtime;
 
         $this->execHandleValue($lastModified);
+
+        return $this;
+    }
+
+    public function directoryName(): self
+    {
+        if ($this->isNotEmpty()) {
+            $this->execHandleValue(pathinfo($this->realPath()->get())['dirname']);
+        }
+
+        return $this;
+    }
+
+    public function fileBaseName(): self
+    {
+        if ($this->isNotEmpty()) {
+            $this->execHandleValue(pathinfo($this->realPath()->get())['basename']);
+        }
+
+        return $this;
+    }
+
+    public function fileExtension(): self
+    {
+        if ($this->isNotEmpty()) {
+            $this->execHandleValue(pathinfo($this->realPath()->get())['extension']);
+        }
+
+        return $this;
+    }
+
+    public function fileName(): self
+    {
+        if ($this->isNotEmpty()) {
+            $this->execHandleValue(pathinfo($this->realPath()->get())['filename']);
+        }
 
         return $this;
     }

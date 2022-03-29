@@ -208,7 +208,7 @@ abstract class Controller
      */
     private function mergeResults(): void
     {
-        $this->resultData['controller'] = array_merge(
+        $this->resultData['data'] = array_merge(
             $this->doBeforeData,
             $this->controllerData,
             $this->requestMethodData,
@@ -221,6 +221,7 @@ abstract class Controller
 
         $this->resultData['galastri'] = [
             'urlRoot' => '/'.Parameters::getUrlRoot(),
+            'version' => GALASTRI_VERSION,
         ];
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);

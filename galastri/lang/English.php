@@ -51,7 +51,7 @@ interface English
     ];
 
     const REQUEST_METHOD_STARTS_WITH_AT = [
-        'G0009', "Request method '%s' need to start with @ as the first character"
+        'G0009', "Request method '%s' need to start with @ as the first character."
     ];
 
     const INVALID_REQUEST_METHOD_NAME = [
@@ -67,11 +67,11 @@ interface English
     ];
 
     const EMPTY_FILE_PATH = [
-        'G0012', "The path parameter is empty in method '%s'"
+        'G0012', "The path parameter is empty in method '%s'."
     ];
 
     const EMPTY_DIRECTORY_PATH = [
-        'G0012', "The path parameter is empty in method '%s'"
+        'G0012', "The path parameter is empty in method '%s'."
     ];
 
     const TYPE_DEFAULT_INVALID_MESSAGE = [
@@ -351,18 +351,70 @@ interface English
     ];
 
     const DATABASE_BIND_PARAMETER_TYPE = [
-        'G0035', "Bind parameter #1 need to be string, int or an array."
+        'G0028', "Bind parameter #1 need to be string, int or an array."
     ];
 
     const DATABASE_CONNECTION_FAIL_UNDEFINED_PROPERTY = [
-        'G0035', "Can't connect to database. Property '%s' was not configured."
+        'G0028', "Can't connect to database. Property '%s' was not configured."
     ];
 
     const DATABASE_UNINITIALIZED_CLASS = [
-        'G0035', "Before execute any database method, execute the 'connect()' method."
+        'G0028', "Before execute any database method, execute the 'connect()' method."
     ];
 
     const DATABASE_UNAVAILABLE_EXPORT_METHOD = [
-        'G0035', "Method 'export' isn't available to the '%s' class"
+        'G0028', "Method 'export' isn't available to the '%s' class."
+    ];
+
+    const VIEW_INVALID_TEMPLATE_EXTENSION = [
+        'G0029', "You are using %s as template engine, but your template file '%s' is using '.%s' extension. Expecting '.%s' extension."
+    ];
+
+    const VIEW_INVALID_VIEW_EXTENSION = [
+        'G0029', "You are using %s as template engine, but your view file '%s' is using '.%s' extension. Expecting '.%s' extension."
+    ];
+
+    const VIEW_INVALID_TEMPLATE_ENGINE_VALUE_TYPE = [
+        'G0029', "The templateEngine parameter needs to be a 'string' or an 'array'."
+    ];
+
+    const VIEW_UNDEFINED_TEMPLATE_ENGINE_VALUE_TYPE = [
+        'G0029', "You need to specify which template engine you will use to this route. The possible template engines, for now, are: %s. if you omit the 'templateEngine' parameter, the default template engine will be 'php'."
+    ];
+
+    const VIEW_INVALID_TEMPLATE_ENGINE_NAME_TYPE = [
+        'G0029', "The value #1 of the templateEngine parameter needs to be an 'string' and cannot be empty."
+    ];
+
+    const VIEW_UNDEFINED_TEMPLATE_ENGINE_NAME = [
+        'G0029', "The value #1 of the templateEngine parameter cannot be undefined nor empty."
+    ];
+    
+    const VIEW_INVALID_TEMPLATE_ENGINE = [
+        'G0029', "Galastri Framework doesn't support the template engine '%s' you informed. The only possible template engines, for now, are: %s."
+    ];
+
+    const VIEW_INVALID_TEMPLATE_ENGINE_OPTIONS_TYPE = [
+        'G0029', "The value #2 of the templateEngine parameter needs to be an 'array' and cannot be empty."
+    ];
+
+    const VIEW_UNDEFINED_TEMPLATE_ENGINE_OPTIONS = [
+        'G0029', "The value #2 of the templateEngine parameter cannot be undefined nor empty."
+    ];
+
+    const TWIG_FILESYSTEMLOADER_NOT_FOUND = [
+        'TWIG0000', "The template engine Twig doesn't seem to be installed (Twig's FilesystemLoader class not found). Check https://twig.symfony.com/ for instructions about installation."
+    ];
+
+    const TWIG_ENVIRONMENT_NOT_FOUND = [
+        'TWIG0001', "The template engine Twig doesn't seem to be installed (Twig's Environment class not found). Check https://twig.symfony.com/ for instructions about installation."
+    ];
+
+    const BLADE_NOT_FOUND = [
+        'BLADE0000', "The template engine BladeOne doesn't seem to be installed (BladeOne class not found). Check https://github.com/EFTEC/BladeOne/ for instructions about installation."
+    ];
+
+    const LATTE_NOT_FOUND = [
+        'LATTE0000', "The template engine Latte doesn't seem to be installed (Latte's Engine class not found). Check https://latte.nette.org/ for instructions about installation."
     ];
 }
