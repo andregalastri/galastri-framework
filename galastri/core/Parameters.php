@@ -176,11 +176,11 @@ final class Parameters implements \galastri\lang\English
     private static ?bool $ignoreMimeType = null;
 
     /**
-     * Stores the templateEngine parameter from the route configuration.
+     * Stores the templateEngineClass parameter from the route configuration.
      *
      * @var array|null
      */
-    private static ?array $templateEngine = null;
+    private static ?string $templateEngineClass = null;
 
 
 
@@ -837,51 +837,38 @@ final class Parameters implements \galastri\lang\English
      *
      * @return void
      */
-    public static function setTemplateEngine($values): void
+    public static function setTemplateEngineClass($value): void
     {
-        self::isOfTypeNotNull(
-            ['array', 'string'], $values,
-            self::VIEW_INVALID_TEMPLATE_ENGINE_VALUE_TYPE,
-            self::VIEW_UNDEFINED_TEMPLATE_ENGINE_VALUE_TYPE,
+        self::isOfType(
+            'string', $value,
+            self::INVALID_TEMPLATE_ENGINE_CLASS_VALUE_TYPE,
         );
 
-        if (gettype($values) !== 'array') {
-            $values = [$values];
-        }
-
-        if (array_key_exists(0, $values)) {
-            $templateEngines = ['php', 'twig', 'blade', 'latte'];
-
-            self::isOfTypeNotNull(
-                'string', $values[0],
-                self::VIEW_INVALID_TEMPLATE_ENGINE_NAME_TYPE,
-                self::VIEW_UNDEFINED_TEMPLATE_ENGINE_NAME,
-            );
-
-            if (!in_array($values[0], $templateEngines)) {
+        if (!empty($value)) {
+            if (!class_exists($value)) {
                 throw new Exception(
-                    self::VIEW_INVALID_TEMPLATE_ENGINE[1],
-                    self::VIEW_INVALID_TEMPLATE_ENGINE[0],
+                    self::TEMPLATE_ENGINE_CLASS_NOT_FOUND[1],
+                    self::TEMPLATE_ENGINE_CLASS_NOT_FOUND[0],
                     [
-                        strtoupper($values[0]),
-                        implode(', ', $templateEngines)
+                        $value
                     ]
                 );
             }
+    
+            if (!is_subclass_of($value, \galastri\extensions\TemplateEngine::class)) {
+                throw new Exception(
+                    self::TEMPLATE_ENGINE_CLASS_DOESNT_EXTENDS_CORE[1],
+                    self::TEMPLATE_ENGINE_CLASS_DOESNT_EXTENDS_CORE[0],
+                    [
+                        $value
+                    ]
+                );
+            }
+        } else {
+            $value = null;
         }
 
-        if (array_key_exists(1, $values)) {
-            self::isOfTypeNotNull(
-                'array', $values[1],
-                self::VIEW_INVALID_TEMPLATE_ENGINE_OPTIONS_TYPE,
-                self::VIEW_UNDEFINED_TEMPLATE_ENGINE_OPTIONS,
-                [
-                    implode(', ', $templateEngines)
-                ]
-            );
-        }
-
-        self::$templateEngine = $values;
+        self::$templateEngineClass = $value;
     }
 
     /**
@@ -889,9 +876,9 @@ final class Parameters implements \galastri\lang\English
      *
      * @return null|array
      */
-    public static function getTemplateEngine(): ?array
+    public static function getTemplateEngineClass(): ?string
     {
-        return self::$templateEngine;
+        return self::$templateEngineClass;
     }
 
 

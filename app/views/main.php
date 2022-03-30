@@ -69,6 +69,7 @@
         opacity: 0.6;
         bottom: 15px;
         right: 15px;
+        text-align: right;
     }
 
     nav,

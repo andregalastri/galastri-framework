@@ -1,6 +1,6 @@
 <?php
 
-namespace galastri\extensions\output\templateEngines;
+namespace galastri\extensions\output\classes;
 
 use galastri\core\Debug;
 use galastri\extensions\Exception;

@@ -366,55 +366,19 @@ interface English
         'G0028', "Method 'export' isn't available to the '%s' class."
     ];
 
-    const VIEW_INVALID_TEMPLATE_EXTENSION = [
-        'G0029', "You are using %s as template engine, but your template file '%s' is using '.%s' extension. Expecting '.%s' extension."
+    const INVALID_TEMPLATE_ENGINE_CLASS_VALUE_TYPE = [
+        'G0029', "The templateEngineClass parameter needs to be a 'string'."
     ];
 
-    const VIEW_INVALID_VIEW_EXTENSION = [
-        'G0029', "You are using %s as template engine, but your view file '%s' is using '.%s' extension. Expecting '.%s' extension."
+    const TEMPLATE_ENGINE_CLASS_NOT_FOUND = [
+        'G0029', "The Template Engine class '%s' doesn't exist."
     ];
 
-    const VIEW_INVALID_TEMPLATE_ENGINE_VALUE_TYPE = [
-        'G0029', "The templateEngine parameter needs to be a 'string' or an 'array'."
+    const TEMPLATE_ENGINE_CLASS_DOESNT_EXTENDS_CORE = [
+        'G0029', "The Template Engine class '%s' needs to extend the class \galastri\extensions\TemplateEngine."
     ];
 
-    const VIEW_UNDEFINED_TEMPLATE_ENGINE_VALUE_TYPE = [
-        'G0029', "You need to specify which template engine you will use to this route. The possible template engines, for now, are: %s. if you omit the 'templateEngine' parameter, the default template engine will be 'php'."
-    ];
-
-    const VIEW_INVALID_TEMPLATE_ENGINE_NAME_TYPE = [
-        'G0029', "The value #1 of the templateEngine parameter needs to be an 'string' and cannot be empty."
-    ];
-
-    const VIEW_UNDEFINED_TEMPLATE_ENGINE_NAME = [
-        'G0029', "The value #1 of the templateEngine parameter cannot be undefined nor empty."
-    ];
-    
-    const VIEW_INVALID_TEMPLATE_ENGINE = [
-        'G0029', "Galastri Framework doesn't support the template engine '%s' you informed. The only possible template engines, for now, are: %s."
-    ];
-
-    const VIEW_INVALID_TEMPLATE_ENGINE_OPTIONS_TYPE = [
-        'G0029', "The value #2 of the templateEngine parameter needs to be an 'array' and cannot be empty."
-    ];
-
-    const VIEW_UNDEFINED_TEMPLATE_ENGINE_OPTIONS = [
-        'G0029', "The value #2 of the templateEngine parameter cannot be undefined nor empty."
-    ];
-
-    const TWIG_FILESYSTEMLOADER_NOT_FOUND = [
-        'TWIG0000', "The template engine Twig doesn't seem to be installed (Twig's FilesystemLoader class not found). Check https://twig.symfony.com/ for instructions about installation."
-    ];
-
-    const TWIG_ENVIRONMENT_NOT_FOUND = [
-        'TWIG0001', "The template engine Twig doesn't seem to be installed (Twig's Environment class not found). Check https://twig.symfony.com/ for instructions about installation."
-    ];
-
-    const BLADE_NOT_FOUND = [
-        'BLADE0000', "The template engine BladeOne doesn't seem to be installed (BladeOne class not found). Check https://github.com/EFTEC/BladeOne/ for instructions about installation."
-    ];
-
-    const LATTE_NOT_FOUND = [
-        'LATTE0000', "The template engine Latte doesn't seem to be installed (Latte's Engine class not found). Check https://latte.nette.org/ for instructions about installation."
+    const TEMPLATE_ENGINE_CLASS_ALREADY_CONSTRUCTED = [
+        'G0029', "You can't rerun the __contruct() method of the TemplateEngine class."
     ];
 }

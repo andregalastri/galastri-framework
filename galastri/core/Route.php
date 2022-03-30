@@ -173,20 +173,9 @@ final class Route implements \Language
      *                                              type configuration file. When false, null or
      *                                              undefined, the validation will occur.
      *
-     * templateEngine         array|null            Works only with View output. Defines a template
-     *                                              engine for views.
-     *
-     *                                              - Key 0  string  Sets the tag that defines which
-     *                                                               template engine will be used.
-     *                                                               Values can be 'php', 'twig' or
-     *                                                               'blade'.
-     *                                              - Key 1  string  Optional. Defines the
-     *                                                               compilation path. When null is
-     *                                                               given, it will create a folder
-     *                                                               with the tag name inside the
-     *                                                               project folder to store
-     *                                                               compiled scripts.
-     *
+     * templateEngineClass    null|string           Works only with View output. Defines a template
+     *                                              engine class for views.
+     * 
      * @var array
      */
     private static array $routeParameters;
@@ -377,7 +366,7 @@ final class Route implements \Language
             'authFailMessage' => $GLOBALS['GALASTRI_PROJECT']['authFailMessage'] ?? null,
             'permissionFailMessage' => $GLOBALS['GALASTRI_PROJECT']['permissionFailMessage'] ?? null,
             'ignoreMimeType' => null,
-            'templateEngine' => 'php',
+            'templateEngineClass' => null,
         ];
 
         self::$parentParameters = [
@@ -835,7 +824,7 @@ final class Route implements \Language
         Parameters::setAuthFailMessage(self::$routeParameters['authFailMessage']);
         Parameters::setPermissionFailMessage(self::$routeParameters['permissionFailMessage']);
         Parameters::setIgnoreMimeType(self::$routeParameters['ignoreMimeType']);
-        Parameters::setTemplateEngine(self::$routeParameters['templateEngine']);
+        Parameters::setTemplateEngineClass(self::$routeParameters['templateEngineClass']);
 
         Parameters::setDownloadable(self::$childParameters['downloadable']);
         Parameters::setAllowedExtensions(self::$childParameters['allowedExtensions']);

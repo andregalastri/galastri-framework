@@ -51,8 +51,9 @@ currentVersion=$(cat 'galastri/VERSION');
 ignoredUpdatePaths=(
     '^.git'
     '^build-package.sh'
-    '^composer.json'
+    '^composer'
     '^LICENSE'
+    '^nicolette'
     '^README.md'
     '^app\/'
     '^logs\/'
@@ -69,6 +70,7 @@ ignoredUpdatePaths=(
  ##
 ignoredReleasePaths=(
     '^.\/.git'
+    '^.\/nicolette'
     '^.\/build-package.sh'
     '^.\/updater-bk'
     '^.\/tmp\/'
@@ -116,18 +118,18 @@ getGitChanges()
     then
         git show --name-status $2 | grep -oP '(?<=U\s).*' >> $fileList
         git show --name-status $2 | grep -oP '(?<=A\s).*' >> $fileList
+        git show --name-status $2 | grep -oP '(?<=R[0-9]..\s).*' | grep -oP '[^\s]*$' >> $fileList
     fi
 
     if [ "$1" == 'modified-files' ];
     then
         git show --name-status $2 | grep -oP '(?<=M\s).*' >> $fileList
-        git show --name-status $2 | grep -oP '(?<=R[0-9]..\s).*' | grep -oP '[^\s]*$' >> $fileList
     fi
 
     if [ "$1" == 'deleted-files' ];
     then
         git show --name-status $2 | grep -oP '(?<=D\s).*' >> $fileList
-        git show --name-status $2 | grep -oP '(?<=R[0-9]..\s).*' | grep -oP '^[^\\s]+' >> $fileList
+        git show --name-status $2 | grep -oP '(?<=R[0-9]..\s).*' | grep -oP '^[^\s]+' >> $fileList
     fi
 
     # Calls the filterGitChanges to remove the ignored files and directories.

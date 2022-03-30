@@ -1,3 +1,8 @@
 updater-bk
+nicolette*
 tmp/
 releases/
+app/modules
+**/*.blade
+**/*.latte
+**/*.twig
