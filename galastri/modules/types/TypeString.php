@@ -119,7 +119,7 @@ final class TypeString extends StringValidation implements \Language
         } elseif (function_exists("openssl_random_pseudo_bytes")) {
             $bytes = openssl_random_pseudo_bytes((int)ceil($length / 2));
         } else {
-            throw new Exception(self::SECURE_RANDOM_GENERATOR_NOT_FOUND[0], self::SECURE_RANDOM_GENERATOR_NOT_FOUND[1]);
+            throw new Exception(self::SECURE_RANDOM_GENERATOR_NOT_FOUND);
         }
 
         $this->execHandleValue(bin2hex($bytes));

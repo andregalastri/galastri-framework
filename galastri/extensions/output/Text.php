@@ -2,7 +2,7 @@
 
 namespace galastri\extensions\output;
 
-use \galastri\core\Debug;
+use galastri\core\Debug;
 
 /**
  * This trait is the Text output, used by the Galastri class, to return a plain text to the request.

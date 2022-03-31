@@ -2,12 +2,12 @@
 
 namespace galastri\extensions\output;
 
-use \galastri\core\Route;
-use \galastri\core\Debug;
-use \galastri\core\Parameters;
-use \galastri\modules\types\TypeString;
-use \galastri\extensions\Exception;
-use \galastri\extensions\output\classes\PhpEngine;
+use galastri\core\Route;
+use galastri\core\Debug;
+use galastri\core\Parameters;
+use galastri\modules\types\TypeString;
+use galastri\extensions\Exception;
+use galastri\extensions\output\classes\PhpEngine;
 
 /**
  * This trait is the View output, used by the Galastri class, to return a HTML to the request.
@@ -88,7 +88,7 @@ trait View
     private static function viewCheckTemplateFile(): void
     {
         if (empty($viewTemplateFile = self::$routeController->getTemplateFile())) {
-            throw new Exception(self::UNDEFINED_TEMPLATE_FILE[1], self::UNDEFINED_TEMPLATE_FILE[0]);
+            throw new Exception(self::UNDEFINED_TEMPLATE_FILE);
         }
 
         self::$viewTemplateFile = new TypeString($viewTemplateFile);
@@ -158,7 +158,7 @@ trait View
          * The template file is required, so, if it doesn't exist, an exception is thrown.
          */
         if (self::$viewTemplateFile->fileNotExists()) {
-            throw new Exception(self::TEMPLATE_FILE_NOT_FOUND[1], self::TEMPLATE_FILE_NOT_FOUND[0], [self::$viewTemplateFile->get()]);
+            throw new Exception(self::TEMPLATE_FILE_NOT_FOUND, [self::$viewTemplateFile->get()]);
         }
 
         /**
@@ -171,7 +171,7 @@ trait View
             if (empty(self::$routeController->getViewPath())) {
                 self::$viewFilePath->set(null);
             } else {
-                throw new Exception(self::VIEW_FILE_NOT_FOUND[1], self::VIEW_FILE_NOT_FOUND[0], [self::$viewFilePath->get()]);
+                throw new Exception(self::VIEW_FILE_NOT_FOUND, [self::$viewFilePath->get()]);
             }
         }
     }

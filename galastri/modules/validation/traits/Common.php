@@ -118,7 +118,7 @@ trait Common
      */
     protected function throwFail(): void
     {
-        throw new Exception($this->failMessage[1], $this->failMessage[0], [var_export($this->validatingValue, true)]);
+        throw new Exception($this->failMessage, [var_export($this->validatingValue, true)]);
     }
 
     /**

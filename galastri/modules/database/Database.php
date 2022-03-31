@@ -389,10 +389,7 @@ abstract class Database implements \Language
                  * If the $bind parameter is from a different type, an exception will be thrown.
                  */
                 default:
-                    throw new Exception(
-                        self::DATABASE_BIND_PARAMETER_TYPE[1],
-                        self::DATABASE_BIND_PARAMETER_TYPE[0]
-                    );
+                    throw new Exception(self::DATABASE_BIND_PARAMETER_TYPE);
             }
         };
 
@@ -499,10 +496,7 @@ abstract class Database implements \Language
     protected function checkIfConnected()
     {
         if (!$this->connected) {
-            throw new Exception(
-                self::DATABASE_UNINITIALIZED_CLASS[1],
-                self::DATABASE_UNINITIALIZED_CLASS[0]
-            );
+            throw new Exception(self::DATABASE_UNINITIALIZED_CLASS);
         }
     }
 

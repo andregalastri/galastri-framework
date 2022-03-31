@@ -134,7 +134,7 @@ trait StringValues
     {
         $this->validatingChain[] = function () use ($charSets) {
             if (empty($charSets)) {
-                throw new Exception(self::UNDEFINED_VALIDATION_ALLOWED_CHARSET[1], self::UNDEFINED_VALIDATION_ALLOWED_CHARSET[0]);
+                throw new Exception(self::UNDEFINED_VALIDATION_ALLOWED_CHARSET);
             }
 
             /**
@@ -183,10 +183,7 @@ trait StringValues
     {
         $this->validatingChain[] = function () use ($minQty, $charSets) {
             if (empty($charSets)) {
-                throw new Exception(
-                    self::UNDEFINED_VALIDATION_REQUIRED_CHARSET[1],
-                    self::UNDEFINED_VALIDATION_REQUIRED_CHARSET[0]
-                );
+                throw new Exception(self::UNDEFINED_VALIDATION_REQUIRED_CHARSET);
             }
 
             foreach ($charSets as $charGroup) {

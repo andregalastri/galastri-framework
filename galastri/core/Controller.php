@@ -220,7 +220,7 @@ abstract class Controller
         );
 
         $this->resultData['galastri'] = [
-            'urlRoot' => '/'.Parameters::getUrlRoot(),
+            'urlRoot' => Parameters::getUrlRoot(),
             'version' => GALASTRI_VERSION,
         ];
 
@@ -321,8 +321,8 @@ abstract class Controller
     }
 
     /**
-     * Overwrites the 'projectTitle' parameter if it is defined in the project or route
-     * configuration. Sets a project title.
+     * Overwrites the 'projectTitle' parameter if it is defined in the route configuration. Sets a
+     * project title.
      *
      * @param  string $value                        The project title.
      *
@@ -391,7 +391,7 @@ abstract class Controller
 
     /**
      * Works only for View output. Overwrites the 'templateFile' parameter if it is defined in the
-     * project or route configuration. Sets the template file for the View output.
+     * route configuration. Sets the template file for the View output.
      *
      * @param  string $value                        The path location of the template file.
      *

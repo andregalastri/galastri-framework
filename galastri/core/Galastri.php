@@ -41,10 +41,10 @@ final class Galastri implements \Language
      * Right now there are the following outputs:
      *
      * - View: This output return a view, based on the MVC concept. All the data processed by the
-     *   route controller are returned and made available to a template file, specified in the
-     *   project or route configuration file, or by the route controller itself. In this template
-     *   file, a view file can be imported to print a HTML to the client's browser. It requires a
-     *   route controller to work.
+     *   route controller are returned and made available to a template file, specified in the route
+     *   configuration file, or by the route controller itself. In this template file, a view file
+     *   can be imported to print a HTML to the client's browser. It requires a route controller to
+     *   work.
      *
      * - Json: This output return a JSON with the data processed by the route controller. It
      *   requires a route controller to work.
@@ -150,12 +150,10 @@ final class Galastri implements \Language
     }
 
     /**
-     * This method checks if the 'offline' parameter is set in the project or the route
-     * configuration. If it is true, it will return an exception showing a message that the route is
-     * offline.
+     * This method checks if the 'offline' parameter is set in the route configuration. If it is
+     * true, it will return an exception showing a message that the route is offline.
      *
-     * The message can be defined by the 'offlineMessage' parameter, set in the project of route
-     * parameter.
+     * The message can be defined by the 'offlineMessage' parameter, set in the route parameter.
      *
      * @return void
      */
@@ -344,7 +342,7 @@ final class Galastri implements \Language
             $notFoundClass = str_replace('\\', '', array_pop($workingController));
             $notFoundNamespace = implode('/', $workingController);
 
-            throw new Exception(self::CONTROLLER_NOT_FOUND[1], self::CONTROLLER_NOT_FOUND[0], [$routeControllerName, $notFoundClass, $notFoundNamespace]);
+            throw new Exception(self::CONTROLLER_NOT_FOUND, [$routeControllerName, $notFoundClass, $notFoundNamespace]);
         }
     }
 
@@ -361,7 +359,7 @@ final class Galastri implements \Language
         Debug::setBacklog();
 
         if (is_subclass_of(self::$routeControllerName, self::CORE_CONTROLLER) === false) {
-            throw new Exception(self::CONTROLLER_DOESNT_EXTENDS_CORE[1], self::CONTROLLER_DOESNT_EXTENDS_CORE[0], [self::$routeControllerName]);
+            throw new Exception(self::CONTROLLER_DOESNT_EXTENDS_CORE, [self::$routeControllerName]);
         }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
@@ -398,7 +396,7 @@ final class Galastri implements \Language
              */
             if (!empty($request)) {
                 if (!method_exists(self::$routeControllerName, $request)){
-                    throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $request]);
+                    throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND, [self::$routeControllerName, $request]);
                 }
             }
 
@@ -411,7 +409,7 @@ final class Galastri implements \Language
          */
         } else {
             if (self::$controllerIsRequired) {
-                throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND[1], self::CONTROLLER_METHOD_NOT_FOUND[0], [self::$routeControllerName, $method]);
+                throw new Exception(self::CONTROLLER_METHOD_NOT_FOUND, [self::$routeControllerName, $method]);
             } else {
                 self::checkOutputIsSet();
             }
@@ -448,7 +446,7 @@ final class Galastri implements \Language
         Debug::setBacklog();
 
         if (Parameters::getOutput() === null) {
-            throw new Exception(self::UNDEFINED_OUTPUT[1], self::UNDEFINED_OUTPUT[0]);
+            throw new Exception(self::UNDEFINED_OUTPUT);
         }
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);
@@ -488,7 +486,7 @@ final class Galastri implements \Language
          */
         if (Parameters::getNotFoundRedirect() === null or Parameters::getOutput() === 'json' or Parameters::getOutput() === 'text'  or Parameters::getOutput() === null) {
             header("HTTP/1.0 404 Not Found");
-            throw new Exception(self::ERROR_404[1], self::ERROR_404[0]);
+            throw new Exception(self::ERROR_404);
 
         /**
          * However, if there is a 'notFoundRedirect' route parameter defined, then the request is

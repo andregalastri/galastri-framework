@@ -109,7 +109,6 @@ try {
      * For more information aboute this files and its parameters, see the files
      * app/config/project.php and app/config/routes.php.
      */
-    $GALASTRI_PROJECT = require(GALASTRI_PROJECT_DIR.'/app/config/project.php');
     $GALASTRI_ROUTES = require(GALASTRI_PROJECT_DIR.'/app/config/routes.php');
 
     /**

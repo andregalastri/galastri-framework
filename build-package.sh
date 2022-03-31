@@ -259,11 +259,11 @@ createChangelogFile()
     echo "Galastri Framework $currentVersion" >> $changelogFile
     echo "----------------------------------------------------" >> $changelogFile
     echo "" >> $changelogFile
-    echo " - Title" >> $changelogFile
+    echo "# New/Change/Removed" >> $changelogFile
+    echo "==================" >> $changelogFile
+    echo "* Description" >> $changelogFile
     echo "" >> $changelogFile
-    echo "Description" >> $changelogFile
-    echo "" >> $changelogFile
-    echo "###" >> $changelogFile
+    echo "---" >> $changelogFile
 
     # Calls the 'nano' editor to describe the update.
     nano $changelogFile

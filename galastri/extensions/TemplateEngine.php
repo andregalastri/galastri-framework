@@ -23,10 +23,7 @@ abstract class TemplateEngine implements \Language
     
             $this->isConstructed = true;
         } else {
-            throw new Exception(
-                self::TEMPLATE_ENGINE_CLASS_ALREADY_CONSTRUCTED[1],
-                self::TEMPLATE_ENGINE_CLASS_ALREADY_CONSTRUCTED[0]
-            );
+            throw new Exception(self::TEMPLATE_ENGINE_CLASS_ALREADY_CONSTRUCTED);
         }
     }
 
@@ -50,10 +47,7 @@ abstract class TemplateEngine implements \Language
         try {
             $this->render();
         } catch (\Error $e) {
-            throw new Exception(
-                $e->getMessage(),
-                $e->getCode()
-            );
+            throw new Exception($e->getMessage(), $e->getCode());
         }
     }
 

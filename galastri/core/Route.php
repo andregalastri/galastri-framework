@@ -147,8 +147,6 @@ final class Route implements \Language
      *
      * templateFile           null|string           Works only with View output. Defines a default
      *                                              template file to all View outputs to the route.
-     *                                              It can be set in the project configuration or by
-     *                                              the route controller.
      *
      * baseFolder             null|string           Works with File and View outputs. Defines the
      *                                              default directory location of the file or the
@@ -298,13 +296,14 @@ final class Route implements \Language
         /**
          * First setup and preparation of the URL.
          */
+        self::checkRouteConfig();
         self::setupParameters();
         self::prepareUrlArray();
 
         /**
          * Execution of the route resolving, passing the route configuration as parameter.
          */
-        self::resolveRoutes($GLOBALS['GALASTRI_ROUTES']);
+        self::resolveRoutes(['/' => array_shift($GLOBALS['GALASTRI_ROUTES'])]);
 
         /**
          * After the route resolving, the array with the route configuration is removed from the
@@ -332,12 +331,6 @@ final class Route implements \Language
          * of the Parameters class.
          */
         self::storeParameters();
-
-        /**
-         * The project configuration is removed from the memory because everything is stored in the
-         * properties of the Parameters class.
-         */
-        unset($GLOBALS['GALASTRI_PROJECT']);
     }
 
     /**
@@ -350,21 +343,22 @@ final class Route implements \Language
     private static function setupParameters(): void
     {
         self::$routeParameters = [
-            'offline' => $GLOBALS['GALASTRI_PROJECT']['offline'],
-            'projectTitle' => $GLOBALS['GALASTRI_PROJECT']['projectTitle'] ?? null,
+            'timezone' => date_default_timezone_get(),
+            'offline' => false,
+            'projectTitle' => null,
             'pageTitle' => null,
             'authTag' => null,
             'authFailRedirect' => null,
             'forceRedirect' => null,
             'namespace' => null,
-            'notFoundRedirect' => $GLOBALS['GALASTRI_PROJECT']['notFoundRedirect'] ?? null,
+            'notFoundRedirect' => null,
             'output' => null,
             'browserCache' => null,
-            'templateFile' => $GLOBALS['GALASTRI_PROJECT']['templateFile'] ?? null,
+            'templateFile' => null,
             'baseFolder' => null,
-            'offlineMessage' => $GLOBALS['GALASTRI_PROJECT']['offlineMessage'] ?? null,
-            'authFailMessage' => $GLOBALS['GALASTRI_PROJECT']['authFailMessage'] ?? null,
-            'permissionFailMessage' => $GLOBALS['GALASTRI_PROJECT']['permissionFailMessage'] ?? null,
+            'offlineMessage' => null,
+            'authFailMessage' => null,
+            'permissionFailMessage' => null,
             'ignoreMimeType' => null,
             'templateEngineClass' => null,
         ];
@@ -382,6 +376,27 @@ final class Route implements \Language
         ];
     }
 
+    private static function checkRouteConfig(): void
+    {
+        if (gettype($GLOBALS['GALASTRI_ROUTES']) !== 'array') {
+            throw new Exception(
+                self::INVALID_ROUTE_CONFIG_TYPE[1],
+                self::INVALID_ROUTE_CONFIG_TYPE[0]
+            );
+        }
+
+        $countKeys = count($GLOBALS['GALASTRI_ROUTES']);
+        if ($countKeys !== 1) {
+            throw new Exception(
+                self::INVALID_ROUTE_CONFIG_ARRAY_KEY_NUMBER[1],
+                self::INVALID_ROUTE_CONFIG_ARRAY_KEY_NUMBER[0],
+                [
+                    $countKeys
+                ]
+            );
+        }    
+    }
+
     /**
      * This method prepares the URL array, splitting it into parts and storing them in an array. The
      * only parts that are stored are the request, between the domain and the query string.
@@ -396,9 +411,12 @@ final class Route implements \Language
      */
     private static function prepareUrlArray(): void
     {
-        Parameters::setUrlRoot($GLOBALS['GALASTRI_PROJECT']['urlRoot'] ?? null);
+        Parameters::setUrlRoot(key($GLOBALS['GALASTRI_ROUTES']) ?? null);
+        
+        $requestUri = (new TypeString($_SERVER['REQUEST_URI']))->replaceOnce(ltrim(Parameters::getUrlRoot(), '/'), '')
+                                                               ->get();
 
-        $urlArray = explode('?', (new TypeString($_SERVER['REQUEST_URI']))->replaceOnce(Parameters::getUrlRoot(), '')->get());
+        $urlArray = explode('?', $requestUri);
         $urlArray = explode('/', $urlArray[0]);
 
         if (empty($urlArray[1])) {
@@ -438,6 +456,14 @@ final class Route implements \Language
          * found.
          */
         foreach (self::$urlArray as $urlNode) {
+
+            // vardump(
+            //     self::$urlArray,
+            //     $routeArray,
+            //     $urlNode,
+            //     $routeArray[$urlNode],
+            //     isset($routeArray[$urlNode])
+            // );exit;
 
             /**
              * When a static parent node is found, the method is just redirect to another method
@@ -796,18 +822,18 @@ final class Route implements \Language
 
     /**
      * This method stores all the child, parent and route parameters in their relative properties in
-     * the Parameters class. It also stores the timezone, defined in the project configuration file.
+     * the Parameters class.
      *
-     * Each of the Parameters setter methods check if the values stored has the right variable
-     * type and will return an exception if there is a misconfiguration in some of the parameters.
+     * Each setter method check if the values stored has the right variable type and will return an
+     * exception if there is a misconfiguration in some of the parameters.
      *
      * @return void
      */
     private static function storeParameters(): void
     {
-        Parameters::setTimezone($GLOBALS['GALASTRI_PROJECT']['timezone'] ?? null);
         Parameters::setController(self::$parentParameters['controller']);
-
+        
+        Parameters::setTimezone(self::$routeParameters['timezone']);
         Parameters::setOffline(self::$routeParameters['offline']);
         Parameters::setProjectTitle(self::$routeParameters['projectTitle']);
         Parameters::setPageTitle(self::$routeParameters['pageTitle']);

@@ -190,7 +190,7 @@ final class PhpEngine implements \Language
     private function execPrint(/*int|string*/ ...$keys) : void
     {
         if (empty($keys)) {
-            throw new Exception(self::VIEW_UNDEFINED_DATA_KEY[1], self::VIEW_UNDEFINED_DATA_KEY[0]);
+            throw new Exception(self::VIEW_UNDEFINED_DATA_KEY);
         }
 
         $data = $this->execData(...$keys);
@@ -199,7 +199,7 @@ final class PhpEngine implements \Language
             case 'array':
             case 'object':
             case 'boolean':
-                throw new Exception(self::VIEW_INVALID_PRINT_DATA[1], self::VIEW_INVALID_PRINT_DATA[0]);
+                throw new Exception(self::VIEW_INVALID_PRINT_DATA);
         }
 
         echo htmlspecialchars($data, ENT_QUOTES, 'UTF-8');

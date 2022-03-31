@@ -123,7 +123,7 @@ final class Authentication
          * If there is no authentication tag defined, it will throw an exception.
          */
         } else {
-            throw new Exception(self::UNDEFINED_AUTH_TAG[1], self::UNDEFINED_AUTH_TAG[0]);
+            throw new Exception(self::UNDEFINED_AUTH_TAG);
         }
 
         return __CLASS__;
@@ -148,14 +148,14 @@ final class Authentication
         if ($authTag ?? self::$authTag) {
             $authTag = $authTag ?? self::$authTag;
         } else {
-            throw new Exception(self::UNDEFINED_AUTH_TAG[1], self::UNDEFINED_AUTH_TAG[0]);
+            throw new Exception(self::UNDEFINED_AUTH_TAG);
         }
 
         /**
          * If the configure method wasn't called before this method, than an exception is thrown.
          */
         if (!isset(self::$token[$authTag])) {
-            throw new Exception(self::UNCONFIGURED_AUTH_TAG[1], self::UNCONFIGURED_AUTH_TAG[0], [$authTag]);
+            throw new Exception(self::UNCONFIGURED_AUTH_TAG, [$authTag]);
         }
 
         session_start();

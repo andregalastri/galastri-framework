@@ -94,7 +94,7 @@ final class Redirect implements \Language
 
     /**
      * This method sets the $bypassUrlRoot property as true, to make the redirect ignore the urlRoot
-     * parameter, configured in project configuration.
+     * parameter, configured in route configuration.
      *
      * @return self
      */

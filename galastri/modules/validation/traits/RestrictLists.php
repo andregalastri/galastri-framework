@@ -30,10 +30,7 @@ trait RestrictLists
          * Throws an exception if the $allowedValues is empty.
          */
         if (empty($allowedValues)) {
-            throw new Exception(
-                self::VALIDATION_UNDEFINED_VALUES_ALLOWED_LIST[1],
-                self::VALIDATION_UNDEFINED_VALUES_ALLOWED_LIST[0],
-            );
+            throw new Exception(self::VALIDATION_UNDEFINED_VALUES_ALLOWED_LIST);
         }
 
         $this->validatingChain[] = function () use ($allowedValues) {
@@ -78,10 +75,7 @@ trait RestrictLists
          * Throws an exception if the $deniedValues is empty.
          */
         if (empty($deniedValues)) {
-            throw new Exception(
-                self::VALIDATION_UNDEFINED_VALUES_DENIED_LIST[1],
-                self::VALIDATION_UNDEFINED_VALUES_DENIED_LIST[0],
-            );
+            throw new Exception(self::VALIDATION_UNDEFINED_VALUES_DENIED_LIST);
         }
 
         $this->validatingChain[] = function () use ($deniedValues) {

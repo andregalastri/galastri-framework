@@ -18,30 +18,6 @@ final class Parameters implements \galastri\lang\English
     const LANGUAGE_DIRECTORY = GALASTRI_PROJECT_DIR.'/galastri/lang';
 
     /**
-     * Project parameters. For more information about these parameters, see the
-     * app/config/project.php file.
-     */
-
-    /**
-     * Stores the url root from the project configuration.
-     *
-     * @var string
-     */
-    private static string $urlRoot;
-
-    /**
-     * Stores the timezone from the project or route configuration.
-     *
-     * @var null|string
-     */
-    private static ?string $timezone = null;
-
-
-
-
-    //////
-
-    /**
      * Parent parameters. For more information about these parameters, see the
      * $parentParameters property description in the galastri/core/Route.php.
      */
@@ -64,6 +40,20 @@ final class Parameters implements \galastri\lang\English
      */
 
     /**
+     * Stores the URL root from the route configuration.
+     *
+     * @var string
+     */
+    private static string $urlRoot;
+
+    /**
+     * Stores the timezone from the route configuration.
+     *
+     * @var null|string
+     */
+    private static ?string $timezone = null;
+
+    /**
      * Stores the offline parameter from the route configuration.
      *
      * @var bool
@@ -71,7 +61,7 @@ final class Parameters implements \galastri\lang\English
     private static bool $offline;
 
     /**
-     * Stores the projectTitle parameter from the project or route configuration.
+     * Stores the projectTitle parameter from the route configuration.
      *
      * @var null|string
      */
@@ -148,21 +138,21 @@ final class Parameters implements \galastri\lang\English
     private static ?string $baseFolder = null;
 
     /**
-     * Stores the offlineMessage parameter from the project or route configuration.
+     * Stores the offlineMessage parameter from the route configuration.
      *
      * @var string
      */
     private static string $offlineMessage;
 
     /**
-     * Stores the authFailMessage parameter from the project or route configuration.
+     * Stores the authFailMessage parameter from the route configuration.
      *
      * @var string
      */
     private static string $authFailMessage;
 
     /**
-     * Stores the permissionFailMessage parameter from the project or route configuration.
+     * Stores the permissionFailMessage parameter from the route configuration.
      *
      * @var string
      */
@@ -277,69 +267,6 @@ final class Parameters implements \galastri\lang\English
 
 
 
-    //////
-
-    /**
-     * Project parameters.
-     */
-
-    /**
-     * Sets the urlRoot parameter. The value needs to be string and cannot be null.
-     *
-     * @param  string $value                        The urlRoot parameter value.
-     *
-     * @return void
-     */
-    public static function setUrlRoot($value): void
-    {
-        self::isOfTypeNotNull(
-            'string', $value,
-            self::INVALID_URL_ROOT_TYPE,
-            self::UNDEFINED_URL_ROOT
-        );
-        self::$urlRoot = ltrim($value, '/');
-    }
-
-    /**
-     * Returns the urlRoot parameter.
-     *
-     * @return string
-     */
-    public static function getUrlRoot(): string
-    {
-        return self::$urlRoot;
-    }
-
-    /**
-     * Sets the timezone parameter and defines it internally. The value needs to be string or null.
-     *
-     * @param  null|string $value                   The timezone parameter value.
-     *
-     * @return void
-     */
-    public static function setTimezone($value): void
-    {
-        self::isOfType(
-            'string', $value,
-            self::INVALID_TIMEZONE_TYPE
-        );
-        self::$timezone = $value;
-
-        if($value !== null) {
-            date_default_timezone_set($value);
-        }
-    }
-
-    /**
-     * Returns the timezone parameter.
-     *
-     * @return null|string
-     */
-    public static function getTimezone(): ?string
-    {
-        return self::$timezone;
-    }
-
 
 
 
@@ -382,6 +309,79 @@ final class Parameters implements \galastri\lang\English
     /**
      * Route parameters.
      */
+
+    /**
+     * Sets the urlRoot parameter. The value needs to be string and cannot be null.
+     *
+     * @param  string $value                        The urlRoot parameter value.
+     *
+     * @return void
+     */
+    public static function setUrlRoot($value): void
+    {
+        self::isOfTypeNotNull(
+            'string', $value,
+            self::INVALID_URL_ROOT_TYPE,
+            self::UNDEFINED_URL_ROOT
+        );
+
+        if (substr($value, 0, 1) !== '/') {
+            throw new Exception(self::URL_ROOT_MUST_START_WITH_SLASH);
+        }
+
+        if (substr($value, -1) !== '/') {
+            throw new Exception(self::URL_ROOT_MUST_END_WITH_SLASH);
+        }
+
+        self::$urlRoot = $value;
+    }
+
+    /**
+     * Returns the urlRoot parameter.
+     *
+     * @return string
+     */
+    public static function getUrlRoot(): string
+    {
+        return self::$urlRoot;
+    }
+
+    /**
+     * Sets the timezone parameter and defines it internally. The value needs to be string or null.
+     *
+     * @param  null|string $value                   The timezone parameter value.
+     *
+     * @return void
+     */
+    public static function setTimezone($value): void
+    {
+        self::isOfTypeNotNull(
+            'string', $value,
+            self::INVALID_TIMEZONE_TYPE,
+            self::UNDEFINED_TIMEZONE,
+            [
+                date_default_timezone_get()
+            ]
+        );
+
+        self::$timezone = $value;
+
+        if(in_array($value, timezone_identifiers_list())) {
+            date_default_timezone_set($value);
+        } else {
+            throw new Exception(self::INVALID_TIMEZONE, [$value]);
+        }
+    }
+
+    /**
+     * Returns the timezone parameter.
+     *
+     * @return null|string
+     */
+    public static function getTimezone(): ?string
+    {
+        return self::$timezone;
+    }
 
     /**
      * Sets the offline parameter. The value needs to be bool and cannot be null.
@@ -606,13 +606,7 @@ final class Parameters implements \galastri\lang\English
             if (in_array($value, ['view', 'json', 'file', 'text'])) {
                 self::$output = $value;
             } else {
-                throw new Exception(
-                    self::INVALID_OUTPUT[1],
-                    self::INVALID_OUTPUT[0],
-                    [
-                        var_export($value, true)
-                    ]
-                );
+                throw new Exception(self::INVALID_OUTPUT, [var_export($value, true)]);
             }
         }
     }
@@ -846,23 +840,11 @@ final class Parameters implements \galastri\lang\English
 
         if (!empty($value)) {
             if (!class_exists($value)) {
-                throw new Exception(
-                    self::TEMPLATE_ENGINE_CLASS_NOT_FOUND[1],
-                    self::TEMPLATE_ENGINE_CLASS_NOT_FOUND[0],
-                    [
-                        $value
-                    ]
-                );
+                throw new Exception(self::TEMPLATE_ENGINE_CLASS_NOT_FOUND, [$value]);
             }
     
             if (!is_subclass_of($value, \galastri\extensions\TemplateEngine::class)) {
-                throw new Exception(
-                    self::TEMPLATE_ENGINE_CLASS_DOESNT_EXTENDS_CORE[1],
-                    self::TEMPLATE_ENGINE_CLASS_DOESNT_EXTENDS_CORE[0],
-                    [
-                        $value
-                    ]
-                );
+                throw new Exception(self::TEMPLATE_ENGINE_CLASS_DOESNT_EXTENDS_CORE, [$value]);
             }
         } else {
             $value = null;
@@ -1140,11 +1122,7 @@ final class Parameters implements \galastri\lang\English
 
         if (!is_file(self::LANGUAGE_DIRECTORY.'/'.$value.'.php')) {
             throw new Exception(
-                self::LANGUAGE_FILE_NOT_FOUND[1],
-                self::LANGUAGE_FILE_NOT_FOUND[0],
-                [
-                    $value
-                ]
+                self::LANGUAGE_FILE_NOT_FOUND, [$value]
             );
         }
         self::$language = $value;
@@ -1187,11 +1165,7 @@ final class Parameters implements \galastri\lang\English
             }
         }
 
-        throw new Exception(
-            $whenInvalid[1],
-            $whenInvalid[0],
-            $printfValues
-        );
+        throw new Exception($whenInvalid, $printfValues);
     }
 
     /**
@@ -1225,18 +1199,10 @@ final class Parameters implements \galastri\lang\English
                     return;
                 }
             } else {
-                throw new Exception(
-                    $whenUndefined[1],
-                    $whenUndefined[0],
-                    $printfValues
-                );
+                throw new Exception($whenUndefined, $printfValues);
             }
         }
 
-        throw new Exception(
-            $whenInvalid[1],
-            $whenInvalid[0],
-            $printfValues
-        );
+        throw new Exception($whenInvalid[1], $printfValues);
     }
 }

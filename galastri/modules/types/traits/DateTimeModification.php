@@ -9,7 +9,7 @@ trait DateTimeModification
 {
     /**
      * This method sets the current date-time as the yesterday's date. The time is always set as
-     * 00:00:00.00000. The timezone is based on the defined timezone in the project configuration.
+     * 00:00:00.00000. The timezone is based on the defined timezone in the route configuration.
      *
      * @return self
      */
@@ -21,7 +21,7 @@ trait DateTimeModification
 
     /**
      * This method sets the current date-time as the today's date. The time is always set as
-     * 00:00:00.00000. The timezone is based on the defined timezone in the project configuration.
+     * 00:00:00.00000. The timezone is based on the defined timezone in the route configuration.
      *
      * @return self
      */
@@ -33,7 +33,7 @@ trait DateTimeModification
 
     /**
      * This method sets the current date-time as the tomorrow's date. The time is always set as
-     * 00:00:00.00000. The timezone is based on the defined timezone in the project configuration.
+     * 00:00:00.00000. The timezone is based on the defined timezone in the route configuration.
      *
      * @return self
      */
@@ -46,7 +46,7 @@ trait DateTimeModification
     /**
      * This method sets the current date-time as the today's date and the time is always set as the
      * current one, defined by the server. The timezone is based on the defined timezone in the
-     * project configuration.
+     * route configuration.
      *
      * @return self
      */

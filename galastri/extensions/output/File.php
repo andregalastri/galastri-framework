@@ -2,11 +2,11 @@
 
 namespace galastri\extensions\output;
 
-use \galastri\core\Route;
-use \galastri\core\Parameters;
-use \galastri\core\Debug;
-use \galastri\modules\types\TypeString;
-use \galastri\extensions\Exception;
+use galastri\core\Route;
+use galastri\core\Parameters;
+use galastri\core\Debug;
+use galastri\modules\types\TypeString;
+use galastri\extensions\Exception;
 
 /**
  * This trait is the File output, used by the Galastri class, to return a file to the request.
@@ -130,7 +130,7 @@ trait File
     private static function fileCheckBaseFolder(): void
     {
         if (empty($baseFolder = Parameters::getBaseFolder())) {
-            throw new Exception(self::UNDEFINED_BASE_FOLDER[1], self::UNDEFINED_BASE_FOLDER[0]);
+            throw new Exception(self::UNDEFINED_BASE_FOLDER);
         }
 
         self::$baseFolder = $baseFolder;
@@ -156,7 +156,7 @@ trait File
          */
         if (empty(Route::getUrlArray())) {
             if (Parameters::getDisplayErrors()) {
-                throw new Exception(self::UNDEFINED_FILE_PATH[1], self::UNDEFINED_FILE_PATH[0]);
+                throw new Exception(self::UNDEFINED_FILE_PATH);
             }
 
             self::return404();
@@ -221,7 +221,7 @@ trait File
          */
         if (!isset(GALASTRI_MIME_TYPE[$fileExtension])) {
             if (Parameters::getDisplayErrors()) {
-                throw new Exception(self::UNDEFINED_EXTENSION_MIME_TYPE[1], self::UNDEFINED_EXTENSION_MIME_TYPE[0], [$fileExtension]);
+                throw new Exception(self::UNDEFINED_EXTENSION_MIME_TYPE, [$fileExtension]);
             }
 
             self::return404();
@@ -288,7 +288,14 @@ trait File
              * If not, an exception is thrown.
              */
             } else {
-                throw new Exception(self::INVALID_MIME_TYPE_FOR_EXTENSION[1], self::INVALID_MIME_TYPE_FOR_EXTENSION[0], [implode(', ', GALASTRI_MIME_TYPE[$fileExtension]), $fileExtension, $mimeType]);
+                throw new Exception(
+                    self::INVALID_MIME_TYPE_FOR_EXTENSION,
+                    [
+                        implode(', ', GALASTRI_MIME_TYPE[$fileExtension]),
+                        $fileExtension,
+                        $mimeType
+                    ]
+                );
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace galastri\extensions\output;
 
-use \galastri\core\Debug;
+use galastri\core\Debug;
 
 /**
  * This trait is the Json output, used by the Galastri class, to return a JSON to the request.

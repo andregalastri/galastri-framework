@@ -52,7 +52,7 @@ trait FilePath
     public function fileExists(): bool
     {
         if ($this->isEmpty()) {
-            throw new Exception(self::EMPTY_FILE_PATH[1], self::EMPTY_FILE_PATH[0], __METHOD__);
+            throw new Exception(self::EMPTY_FILE_PATH, [__METHOD__]);
         }
 
         return is_file($this->realPath()->get());
@@ -76,7 +76,7 @@ trait FilePath
     public function directoryExists(): bool
     {
         if ($this->isEmpty()) {
-            throw new Exception(self::EMPTY_FILE_PATH[1], self::EMPTY_FILE_PATH[0], __METHOD__);
+            throw new Exception(self::EMPTY_FILE_PATH, [__METHOD__]);
         }
 
         return is_dir($this->realPath()->get());
