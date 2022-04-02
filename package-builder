@@ -1,0 +1,9 @@
+<?php
+namespace galastri;
+
+require('vendor/autoload.php');
+
+define('GALASTRI_PROJECT_DIR', __DIR__);
+
+\galastri\cli\classes\PackageBuilder::setLanguage($argv[1] ?? 'en');
+\galastri\cli\classes\PackageBuilder::mainWindow();

@@ -221,7 +221,7 @@ abstract class Controller
 
         $this->resultData['galastri'] = [
             'urlRoot' => Parameters::getUrlRoot(),
-            'version' => GALASTRI_VERSION,
+            'version' => GALASTRI_VERSION['galastri'],
         ];
 
         PerformanceAnalysis::flush(PERFORMANCE_ANALYSIS_LABEL);

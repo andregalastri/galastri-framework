@@ -1,1 +1,6 @@
-0.6.0-dev-3
+<?php
+return [
+    'galastri'        => '0.6.0-dev-4',
+    'updater'         => '0.1.5-alpha',
+    'package-builder' => '0.1.0-alpha',
+];

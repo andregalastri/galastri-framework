@@ -120,7 +120,7 @@ try {
     define('GALASTRI_DATABASE', require(GALASTRI_PROJECT_DIR.'/app/config/database.php'));
     define('GALASTRI_URL_TAGS', require(GALASTRI_PROJECT_DIR.'/app/config/url-tags.php'));
     define('GALASTRI_MIME_TYPE', require(GALASTRI_PROJECT_DIR.'/app/config/mime-type.php'));
-    define('GALASTRI_VERSION', trim(file_get_contents(GALASTRI_PROJECT_DIR.'/galastri/VERSION')));
+    define('GALASTRI_VERSION', require(GALASTRI_PROJECT_DIR.'/galastri/VERSION'));
 
     /**
      * Beginning of the PerformanceAnalysis class. This class is used to measure the performance of
